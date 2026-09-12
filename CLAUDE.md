@@ -10,11 +10,13 @@ Aplicação web multi-organização para publicar textos e imagens programados e
 grupos de Telegram, hospedada em `msg.oa12.org` sobre Railway.
 
 **Nome da aplicação: `msg`.** Genérico de propósito, para servir a outros usos
-além da OA. O projeto no Railway também se chama `msg`. O repositório
-(`cnasajon/oamsg`) e o bot (`@OAmsg_bot`) mantêm os nomes atuais.
+além da OA. O projeto no Railway também se chama `msg`, e o repositório foi renomeado para
+`cnasajon/msg`. O bot (`@OAmsg_bot`) mantém o nome atual.
 
 **Interface: tema escuro é o padrão**, com alternador para o claro na mesma
-linha do cabeçalho.
+linha do cabeçalho. A entrada é uma tela de quatro blocos — Painel de controle,
+Textos, Configuração (admin e superadmin) e Sistema (só superadmin) —, e o menu
+lateral segue a mesma divisão.
 
 ## Regras de trabalho
 
@@ -55,20 +57,29 @@ linha do cabeçalho.
    `TELEGRAM_BOT_TOKEN`. O campo de token da pasta é sobreposição opcional,
    nulo por padrão, cifrado com AES-256-GCM, editável só pelo superadmin e
    nunca reexibido por inteiro.
-6. **Dois limites de tamanho:** 4096 caracteres para texto sem imagem, 1024
+6. **Quatro situações do texto:** `pendente | publicado | erro | arquivado`.
+   Arquivar é a ação normal para tirar um texto da lista; excluir existe para o
+   admin, em casos excepcionais. O histórico sobrevive à exclusão porque
+   `publications` guarda `conteudo_publicado` e `tinha_imagem`.
+7. **Dois limites de tamanho:** 4096 caracteres para texto sem imagem, 1024
    para texto com imagem (limite de legenda do Telegram). A validação muda ao
    anexar ou remover a imagem, na digitação e na importação.
-7. **Imagens no Postgres como `bytea`**, servidas em rota autenticada e lidas
+8. **Imagens no Postgres como `bytea`**, servidas em rota autenticada e lidas
    pelo worker direto do banco. Sem serviço de armazenamento externo e sem
    volume do Railway.
-8. **Fila esgotada:** comportamento configurável por pasta
+9. **Fila esgotada:** comportamento configurável por pasta
    (`parar_notificar` ou `reiniciar`).
-9. **Destino dos alertas com a precedência da seção 7.4:** `settings`, depois
+10. **Destino dos alertas com a precedência da seção 7.4:** `settings`, depois
    variável de ambiente, depois só log e painel. O worker precisa conseguir
    alertar mesmo com o banco inacessível. As duas configurações podem estar
    vazias sem quebrar o deploy.
-10. **`chat_id` de cada pasta e destino dos alertas configuráveis pela
+11. **`chat_id` de cada pasta e destino dos alertas configuráveis pela
     interface.** Nada de `chat_id` fixo no código.
+12. **Importação traz histórico:** coluna opcional de data de publicação; essas
+    linhas entram como `publicado` e, em `publications`, com
+    `origem = importacao` e `hora_prevista` nula. O dispatcher nunca as reenvia.
+13. **Exportação dos textos** em PDF, XLSX, CSV, JSON e XML, respeitando o filtro
+    e o escopo do usuário.
 
 ## Stack
 

@@ -37,6 +37,17 @@ enum StatusTexto {
   pendente
   publicado
   erro
+  arquivado
+}
+
+// De onde veio a linha de publicação.
+//  - dispatcher: slot calculado pelo worker (o caso que a restrição única protege)
+//  - manual: ação "publicar agora" na interface
+//  - importacao: histórico trazido de outro aplicativo, nunca enviado por este
+enum OrigemPublicacao {
+  dispatcher
+  manual
+  importacao
 }
 
 enum StatusPublicacao {
@@ -67,7 +78,10 @@ model User {
   // nulo apenas para superadmin — superadmin não pertence a organização
   organizationId  String?   @map("organization_id") @db.Uuid
   nome            String
+  // Identificador de login — obrigatório. Telefone e Telegram são cadastrais.
   email           String    @unique
+  telefone        String?
+  telegramUsername String?  @map("telegram_username")
   senhaHash       String    @map("senha_hash")
   perfil          Perfil
   idioma          Idioma?   // sobreposição por usuário; nulo = idioma da organização
@@ -158,10 +172,12 @@ model Text {
   imagemMime         String?     @map("imagem_mime")
   imagemBytes        Int?        @map("imagem_bytes")
   imagemNomeOriginal String?     @map("imagem_nome_original")
-  // Três estados, só. Excluir um texto apaga a linha e ele some da lista; o
-  // histórico não se perde porque `publications` guarda o conteúdo publicado.
+  // pendente | publicado | erro | arquivado. Arquivar tira o texto da lista de
+  // trabalho preservando o registro; excluir apaga a linha (ação excepcional do
+  // admin) e o histórico sobrevive no snapshot de `publications`.
   status             StatusTexto @default(pendente)
   publicadoEm        DateTime?   @map("publicado_em") @db.Timestamptz(3)
+  arquivadoEm        DateTime?   @map("arquivado_em") @db.Timestamptz(3)
   erroMensagem       String?     @map("erro_mensagem")
   importId           String?     @map("import_id") @db.Uuid
   // hash do conteúdo textual apenas — a imagem não entra no cálculo
@@ -203,8 +219,12 @@ model Publication {
   id                String           @id @default(uuid()) @db.Uuid
   folderId          String           @map("folder_id") @db.Uuid
   textId            String?          @map("text_id") @db.Uuid // nulo quando a fila está vazia
+  origem            OrigemPublicacao @default(dispatcher)
   dataPrevista      DateTime         @map("data_prevista") @db.Date
-  horaPrevista      DateTime         @map("hora_prevista") @db.Time(0)
+  // Nula apenas em histórico importado sem hora. O Postgres trata NULLs como
+  // distintos na restrição única, então importar duas mensagens da mesma data
+  // não colide — e todo slot do dispatcher tem hora, que é o caso protegido.
+  horaPrevista      DateTime?        @map("hora_prevista") @db.Time(0)
   status            StatusPublicacao @default(reivindicada)
   // Cópia do texto no momento do envio. Sem ela, excluir um texto deixaria o
   // histórico com uma linha vazia — `text_id` vira nulo quando o texto some.
@@ -224,6 +244,7 @@ model Publication {
   @@unique([folderId, dataPrevista, horaPrevista])
   @@index([folderId, dataPrevista])
   @@index([status])
+  @@index([folderId, origem])
   @@map("publications")
 }
 
@@ -249,6 +270,8 @@ model Import {
   totalLinhas         Int      @map("total_linhas")
   importadas          Int
   duplicadasIgnoradas Int      @map("duplicadas_ignoradas")
+  // linhas que vieram com data de publicação preenchida (histórico importado)
+  importadasComoHistorico Int  @default(0) @map("importadas_como_historico")
   desfeitoEm          DateTime? @map("desfeito_em") @db.Timestamptz(3)
   criadoPor           String?  @map("criado_por") @db.Uuid
   criadoEm            DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)

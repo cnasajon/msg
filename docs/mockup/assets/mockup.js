@@ -30,6 +30,12 @@
     var rl = document.querySelector('.foot .role');
     if (who) who.textContent = names[r];
     if (rl) rl.textContent = labels[r] + ' · ' + mails[r];
+    var nomes = document.querySelectorAll('.nome-usuario');
+    for (var k = 0; k < nomes.length; k++) {
+      nomes[k].textContent = nomes[k].classList.contains('curto') ? names[r].split(' ')[0] : names[r];
+    }
+    var papeis = document.querySelectorAll('.papel-usuario');
+    for (var m = 0; m < papeis.length; m++) papeis[m].textContent = labels[r];
   }
 
   function applyTheme(t) {

@@ -10,20 +10,26 @@
 <body>
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">
+      <a class="brand" href="home.html" style="text-decoration:none;color:inherit">
         <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
         <div>
           <div class="name">msg</div>
           <div class="env">msg.oa12.org</div>
         </div>
-      </div>
+      </a>
+        <div class="navgroup nav">
+          <a href="home.html"><span class="ico">⌂</span>Início</a>
+        </div>
         <div class="navgroup nav" data-roles="superadmin admin usuario">
-          <h4>Operação</h4>
+          <h4>Painel de controle</h4>
           <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
-          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Textos</h4>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Lista de textos</a>
           <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
           <a href="historico.html" class="active" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
-          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
         </div>
         <div class="navgroup nav" data-roles="superadmin admin">
           <h4>Configuração</h4>
@@ -73,7 +79,7 @@
         <div class="card">
           <div class="toolbar">
             <select><option>Todas as pastas visíveis</option><option>Uma Visão Para Você</option><option>Mesa de ajuda UVPV</option></select>
-            <select><option>Todos os status</option><option>Enviada</option><option>Erro</option><option>Perdida</option><option>Reivindicada</option></select>
+            <select><option>Todos os status</option><option>Enviada</option><option>Erro</option><option>Perdida</option><option>Reivindicada</option><option>Importada</option></select>
             <input type="text" placeholder="Buscar no conteúdo…">
             <span class="spacer"></span>
             <span class="faint">datas no fuso de cada pasta</span>
@@ -114,6 +120,14 @@
                 <td><a class="btn sm" href="importacao.html">Importar textos</a></td>
               </tr>
               <tr>
+                <td>13/03 <span class="faint">sem hora</span></td>
+                <td>Uma Visão Para Você</td>
+                <td class="textcell"><div class="thumb empty">⇪</div><div class="t"><p>O encontro começa no convite, não na chegada.</p>
+                  <div class="meta">histórico importado de outro aplicativo — nunca enviado por este sistema</div></div></td>
+                <td><span class="pill info">importada</span></td>
+                <td class="faint">—</td><td class="faint">—</td><td></td>
+              </tr>
+              <tr>
                 <td>06/09 18:30 <span class="tz">BRT</span></td>
                 <td>Reflexões da semana</td>
                 <td class="textcell"><div class="thumb empty">✕</div><div class="t"><p>O encontro começa no convite.</p>
@@ -125,7 +139,8 @@
           </table>
         </div>
         <p class="faint">Cada linha corresponde a um slot <code>(pasta, data_prevista, hora_prevista)</code> —
-        a mesma chave única que garante a idempotência. Um slot nunca aparece duas vezes.</p>
+        a mesma chave única que garante a idempotência. Um slot nunca aparece duas vezes. O histórico importado entra
+        sem hora prevista e marcado como <b>importada</b>: fica no registro, mas nunca é enviado.</p>
       </div>
     </div>
   </div>

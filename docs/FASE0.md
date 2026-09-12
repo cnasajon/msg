@@ -147,6 +147,7 @@ Perfil e tema ficam no `localStorage` e acompanham a navegação entre as telas.
 | `pastas.html` | Lista de pastas |
 | `pasta-config.html` | Pasta: `chat_id`, fuso, ao esgotar, agendamentos, token de sobreposição, testar conexão |
 | `textos.html` | Lista de textos com miniatura, busca, filtro e reordenação |
+| `home.html` | **Tela inicial** com os quatro blocos |
 | `texto-editor.html` | Editor com contador dinâmico (4096/1024), upload de imagem e pré-visualização |
 | `importacao.html` | Importação CSV/XLSX com mapeamento de colunas, pré-visualização e resultado |
 | `historico.html` | Histórico de publicações |
@@ -183,16 +184,15 @@ abrir o arquivo, ou colar a URL do arquivo em `htmlpreview.github.io`.
 Os cinco pontos que estavam em aberto foram respondidos e já estão aplicados ao
 schema e ao mockup.
 
-1. **Sem arquivamento: três estados e exclusão de verdade.** O `status` do texto
-   é `pendente | publicado | erro`, e nada mais. Excluir apaga a linha e o texto
-   some da lista — não existe estado intermediário nem coluna de arquivamento.
-   Para que o histórico não fique com linhas vazias, `publications` passa a
-   guardar `conteudo_publicado` e `tinha_imagem`: o que foi ao ar fica registrado
-   na publicação, não no texto. A imagem em si não é copiada — some junto com o
-   texto, e o histórico indica que havia uma.
-   *Isto altera a seção 9 da especificação*, que diz que texto publicado "não
-   pode ser excluído, apenas arquivado". A troca é deliberada e vale atualizar a
-   especificação para a v1.4.
+1. **Quatro estados, com arquivamento e exclusão.** O `status` do texto é
+   `pendente | publicado | erro | arquivado`, e `texts.arquivado_em` guarda a
+   data do arquivamento. **Arquivar** é a ação normal para tirar um texto da
+   lista preservando o registro; **excluir** continua existindo para o admin,
+   para casos excepcionais. As ações da lista passam a ser editar, arquivar e
+   excluir. Mesmo na exclusão o histórico sobrevive: `publications` guarda
+   `conteudo_publicado` e `tinha_imagem` — o que foi ao ar fica registrado na
+   publicação, não no texto. A imagem não é copiada; some junto com o texto, e o
+   histórico indica que havia uma.
 2. **Duplicata depois de publicada — aprovado.** O índice único
    `(folder_id, hash_conteudo)` fica como a especificação pede. A importação
    lista as duplicatas ignoradas com o motivo.
@@ -205,13 +205,42 @@ schema e ao mockup.
 
 6. **Nome e identidade — `msg`.** A aplicação passa a se chamar `msg`, nome
    genérico de propósito. Vale para a interface, a documentação e o projeto no
-   Railway. Ficam como estão, por serem externos ao código: o repositório
-   `cnasajon/oamsg` (renomeável no GitHub a qualquer momento, com redirecionamento
-   automático) e o bot `@OAmsg_bot` (trocar o nome exige outro bot no BotFather e
-   novo token). A logomarca está em `docs/mockup/assets/logo.svg`, com o símbolo
+   Railway. O repositório foi renomeado para `cnasajon/msg`. Fica como está, por
+   ser externo ao código, o bot `@OAmsg_bot` — trocar o username de um bot exige
+   criar outro no BotFather e gerar novo token, e como o token vem de variável de
+   ambiente isso pode ser feito depois sem tocar em código. A logomarca está em `docs/mockup/assets/logo.svg`, com o símbolo
    isolado em `mark.svg`.
 
-7. **Tema escuro é o padrão**, com alternador para o claro na mesma linha do
+7. **Exportação dos textos** em PDF, XLSX, CSV, JSON e XML, respeitando o filtro
+   ativo da lista e o escopo do usuário. Entra na fase 2, junto com a lista de
+   textos.
+
+8. **Importação de histórico.** A importação ganha o mapeamento opcional de uma
+   **coluna de data de publicação**, para trazer mensagens já publicadas em outro
+   aplicativo: a linha entra com `status = publicado` e a data informada. Em
+   `publications` essas linhas ficam com `origem = importacao` e `hora_prevista`
+   nula — o Postgres trata nulos como distintos na restrição única, então duas
+   mensagens importadas na mesma data não colidem, e todo slot do dispatcher
+   continua tendo hora, que é exatamente o caso que a restrição protege. O
+   dispatcher nunca reenvia uma linha importada.
+
+9. **Ordem da fila na importação.** Não há coluna de ordem para mapear: vale a
+   ordem das linhas do arquivo. A coluna `texts.ordem` continua no banco — é ela
+   que sustenta a fila e a reordenação por arrastar —, apenas deixa de ser
+   alimentada pela planilha.
+
+10. **Usuários ganham `telefone` e `telegram_username`**, ambos opcionais e
+    apenas cadastrais: servem para localizar a pessoa, o que na OA costuma valer
+    mais que o e-mail. O **e-mail continua obrigatório**, porque é a credencial de
+    entrada — ver a pergunta ao final.
+
+11. **Tela inicial nova.** A entrada deixa de ser o painel e passa a ser uma tela
+    de quatro blocos com ilustração, título e explicação: *Painel de controle*,
+    *Textos* (com importação e histórico dentro), *Configuração* (pastas,
+    usuários e auditoria; admin e superadmin) e *Sistema* (só superadmin). O menu
+    lateral das telas internas segue a mesma divisão.
+
+12. **Tema escuro é o padrão**, com alternador para o claro na mesma linha do
    cabeçalho — sem faixa própria, para não gastar altura útil.
 5. **Fuso padrão das organizações — aprovado.** `America/Sao_Paulo` como valor
    inicial de `timezone_padrao`, editável por organização e sobreposto por pasta.
@@ -220,3 +249,23 @@ Registro de uma escolha adjacente: `folders.telegram_chat_id` é texto, não
 número — `-1001492357816` cabe em `bigint`, mas guardar como texto evita
 qualquer surpresa de precisão em JavaScript e aceita o formato `-100...` como
 digitado. A validação de formato fica na aplicação.
+
+---
+
+## Uma pergunta que ficou
+
+**O e-mail pode mesmo ser opcional?** Você escreveu que todos os campos novos de
+usuário são opcionais, e que na OA o Telegram vale mais que o e-mail. Telefone e
+Telegram entraram como opcionais. O e-mail, não: hoje ele é a credencial de
+entrada, e sem ele a pessoa não teria como se identificar no login.
+
+Duas saídas, se você quiser o e-mail opcional de verdade:
+
+1. **Login por e-mail *ou* usuário do Telegram**, o que for preenchido — exige
+   que pelo menos um dos dois exista e seja único no sistema. É a mudança menor,
+   mas mexe na tela de login e na autenticação, que são da fase 1.
+2. **Login por Telegram de verdade** (o bot autentica a pessoa) — muda bastante
+   coisa e vale como evolutiva, não agora.
+
+Segui com o e-mail obrigatório para não travar a fase 1. Se preferir a saída 1,
+é um ajuste pequeno enquanto a autenticação ainda está sendo escrita.

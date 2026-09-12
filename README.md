@@ -4,9 +4,8 @@ Aplicação web multi-organização para publicação programada de textos e ima
 em grupos de Telegram. Domínio: `msg.oa12.org`. Bot: `@OAmsg_bot`.
 
 O nome da aplicação é **msg** — genérico de propósito, para servir a outros usos
-além da OA. O repositório ainda se chama `oamsg` e o bot `@OAmsg_bot`; a
-renomeação do repositório no GitHub e a criação de um bot com outro nome, se
-desejada, são decisões independentes deste código.
+além da OA. O repositório é `cnasajon/msg`; o bot continua `@OAmsg_bot`, porque
+o username de um bot não se troca sem criar outro no BotFather.
 
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.3).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
@@ -34,9 +33,10 @@ de um `git pull` da branch. Trabalhando pela nuvem, também dá para colar a URL
 do arquivo no GitHub em `htmlpreview.github.io` — o GitHub não renderiza HTML do
 repositório, mostra o código-fonte.
 
-O seletor **Ver como** (superadmin / admin / usuário) e o botão de tema ficam na
-mesma linha do cabeçalho e valem para todas as telas. O **tema escuro é o
-padrão**.
+A entrada é `home.html`, com quatro blocos: Painel de controle, Textos,
+Configuração (admin e superadmin) e Sistema (só superadmin). O seletor **Ver
+como** e o botão de tema ficam na mesma linha do cabeçalho e valem para todas as
+telas. O **tema escuro é o padrão**.
 
 ## Arquitetura
 
@@ -62,8 +62,8 @@ PostgreSQL 16 · Prisma · `node-cron` · `xlsx` · `sharp` · Telegram Bot API 
 > Disponível a partir da fase 1, quando existir `package.json`.
 
 ```bash
-git clone git@github.com:cnasajon/oamsg.git
-cd oamsg
+git clone git@github.com:cnasajon/msg.git
+cd msg
 npm install
 cp .env.example .env      # preencher com valores locais; .env nunca é versionado
 npx prisma migrate dev
@@ -129,7 +129,7 @@ existir código; os demais exigem `package.json` com `start:web` e
 3. **Gerar as chaves** (comandos acima) e guardar no gerenciador de senhas.
 4. **Cadastrar as variáveis compartilhadas.** Project Settings → Shared
    Variables: `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET`, `ENCRYPTION_KEY`.
-5. **Criar o serviço `web`.** + Create → GitHub Repo → `oamsg`, renomear para
+5. **Criar o serviço `web`.** + Create → GitHub Repo → `msg`, renomear para
    `web`, start command `npm run start:web`, health check path `/health`.
 6. **Criar o serviço `worker`.** Duplicar o serviço `web` pelo botão direito —
    adicionar o mesmo repositório duas vezes pelo canvas costuma não funcionar.

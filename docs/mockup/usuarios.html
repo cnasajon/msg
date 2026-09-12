@@ -10,20 +10,26 @@
 <body>
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">
+      <a class="brand" href="home.html" style="text-decoration:none;color:inherit">
         <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
         <div>
           <div class="name">msg</div>
           <div class="env">msg.oa12.org</div>
         </div>
-      </div>
+      </a>
+        <div class="navgroup nav">
+          <a href="home.html"><span class="ico">⌂</span>Início</a>
+        </div>
         <div class="navgroup nav" data-roles="superadmin admin usuario">
-          <h4>Operação</h4>
+          <h4>Painel de controle</h4>
           <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
-          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Textos</h4>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Lista de textos</a>
           <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
           <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
-          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
         </div>
         <div class="navgroup nav" data-roles="superadmin admin">
           <h4>Configuração</h4>
@@ -73,7 +79,8 @@
         <div class="banner info">
           <div>Não existe cadastro público. Cada conta é criada por quem está acima na hierarquia, com
           <b>senha provisória</b> e troca obrigatória no primeiro acesso. O e-mail serve apenas como
-          identificador de login — o sistema não envia e-mail algum.</div>
+          identificador de login — o sistema não envia e-mail algum. <b>Telegram e telefone são opcionais</b>
+          e existem para localizar a pessoa; na OA costumam valer mais que o e-mail.</div>
         </div>
 
         <div class="card">
@@ -84,30 +91,30 @@
             <button class="btn primary">Novo usuário</button>
           </div>
           <table>
-            <thead><tr><th>Nome</th><th>E-mail</th><th data-roles="superadmin">Organização</th><th>Perfil</th><th>Pastas atribuídas</th><th>Último acesso</th><th></th></tr></thead>
+            <thead><tr><th>Nome</th><th>Contato</th><th data-roles="superadmin">Organização</th><th>Perfil</th><th>Pastas atribuídas</th><th>Último acesso</th><th></th></tr></thead>
             <tbody>
               <tr data-roles="superadmin">
-                <td><b>Claudio Nasajon</b></td><td class="mono">claudio@…</td><td class="faint">— (global)</td>
+                <td><b>Claudio Nasajon</b></td><td class="mono">claudio@…<div class="faint">@claudionasajon · +55 21 9····-····</div></td><td class="faint">— (global)</td>
                 <td><span class="pill accent">superadmin</span></td><td class="faint">todas</td><td>hoje 08:12</td>
                 <td><button class="btn sm">Editar</button></td>
               </tr>
               <tr>
-                <td><b>Marta Ribeiro</b></td><td class="mono">marta@oabrasil.org</td><td data-roles="superadmin">OA Brasil</td>
+                <td><b>Marta Ribeiro</b></td><td class="mono">marta@oabrasil.org<div class="faint">@martaribeiro</div></td><td data-roles="superadmin">OA Brasil</td>
                 <td><span class="pill info">admin</span></td><td class="faint">todas da organização</td><td>hoje 07:40</td>
                 <td><button class="btn sm" data-roles="superadmin">Editar</button><span class="faint" data-roles="admin usuario">—</span></td>
               </tr>
               <tr>
-                <td><b>Ana Duarte</b></td><td class="mono">ana@oabrasil.org</td><td data-roles="superadmin">OA Brasil</td>
+                <td><b>Ana Duarte</b></td><td class="mono">ana@oabrasil.org<div class="faint">@anaduarte · +55 11 9····-····</div></td><td data-roles="superadmin">OA Brasil</td>
                 <td><span class="pill">usuário</span></td><td>Uma Visão Para Você, Reflexões da semana</td><td>ontem 19:02</td>
                 <td><button class="btn sm">Editar</button></td>
               </tr>
               <tr>
-                <td><b>João Prado</b> <span class="pill warn">senha provisória</span></td><td class="mono">joao@oabrasil.org</td><td data-roles="superadmin">OA Brasil</td>
+                <td><b>João Prado</b> <span class="pill warn">senha provisória</span></td><td class="mono">joao@oabrasil.org<div class="faint">— sem Telegram</div></td><td data-roles="superadmin">OA Brasil</td>
                 <td><span class="pill">usuário</span></td><td class="faint">nenhuma</td><td class="faint">nunca entrou</td>
                 <td><button class="btn sm">Editar</button></td>
               </tr>
               <tr data-roles="superadmin">
-                <td><b>Lucía Ferrer</b></td><td class="mono">lucia@oaespana.org</td><td>OA España</td>
+                <td><b>Lucía Ferrer</b></td><td class="mono">lucia@oaespana.org<div class="faint">@luciaferrer</div></td><td>OA España</td>
                 <td><span class="pill info">admin</span></td><td class="faint">todas da organização</td><td>09/09 10:31</td>
                 <td><button class="btn sm">Editar</button></td>
               </tr>
@@ -120,7 +127,11 @@
           <div class="body">
             <div class="row">
               <label class="field" style="margin:0"><span class="lbl">Nome</span><input type="text" value="Ana Duarte"></label>
-              <label class="field" style="margin:0"><span class="lbl">E-mail (login)</span><input type="email" value="ana@oabrasil.org"></label>
+              <label class="field" style="margin:0"><span class="lbl">E-mail (login)</span><input type="email" value="ana@oabrasil.org">
+                <span class="hint">É a credencial de entrada — obrigatório.</span></label>
+              <label class="field" style="margin:0"><span class="lbl">Telegram <span class="faint">(opcional)</span></span><input type="text" value="@anaduarte">
+                <span class="hint">Como encontrar a pessoa no Telegram. Não é usado para entrar no sistema.</span></label>
+              <label class="field" style="margin:0"><span class="lbl">Telefone <span class="faint">(opcional)</span></span><input type="text" value="+55 11 98888-7777"></label>
               <label class="field" style="margin:0"><span class="lbl">Perfil</span>
                 <select><option>Usuário</option><option>Admin</option><option data-roles="superadmin">Superadmin</option></select>
                 <span class="hint" data-roles="admin">Admins não criam outros admins — isso é do superadmin.</span>
