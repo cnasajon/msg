@@ -205,6 +205,23 @@ npm run typecheck
 Sem `TEST_DATABASE_URL` os testes de integração se pulam sozinhos, e só os de
 unidade rodam. Use um banco separado: eles truncam as tabelas.
 
+### Sobre os avisos do `npm audit`
+
+Sobram três avisos, todos na CLI do Prisma (`prisma` → `@prisma/config` →
+`deepmerge-ts`), que é dependência de desenvolvimento e não vai para o runtime —
+`@prisma/client`, esse sim usado em produção, não está afetado. Não há versão
+estável corrigida: a correção está na linha 8.x do Prisma, ainda em release
+candidate. Rever quando o Prisma 8 sair como estável.
+
+Se o `npm install` avisar que há scripts de instalação não aprovados
+(`npm warn install-scripts`), aprove-os antes de seguir — o Prisma depende do
+`postinstall` para preparar seus binários:
+
+```bash
+npm install-scripts approve prisma @prisma/client @prisma/engines esbuild fsevents
+npm install
+```
+
 O que já está coberto: **isolamento entre organizações** na camada de dados e
 nas rotas HTTP (inclusive a leitura de imagem), a matriz de permissões linha a
 linha, senha com argon2id e o limite de tentativas de login. Falta cobrir, nas
