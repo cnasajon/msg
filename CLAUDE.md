@@ -1,7 +1,7 @@
 # CLAUDE.md — msg
 
 Guia de trabalho para qualquer sessão do Claude Code neste repositório.
-A fonte da verdade funcional é `docs/ESPECIFICACAO.md` (v1.3). Este arquivo
+A fonte da verdade funcional é `docs/ESPECIFICACAO.md` (v1.4). Este arquivo
 consolida as regras de trabalho e os pontos não negociáveis.
 
 ## Contexto em uma frase
