@@ -10,18 +10,22 @@ o username de um bot não se troca sem criar outro no BotFather.
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.3).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
-> **Situação: fase 0 aprovada.** Ainda não há código de aplicação. Esta fase
-> entrega modelo de dados, matriz de permissões, mockup e a escolha do framework
-> — ver [`docs/FASE0.md`](docs/FASE0.md). O próximo passo é o plano de
-> implementação das fases 1 a 4, também sujeito a aprovação.
+> **Situação: fase 1 entregue.** Autenticação, organizações, usuários,
+> permissões e o isolamento entre organizações testado. As telas das fases 2 a 4
+> existem e avisam em que fase chegam.
 
 ## O que já existe
 
 | Caminho | Conteúdo |
 | :-- | :-- |
 | `docs/ESPECIFICACAO.md` | Especificação funcional e técnica |
-| `docs/FASE0.md` | Entrega da fase 0 e perguntas em aberto |
+| `docs/FASE0.md` | Entrega da fase 0 e as decisões aprovadas |
 | `prisma/schema.prisma` | Modelo de dados com índices e restrições únicas |
+| `src/lib/escopo.ts` | **Isolamento entre organizações** — o filtro por onde passa toda consulta |
+| `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
+| `src/app/` | Interface e server actions (Next.js App Router) |
+| `src/worker/` | Serviço `worker`; o dispatcher entra na fase 3 |
+| `tests/` | Isolamento, permissões, autenticação e rotas HTTP |
 | `docs/mockup/` | Mockup navegável em HTML estático, sem build |
 | `docs/mockup/assets/logo.svg` | Logomarca (símbolo + wordmark) e `mark.svg`, só o símbolo |
 | `CLAUDE.md` | Regras de trabalho e pontos não negociáveis |
@@ -59,17 +63,32 @@ PostgreSQL 16 · Prisma · `node-cron` · `xlsx` · `sharp` · Telegram Bot API 
 
 ## Instalação local
 
-> Disponível a partir da fase 1, quando existir `package.json`.
+Precisa de Node.js 22 e um PostgreSQL 16.
 
 ```bash
 git clone git@github.com:cnasajon/msg.git
 cd msg
 npm install
 cp .env.example .env      # preencher com valores locais; .env nunca é versionado
-npx prisma migrate dev
-npm run dev               # interface
-npm run dev:worker        # dispatcher, em outro terminal
+npx prisma migrate dev    # cria o banco e gera o cliente
+npm run dev               # interface em http://localhost:3000
+npm run dev:worker        # serviço worker, em outro terminal
 ```
+
+### Primeiro superadmin
+
+Não há cadastro público, e o primeiro superadmin é o único usuário que não é
+criado por outro. A senha provisória é gerada pelo comando e aparece **uma única
+vez** — não é lida de variável de ambiente nem de argumento, para não ficar no
+histórico do shell:
+
+```bash
+npm run criar-superadmin -- "Seu Nome" voce@exemplo.org
+```
+
+Entre com ela; a troca é obrigatória no primeiro acesso. A partir daí: crie a
+organização em **Sistema → Organizações**, escolha-a no seletor do topo e crie
+os usuários dela em **Configuração → Usuários**.
 
 ## Variáveis de ambiente
 
@@ -176,14 +195,20 @@ anexo da especificação.
 
 ## Testes
 
-> A partir da fase 1.
-
 ```bash
-npm test
+npm test                                   # unidade; integração se houver banco
+TEST_DATABASE_URL=postgresql://… npm test  # inclui os testes com banco real
+TEST_DATABASE_URL=postgresql://… npm run test:http   # isolamento nas rotas HTTP
+npm run typecheck
 ```
 
-Cobertura obrigatória: isolamento entre organizações (inclusive a rota de
-imagem), idempotência do dispatcher, limites de 4096/1024 caracteres e
+Sem `TEST_DATABASE_URL` os testes de integração se pulam sozinhos, e só os de
+unidade rodam. Use um banco separado: eles truncam as tabelas.
+
+O que já está coberto: **isolamento entre organizações** na camada de dados e
+nas rotas HTTP (inclusive a leitura de imagem), a matriz de permissões linha a
+linha, senha com argon2id e o limite de tentativas de login. Falta cobrir, nas
+fases seguintes: idempotência do dispatcher, limites de 4096/1024 caracteres e
 precedência do destino dos alertas.
 
 ## Fases
@@ -191,7 +216,27 @@ precedência do destino dos alertas.
 | Fase | Conteúdo | Situação |
 | :-- | :-- | :-- |
 | 0 | Modelo de dados, permissões, mockup, escolha do framework | **aprovada** |
-| 1 | Railway, autenticação, organizações, usuários, permissões, isolamento testado | — |
+| 1 | Railway, autenticação, organizações, usuários, permissões, isolamento testado | **entregue** |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, reordenação | — |
 | 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | — |
 | 4 | Painel, i18n, auditoria, polimento visual | — |
+
+## Decisões de segurança que valem registro
+
+- **O isolamento vive em `src/lib/escopo.ts`.** Toda consulta parte do escopo da
+  sessão; identificador vindo da URL só é usado depois de resolvido contra ele.
+  Recurso de outra organização responde **404, nunca 403** — 403 confirmaria que
+  aquele identificador existe.
+- **Sair é POST com CSRF, não link GET.** Um GET que encerra sessão é derrubado
+  pelo próprio navegador: o Next busca os links antes do clique, e a sessão
+  morria sozinha no prefetch.
+- **O cookie de sessão é `Secure` conforme o esquema de `APP_URL`**, não conforme
+  o `NODE_ENV`. Marcar `Secure` em `http://localhost` faz o navegador tratar o
+  envio como exceção e nem sempre devolver o cookie.
+- **A validade da sessão é do banco**, não do cookie: renová-la a cada uso não
+  pode depender de reescrever cookie, porque só server action e route handler
+  podem fazer isso.
+- **Senha provisória aparece uma vez só**, na tela de quem a criou. Só o hash
+  argon2id é guardado.
+- **Nenhum segredo em log, mensagem de erro ou auditoria** — a auditoria
+  registra que um valor mudou, nunca o valor.
