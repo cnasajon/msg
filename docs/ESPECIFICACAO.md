@@ -1,29 +1,33 @@
-# Especificação da aplicação oa12-msg
+# Especificação da aplicação msg
 
-**Domínio:** msg.oa12.org **Repositório:** [https://github.com/cnasajon/oamsg](https://github.com/cnasajon/oamsg) (privado) **Bot do Telegram:** @OAmsg\_bot **Versão do documento:** 1.3 — 12/09/2026
+**Domínio:** msg.oa12.org
+**Repositório:** https://github.com/cnasajon/msg (privado)
+**Projeto no Railway:** `msg` — id `656b5e1d-4133-4d5f-80a0-215a493a537e`
+**Bot do Telegram:** @OAmsg_bot
+**Versão do documento:** 1.4 — 12/09/2026
 
-Mudanças em relação à 1.2: nome do repositório corrigido para `oamsg`; nova seção 3 com o roteiro de configuração passo a passo de tudo (Claude Code, Telegram, Railway, DNS); registrada a decisão de trabalhar com o Claude Code na nuvem e como visualizar o mockup nesse modo.
+Mudanças em relação à 1.3: nomenclatura unificada (repositório `msg`, projeto Railway `msg`); registrado o estado atual da configuração do Railway; markdown limpo, sem escapes.
 
-Histórico: 1.1 fechou banco, bot único, imagens na v1 e alertas por Telegram. 1.2 tornou o destino dos alertas híbrido e acrescentou o cadastro de segredos.
+Histórico: 1.1 fechou banco, bot único, imagens na v1 e alertas por Telegram. 1.2 tornou o destino dos alertas híbrido. 1.3 acrescentou o roteiro de configuração completo.
 
 ---
 
-## 1\. Objetivo
+## 1. Objetivo
 
 Aplicação web para publicação programada de textos em grupos de Telegram. Cada organização (OA Brasil, OA España, OA English e futuras) opera de forma independente, com suas próprias pastas de textos, seus grupos de Telegram e seus usuários. No dia e horário configurados para cada pasta, o sistema publica o próximo texto da fila daquela pasta no grupo correspondente e registra a data-hora da publicação.
 
 ---
 
-## 2\. Arquitetura no Railway
+## 2. Arquitetura no Railway
 
 ### 2.1 Estrutura do projeto
 
-Um único projeto no Railway chamado `oa12-msg`, com três serviços e um repositório só — os dois serviços de aplicação apontam para o mesmo repo com comandos de start diferentes.
+Um único projeto no Railway chamado `msg`, com três serviços e um repositório só — os dois serviços de aplicação apontam para o mesmo repo com comandos de start diferentes.
 
 | Serviço | Função | Origem | Comando de start |
-| :---- | :---- | :---- | :---- |
-| `web` | Interface e API | repo `oamsg` | `npm run start:web` |
-| `worker` | Dispatcher de publicações | repo `oamsg` | `npm run start:worker` |
+|---|---|---|---|
+| `web` | Interface e API | repo `cnasajon/msg` | `npm run start:web` |
+| `worker` | Dispatcher de publicações | repo `cnasajon/msg` | `npm run start:worker` |
 | `postgres` | Banco de dados | plugin gerenciado do Railway | — |
 
 Por que dois serviços e não um: se o agendador rodar dentro do processo web, cada deploy ou escalonamento horizontal cria uma segunda instância do agendador, e você passa a ter publicações duplicadas. Separando, o `worker` fica fixo em uma réplica e o `web` pode escalar livremente. A trava de idempotência no banco (seção 7.2) é a segunda camada de proteção.
@@ -54,7 +58,7 @@ ALERTS_CHAT_ID=<pode começar vazio>
 GOOGLE_CHAT_WEBHOOK=<opcional; se vazio, alerta só pelo Telegram>
 ```
 
-Regras: `TZ=UTC` em todos os serviços — o fuso horário de agendamento e de exibição é sempre o da pasta, convertido na aplicação. `SESSION_SECRET` e `ENCRYPTION_KEY` gerados uma única vez e guardados no gerenciador de senhas; trocar a `ENCRYPTION_KEY` invalida os tokens de sobreposição cifrados no banco. Nenhum segredo no repositório: `.env` no `.gitignore` desde o commit inicial, valores cadastrados apenas no painel do Railway.
+Regras: `TZ=UTC` em todos os serviços — o fuso horário de agendamento e de exibição é sempre o da pasta, convertido na aplicação. `SESSION_SECRET` e `ENCRYPTION_KEY` gerados uma única vez e guardados no gerenciador de senhas; trocar a `ENCRYPTION_KEY` invalida os tokens de sobreposição cifrados no banco. Nenhum segredo no repositório: `.env` no `.gitignore`, valores cadastrados apenas no painel do Railway.
 
 ### 2.3 Custo estimado
 
@@ -62,146 +66,141 @@ Plano Hobby ou Pro do Railway: `web` e `worker` são serviços leves, o Postgres
 
 ---
 
-## 3\. Roteiro de configuração
+## 3. Roteiro de configuração
 
-Ordem recomendada. Os passos 3.1 e 3.2 podem ser feitos agora; o 3.3 e o 3.4 dependem de existir código no repositório, e acontecem na fase 1\.
+### 3.0 Estado atual (12/09/2026)
+
+Concluído:
+
+- Repositório `cnasajon/msg` criado, privado, com `docs/ESPECIFICACAO.md` na branch `main`.
+- Claude Code na nuvem conectado ao repositório, trabalhando a partir da `main`.
+- Bot `@OAmsg_bot` criado, com descrição trilíngue, avatar e modo de privacidade em Enabled. Token guardado no gerenciador de senhas.
+- Envio testado com sucesso no grupo "Uma Visão Para Você".
+- Projeto `msg` criado no Railway, serviço `postgres` Online.
+- `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET` e `ENCRYPTION_KEY` cadastrados como variáveis compartilhadas do projeto. Ainda não distribuídas a nenhum serviço, porque `web` e `worker` só existem na fase 1.
+
+Pendente: passos 5 a 9 de 3.3 (fase 1), o DNS de 3.4 e o levantamento dos `chat_id` restantes de 3.2.
 
 ### 3.1 Claude Code
 
 **Decisão: trabalhar com o Claude Code na nuvem** (`claude.ai/code` ou aba Code no app), para não ocupar a máquina local e poder acompanhar sessões longas pelo celular.
 
-Autorização do GitHub, feita uma única vez. Duas formas:
-
-- **Pelo navegador:** acessar `claude.ai/code`, seguir o fluxo de conexão do GitHub e autorizar o Claude GitHub App. Na tela do GitHub, ao escolher "apenas repositórios selecionados", incluir `cnasajon/oamsg`.
-
-- **Pelo terminal:** com o `gh` já autenticado, rodar `/web-setup` numa sessão do Claude Code. Ele lê o token do `gh`, pede confirmação e o envia à Anthropic, que o guarda cifrado junto à conta.
-
-Depois de conectado, usar o seletor de repositório abaixo do campo de mensagem e escolher `oamsg`. Escopo a ter em mente: com qualquer um dos dois métodos, a sessão na nuvem alcança qualquer repositório que a conta conectada consiga ver.
+A autorização do GitHub é feita uma vez, pelo fluxo de conexão no navegador (autorizando o Claude GitHub App) ou por `/web-setup` no terminal, que sincroniza o token do `gh` com a conta Claude. Depois basta selecionar o repositório e a branch nos chips abaixo do campo de mensagem. Escopo a ter em mente: com qualquer um dos dois métodos, a sessão na nuvem alcança qualquer repositório que a conta conectada consiga ver.
 
 **Como visualizar o mockup da fase 0 trabalhando na nuvem.** O GitHub não renderiza HTML de dentro do repositório — mostra o código-fonte. Três saídas, em ordem de simplicidade:
 
-1. Colar a URL do arquivo na branch em `htmlpreview.github.io`, que renderiza HTML hospedado no GitHub.  
-2. A partir da fase 1, usar um ambiente de preview do Railway apontado para a branch.  
+1. Colar a URL do arquivo na branch em `htmlpreview.github.io`.
+2. A partir da fase 1, usar um ambiente de preview do Railway apontado para a branch.
 3. Dar `git pull` da branch na máquina e abrir o arquivo no navegador — sem precisar rodar o Claude Code localmente.
 
 ### 3.2 Telegram
 
-Já concluído: bot `@OAmsg_bot` criado no @BotFather, token guardado no gerenciador de senhas, modo de privacidade em Enabled, descrição e avatar configurados.
+Concluído conforme 3.0. Pendente, e sem urgência, porque o `chat_id` de cada pasta e o destino dos alertas são configuráveis pela interface:
 
-Pendente, e sem urgência — o `chat_id` de cada pasta e o destino dos alertas são configuráveis pela interface (ver anexo):
-
-1. Criar o grupo de alertas, só com os superadmins.  
-2. Adicionar `@OAmsg_bot` a cada grupo de destino e ao grupo de alertas.  
-3. Promover a supergroup os grupos que ainda forem grupo comum, **antes** de anotar o `chat_id`: tornar público e voltar a privado força a promoção. Grupo comum tem `chat_id` que muda ao ser promovido, e a publicação passa a falhar com `chat not found`.  
-4. Enviar `/start@OAmsg_bot` em cada grupo e levantar os `chat_id` com o comando do anexo.  
+1. Criar o grupo de alertas, só com os superadmins.
+2. Adicionar `@OAmsg_bot` a cada grupo de destino e ao grupo de alertas.
+3. Promover a supergroup os grupos que ainda forem grupo comum, **antes** de anotar o `chat_id`: tornar público e voltar a privado força a promoção. Grupo comum tem `chat_id` que muda ao ser promovido, e a publicação passa a falhar com `chat not found`.
+4. Enviar `/start@OAmsg_bot` em cada grupo e levantar os `chat_id` com o comando do anexo.
 5. Testar o envio em cada um com `sendMessage` antes de cadastrar.
 
 ### 3.3 Railway
 
-**Passos 1 a 4 podem ser feitos antes do código existir. Os demais exigem `package.json` com os scripts `start:web` e `start:worker`, senão o build falha.**
+**Passos 1 a 4 já concluídos. Os demais exigem `package.json` com os scripts `start:web` e `start:worker`, senão o build falha.**
 
-1. **Criar o projeto.** No dashboard, New Project → Empty Project. Renomear para `oa12-msg`. Começar vazio, em vez de partir do repositório, para controlar a ordem de criação dos serviços.  
-2. **Adicionar o Postgres.** No canvas, \+ Create → Database → Add PostgreSQL. Renomear o serviço para `postgres` — é esse nome que a referência `${{postgres.DATABASE_URL}}` usa.  
-3. **Gerar as chaves.** No terminal, `openssl rand -base64 32` duas vezes, uma para `SESSION_SECRET` e outra para `ENCRYPTION_KEY`. Guardar as duas no gerenciador de senhas antes de fechar o terminal.  
-4. **Cadastrar as variáveis compartilhadas.** Project Settings → Shared Variables, escolher o ambiente e adicionar `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET` e `ENCRYPTION_KEY`. Elas ficam definidas uma vez para todos os serviços que precisarem, o que evita colar o mesmo valor em vários lugares e um deles sair de sincronia. Nesta etapa as variáveis ainda não estão em nenhum serviço.  
-5. **Criar o serviço `web`.** No canvas, \+ Create → GitHub Repo → `oamsg`. Renomear para `web`. Em Settings → Deploy, definir o start command `npm run start:web` e o health check path `/health`.  
-6. **Criar o serviço `worker`.** Clicar com o botão direito no serviço `web` e duplicar — adicionar o mesmo repositório duas vezes pelo canvas costuma não funcionar. No serviço novo: renomear para `worker`, trocar o start command para `npm run start:worker`, **remover o health check** (não tem porta HTTP) e **fixar as réplicas em 1**. Esta última parte não é opcional: duas réplicas do worker é exatamente o cenário que a idempotência existe para conter, e não convém depender só dela.  
-7. **Configurar watch paths** nos dois serviços, se o código ficar separado em pastas. São padrões no estilo gitignore que disparam deploy conforme os caminhos alterados — assim uma mudança só na interface não reinicia o dispatcher no meio de uma publicação.  
-8. **Distribuir as variáveis.** Em cada serviço, aba Variables, inserir as três compartilhadas pelo botão de variável compartilhada, e acrescentar as específicas da seção 2.2. Usar sempre referência (`${{postgres.DATABASE_URL}}`), nunca a string copiada — se o Railway rotacionar a credencial do banco, os serviços acompanham sozinhos.  
+1. **Criar o projeto.** New Project → Empty Project, renomeado para `msg`. Começar vazio, em vez de partir do repositório, para controlar a ordem de criação dos serviços.
+2. **Adicionar o Postgres.** No canvas, + Create → Database → Add PostgreSQL. O serviço precisa se chamar `postgres` — é esse nome que a referência `${{postgres.DATABASE_URL}}` usa.
+3. **Gerar as chaves.** `openssl rand -base64 32` duas vezes, uma para `SESSION_SECRET` e outra para `ENCRYPTION_KEY`, guardadas no gerenciador de senhas.
+4. **Cadastrar as variáveis compartilhadas.** Project Settings → Shared Variables, ambiente `production`, com `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET` e `ENCRYPTION_KEY`. Ficam definidas uma vez para todos os serviços que precisarem, o que evita colar o mesmo valor em vários lugares e um deles sair de sincronia. Nesta etapa elas ainda não estão em nenhum serviço — o botão "Share" de cada variável é usado no passo 8.
+5. **Criar o serviço `web`.** No canvas, + Create → GitHub Repo → `cnasajon/msg`. Renomear para `web` (o Railway sorteia um nome aleatório na criação). Em Settings → Deploy, definir o start command `npm run start:web` e o health check path `/health`.
+6. **Criar o serviço `worker`.** Clicar com o botão direito no serviço `web` e duplicar — adicionar o mesmo repositório duas vezes pelo canvas costuma não funcionar. No serviço novo: renomear para `worker`, trocar o start command para `npm run start:worker`, **remover o health check** (não tem porta HTTP) e **fixar as réplicas em 1**. Esta última parte não é opcional: duas réplicas do worker é exatamente o cenário que a idempotência existe para conter, e não convém depender só dela.
+7. **Configurar watch paths** nos dois serviços, se o código ficar separado em pastas. São padrões no estilo gitignore que disparam deploy conforme os caminhos alterados — assim uma mudança só na interface não reinicia o dispatcher no meio de uma publicação.
+8. **Distribuir as variáveis.** Compartilhar as três variáveis do projeto com `web` e `worker`, e acrescentar em cada serviço as específicas da seção 2.2. Usar sempre referência (`${{postgres.DATABASE_URL}}`), nunca a string copiada — se o Railway rotacionar a credencial do banco, os serviços acompanham sozinhos.
 9. **Migrações.** Rodar no build/release, não no start, para não competirem entre réplicas.
 
 Observações operacionais: alterar variável dispara redeploy automático do serviço — evitar fazê-lo perto de um horário de publicação. A opção **sealed variable** deixa o valor invisível no painel após salvo, boa prática para o token, mas só marcar com a cópia já no gerenciador de senhas, porque não há leitura de volta. Em caso de suspeita de vazamento do token, `/revoke` no @BotFather emite outro e invalida o antigo; basta atualizar a variável compartilhada.
 
+Se um serviço vazio for criado por engano no canvas (o Railway sugere um nome aleatório antes de conectar a origem), descartar a alteração pendente pelo menu de três pontos ao lado do botão Deploy, em vez de fazer o deploy de um serviço sem repositório.
+
 ### 3.4 DNS na HostGator
 
-1. No serviço `web` do Railway, Settings → Networking → Custom Domain, informar `msg.oa12.org`. O Railway devolve um destino CNAME.  
-2. No cPanel da HostGator, Zone Editor do domínio `oa12.org`, adicionar registro CNAME com nome `msg` e valor o destino fornecido.  
+1. No serviço `web` do Railway, Settings → Networking → Custom Domain, informar `msg.oa12.org`. O Railway devolve um destino CNAME.
+2. No cPanel da HostGator, Zone Editor do domínio `oa12.org`, adicionar registro CNAME com nome `msg` e valor o destino fornecido.
 3. A propagação leva de minutos a algumas horas. O certificado TLS é emitido automaticamente quando o DNS resolve.
 
 ### 3.5 Verificação final
 
-- `https://msg.oa12.org/health` responde.  
-- O log do `worker` mostra o ciclo de 5 minutos acontecendo.  
-- O `postgres` tem as tabelas criadas pela migração.  
-- O botão "testar conexão" de uma pasta publica no grupo correto.  
+- `https://msg.oa12.org/health` responde.
+- O log do `worker` mostra o ciclo de 5 minutos acontecendo.
+- O `postgres` tem as tabelas criadas pela migração.
+- O botão "testar conexão" de uma pasta publica no grupo correto.
 - Um alerta de teste chega ao grupo de alertas (quando o `chat_id` estiver cadastrado).
 
 ---
 
-## 4\. Stack
+## 4. Stack
 
-- **Runtime:** Node.js 22 \+ TypeScript  
-- **Framework web:** Next.js (App Router) com server actions, ou Fastify \+ React — a decidir na fase 0  
-- **Banco:** PostgreSQL 16 gerenciado pelo Railway  
-- **ORM e migrações:** Prisma  
-- **Agendamento:** `node-cron` dentro do serviço `worker`, com trava de idempotência no banco  
-- **Planilhas:** `xlsx` (SheetJS) para importação de CSV e XLSX  
-- **Imagens:** `sharp` para validação e redimensionamento no upload  
-- **Telegram:** Bot API via `fetch`, sem biblioteca intermediária  
-- **Alertas operacionais:** mensagens ao grupo de administradores no Telegram, pela mesma integração, e opcionalmente um webhook do Google Chat. Sem provedor de e-mail e sem credencial adicional.  
-- **Estilo:** Tailwind CSS  
-- **i18n:** `next-intl` ou equivalente, com PT, ES e EN  
-- **Senhas:** argon2id  
+- **Runtime:** Node.js 22 + TypeScript
+- **Framework web:** Next.js (App Router) com server actions, ou Fastify + React — a decidir na fase 0
+- **Banco:** PostgreSQL 16 gerenciado pelo Railway
+- **ORM e migrações:** Prisma
+- **Agendamento:** `node-cron` dentro do serviço `worker`, com trava de idempotência no banco
+- **Planilhas:** `xlsx` (SheetJS) para importação de CSV e XLSX
+- **Imagens:** `sharp` para validação e redimensionamento no upload
+- **Telegram:** Bot API via `fetch`, sem biblioteca intermediária
+- **Alertas operacionais:** mensagens ao grupo de administradores no Telegram, pela mesma integração, e opcionalmente um webhook do Google Chat. Sem provedor de e-mail e sem credencial adicional.
+- **Estilo:** Tailwind CSS
+- **i18n:** `next-intl` ou equivalente, com PT, ES e EN
+- **Senhas:** argon2id
 - **Testes:** Vitest, com cobertura obrigatória do isolamento entre organizações e da idempotência do dispatcher
 
 ---
 
-## 5\. Modelo de dados
+## 5. Modelo de dados
 
 ### organizations
-
 `id`, `nome`, `idioma_padrao` (pt | es | en), `timezone_padrao`, `ativa`, `criada_em`
 
 ### users
-
 `id`, `organization_id` (nulo para superadmin), `nome`, `email` (único), `senha_hash`, `perfil` (superadmin | admin | usuario), `ativo`, `senha_provisoria` (booleano), `ultimo_login_em`, `criado_em`
 
-### user\_folders
-
+### user_folders
 Relação muitos-para-muitos usada apenas pelo perfil `usuario`: `user_id`, `folder_id`
 
 ### folders
-
-`id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `ao_esgotar` (parar\_notificar | reiniciar), `ativa`, `criada_em`
+`id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `ao_esgotar` (parar_notificar | reiniciar), `ativa`, `criada_em`
 
 ### texts
-
 `id`, `folder_id`, `conteudo`, `ordem`, `imagem` (bytea, nulo), `imagem_mime`, `imagem_bytes`, `imagem_nome_original`, `status` (pendente | publicado | erro), `publicado_em`, `erro_mensagem`, `import_id`, `hash_conteudo`, `criado_por`, `criado_em`
 
 Índice único em (`folder_id`, `hash_conteudo`) para detectar duplicatas na importação. O `hash_conteudo` considera apenas o texto, não a imagem.
 
 ### schedules
-
 `id`, `folder_id`, `hora_local` (HH:MM), `dias_semana` (conjunto de 1 a 7), `ativo`
 
 Uma pasta pode ter vários agendamentos — por exemplo, 07:00 de segunda a sexta e 09:00 nos fins de semana.
 
 ### publications
-
 `id`, `folder_id`, `text_id` (nulo quando a fila está vazia), `data_prevista` (date), `hora_prevista` (time), `status` (reivindicada | enviada | erro | perdida), `tentativas`, `telegram_message_id`, `erro_mensagem`, `enviada_em`
 
 **Índice único em (`folder_id`, `data_prevista`, `hora_prevista`).** É esta restrição que garante a idempotência.
 
 ### settings
-
 Linha única, global ao sistema: `id`, `alerts_chat_id` (nulo), `google_chat_webhook` (nulo), `atualizado_por`, `atualizado_em`
 
 Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 
 ### imports
-
 `id`, `folder_id`, `arquivo_nome`, `total_linhas`, `importadas`, `duplicadas_ignoradas`, `criado_por`, `criado_em`
 
-### audit\_log
-
+### audit_log
 `id`, `organization_id`, `user_id`, `acao`, `entidade`, `entidade_id`, `detalhes` (jsonb), `ip`, `criado_em`
 
 ---
 
-## 6\. Perfis e permissões
+## 6. Perfis e permissões
 
 | Ação | Superadmin | Admin | Usuário |
-| :---- | :---: | :---: | :---: |
+|---|:--:|:--:|:--:|
 | Criar, editar, desativar organizações | sim | não | não |
 | Transitar entre organizações | sim | não | não |
 | Criar e gerenciar admins | sim | não | não |
@@ -209,7 +208,7 @@ Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 | Redefinir senha de usuário | sim | da sua organização | não |
 | Atribuir pastas a usuários | sim | sim | não |
 | Criar, editar, excluir pastas | sim | sim | não |
-| Configurar chat\_id da pasta | sim | sim | não |
+| Configurar chat_id da pasta | sim | sim | não |
 | Configurar token de sobreposição da pasta | sim | não | não |
 | Configurar destino dos alertas | sim | não | não |
 | Configurar agendamentos | sim | sim | não |
@@ -222,22 +221,22 @@ Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 
 Regras de isolamento:
 
-- Todo acesso a dados é filtrado por `organization_id` na camada de dados, não na interface. Nenhuma consulta parte de um identificador vindo da URL sem verificar a organização do usuário autenticado.  
-- O superadmin opera com uma organização ativa selecionada, visível no topo da tela, e toda troca fica registrada na auditoria.  
+- Todo acesso a dados é filtrado por `organization_id` na camada de dados, não na interface. Nenhuma consulta parte de um identificador vindo da URL sem verificar a organização do usuário autenticado.
+- O superadmin opera com uma organização ativa selecionada, visível no topo da tela, e toda troca fica registrada na auditoria.
 - Não existe cadastro público. Usuários são criados por quem está acima deles na hierarquia, com senha provisória e troca obrigatória no primeiro acesso.
 
 ---
 
-## 7\. Agendamento e publicação
+## 7. Agendamento e publicação
 
 ### 7.1 Fluxo
 
-1. O `worker` acorda a cada 5 minutos.  
-2. Para cada pasta ativa, calcula os slots (`data_prevista`, `hora_prevista`) vencidos dentro da janela de tolerância de 30 minutos e ainda não registrados, usando o fuso horário da pasta.  
-3. Para cada slot, insere a linha em `publications` com status `reivindicada`. Se a inserção falhar por violação da restrição única, outro processo já pegou o slot e este desiste em silêncio.  
-4. Seleciona o texto `pendente` de menor `ordem` na pasta. Com imagem, publica com `sendPhoto` (imagem em multipart, texto como legenda); sem imagem, com `sendMessage`.  
-5. Em caso de sucesso: marca a publicação como `enviada`, grava o `telegram_message_id`, e marca o texto como `publicado` com a data-hora.  
-6. Em caso de falha: até 3 tentativas com backoff exponencial. Esgotadas, marca publicação e texto como `erro`, envia alerta e **não avança a fila**.  
+1. O `worker` acorda a cada 5 minutos.
+2. Para cada pasta ativa, calcula os slots (`data_prevista`, `hora_prevista`) vencidos dentro da janela de tolerância de 30 minutos e ainda não registrados, usando o fuso horário da pasta.
+3. Para cada slot, insere a linha em `publications` com status `reivindicada`. Se a inserção falhar por violação da restrição única, outro processo já pegou o slot e este desiste em silêncio.
+4. Seleciona o texto `pendente` de menor `ordem` na pasta. Com imagem, publica com `sendPhoto` (imagem em multipart, texto como legenda); sem imagem, com `sendMessage`.
+5. Em caso de sucesso: marca a publicação como `enviada`, grava o `telegram_message_id`, e marca o texto como `publicado` com a data-hora.
+6. Em caso de falha: até 3 tentativas com backoff exponencial. Esgotadas, marca publicação e texto como `erro`, envia alerta e **não avança a fila**.
 7. Slots vencidos há mais de 30 minutos são marcados como `perdidos` e alertados, nunca publicados com atraso.
 
 ### 7.2 Idempotência
@@ -248,7 +247,7 @@ A reivindicação do slot acontece **antes** da chamada ao Telegram, dentro de u
 
 Comportamento configurado por pasta:
 
-- **parar\_notificar:** registra a publicação sem texto, alerta os administradores e não publica nada.  
+- **parar_notificar:** registra a publicação sem texto, alerta os administradores e não publica nada.
 - **reiniciar:** devolve todos os textos da pasta ao status `pendente`, preservando a ordem, e publica o primeiro. O evento fica registrado na auditoria.
 
 O painel avisa quando uma pasta tem menos de cinco textos pendentes.
@@ -259,8 +258,8 @@ Eventos que geram alerta: falha definitiva de publicação, slot perdido, fila e
 
 **Destino do alerta, nesta ordem de precedência:**
 
-1. `settings.alerts_chat_id`, se preenchido pela interface;  
-2. senão a variável de ambiente `ALERTS_CHAT_ID`;  
+1. `settings.alerts_chat_id`, se preenchido pela interface;
+2. senão a variável de ambiente `ALERTS_CHAT_ID`;
 3. senão apenas o log da aplicação e o painel de alertas na interface.
 
 O mesmo vale para o webhook do Google Chat (`settings.google_chat_webhook`, depois `GOOGLE_CHAT_WEBHOOK`).
@@ -273,77 +272,77 @@ A falha de um canal de alerta nunca interrompe a publicação nem gera novo aler
 
 ---
 
-## 8\. Integração com o Telegram
+## 8. Integração com o Telegram
 
-- **Um único bot para todas as organizações:** `@OAmsg_bot`, com o token na variável compartilhada `TELEGRAM_BOT_TOKEN`.  
-- O campo de token na pasta existe como sobreposição opcional, nulo por padrão, editável apenas pelo superadmin. Serve para isolar uma organização no futuro sem mexer no código. Quando preenchido, é cifrado com AES-256-GCM e nunca reexibido na interface — apenas os últimos caracteres.  
-- O bot precisa estar em todos os grupos de destino. Em canais, precisa ser administrador. Modo de privacidade mantido em Enabled: o bot não lê as conversas dos grupos.  
-- O destino é o `chat_id` numérico (supergrupos vêm com o prefixo `-100`), não um link ou nome de usuário. Mesmo quando o grupo tem username público, usar o número: o username pode ser alterado por um administrador e quebraria a publicação.  
-- **Grupo comum versus supergroup:** o `chat_id` de um grupo comum muda quando ele é promovido, e a publicação passa a falhar com `chat not found`. Promover antes do cadastro, e manter o campo editável na interface como conserto rápido.  
-- `parse_mode: HTML` — mais tolerante que MarkdownV2. A interface avisa quais tags são aceitas.  
-- **Limites de tamanho, validados na digitação e na importação:** 4096 caracteres para texto sem imagem, **1024 caracteres para texto com imagem** (limite de legenda do Telegram). Anexar imagem a um texto acima de 1024 caracteres é bloqueado com mensagem explícita.  
-- Respeitar os limites de taxa da Bot API. Com bot único, todas as publicações compartilham a mesma cota — o dispatcher serializa os envios quando várias pastas coincidem no mesmo slot.  
+- **Um único bot para todas as organizações:** `@OAmsg_bot`, com o token na variável compartilhada `TELEGRAM_BOT_TOKEN`.
+- O campo de token na pasta existe como sobreposição opcional, nulo por padrão, editável apenas pelo superadmin. Serve para isolar uma organização no futuro sem mexer no código. Quando preenchido, é cifrado com AES-256-GCM e nunca reexibido na interface — apenas os últimos caracteres.
+- O bot precisa estar em todos os grupos de destino. Em canais, precisa ser administrador. Modo de privacidade mantido em Enabled: o bot não lê as conversas dos grupos.
+- O destino é o `chat_id` numérico (supergrupos vêm com o prefixo `-100`), não um link ou nome de usuário. Mesmo quando o grupo tem username público, usar o número: o username pode ser alterado por um administrador e quebraria a publicação.
+- **Grupo comum versus supergroup:** o `chat_id` de um grupo comum muda quando ele é promovido, e a publicação passa a falhar com `chat not found`. Promover antes do cadastro, e manter o campo editável na interface como conserto rápido.
+- `parse_mode: HTML` — mais tolerante que MarkdownV2. A interface avisa quais tags são aceitas.
+- **Limites de tamanho, validados na digitação e na importação:** 4096 caracteres para texto sem imagem, **1024 caracteres para texto com imagem** (limite de legenda do Telegram). Anexar imagem a um texto acima de 1024 caracteres é bloqueado com mensagem explícita.
+- Respeitar os limites de taxa da Bot API. Com bot único, todas as publicações compartilham a mesma cota — o dispatcher serializa os envios quando várias pastas coincidem no mesmo slot.
 - O botão "testar conexão" envia uma mensagem de teste e exibe o erro exato devolvido pela API. Tratar com mensagem clara: `chat not found`, `bot was kicked from the group chat`, `not enough rights to send text messages`, `unauthorized` (token inválido).
 
 ---
 
-## 9\. Textos, imagens e importação
+## 9. Textos, imagens e importação
 
-- Digitação manual com contador de caracteres, limite dinâmico conforme a presença de imagem e pré-visualização do HTML.  
-- **Uma imagem opcional por texto**, enviada pela interface. Formatos aceitos: JPEG, PNG e WebP. Limite de 2 MB após processamento; no upload, a imagem é redimensionada para no máximo 1600 px no lado maior e recomprimida. Metadados EXIF removidos.  
-- A imagem é guardada no Postgres como `bytea`, servida pelo `web` em rota autenticada e lida pelo `worker` diretamente do banco na hora de publicar.  
-- Importação de CSV e XLSX é **somente texto**. Imagens entram apenas pela edição manual — importação de imagens em lote fica para evolutiva.  
-- A importação mostra pré-visualização com mapeamento de colunas antes de confirmar. Duplicatas (mesmo texto na mesma pasta) são sinalizadas e ignoradas, com o total exibido no resultado.  
-- Cada importação fica registrada, com possibilidade de desfazer enquanto nenhum texto daquele lote tiver sido publicado.  
-- A lista de textos mostra miniatura da imagem, conteúdo, ordem, status e data-hora da publicação, com busca por conteúdo, filtro por status e reordenação manual por arrastar.  
+- Digitação manual com contador de caracteres, limite dinâmico conforme a presença de imagem e pré-visualização do HTML.
+- **Uma imagem opcional por texto**, enviada pela interface. Formatos aceitos: JPEG, PNG e WebP. Limite de 2 MB após processamento; no upload, a imagem é redimensionada para no máximo 1600 px no lado maior e recomprimida. Metadados EXIF removidos.
+- A imagem é guardada no Postgres como `bytea`, servida pelo `web` em rota autenticada e lida pelo `worker` diretamente do banco na hora de publicar.
+- Importação de CSV e XLSX é **somente texto**. Imagens entram apenas pela edição manual — importação de imagens em lote fica para evolutiva.
+- A importação mostra pré-visualização com mapeamento de colunas antes de confirmar. Duplicatas (mesmo texto na mesma pasta) são sinalizadas e ignoradas, com o total exibido no resultado.
+- Cada importação fica registrada, com possibilidade de desfazer enquanto nenhum texto daquele lote tiver sido publicado.
+- A lista de textos mostra miniatura da imagem, conteúdo, ordem, status e data-hora da publicação, com busca por conteúdo, filtro por status e reordenação manual por arrastar.
 - Textos publicados não podem ser reordenados nem excluídos — apenas arquivados, para preservar o histórico.
 
 ---
 
-## 10\. Interface
+## 10. Interface
 
-- Clean, elegante e moderna, com tema claro e escuro.  
-- Interface traduzida em português, espanhol e inglês. O idioma padrão vem da organização e pode ser trocado por usuário.  
-- Painel inicial, por pasta: últimos textos publicados com data-hora e miniatura, próximo texto da fila, próxima publicação programada, total de textos pendentes e alertas de erro ou fila curta.  
-- Painel de alertas na própria interface, com os erros e as filas curtas das pastas visíveis ao usuário. O Telegram é o aviso imediato; a interface é o registro consultável.  
-- Tela de configurações globais, visível só ao superadmin: destino dos alertas (`chat_id` do Telegram e webhook do Google Chat), com botão de teste para cada canal.  
-- Todas as datas e horas exibidas no fuso horário da pasta, com o fuso indicado explicitamente.  
+- Clean, elegante e moderna, com tema claro e escuro.
+- Interface traduzida em português, espanhol e inglês. O idioma padrão vem da organização e pode ser trocado por usuário.
+- Painel inicial, por pasta: últimos textos publicados com data-hora e miniatura, próximo texto da fila, próxima publicação programada, total de textos pendentes e alertas de erro ou fila curta.
+- Painel de alertas na própria interface, com os erros e as filas curtas das pastas visíveis ao usuário. O Telegram é o aviso imediato; a interface é o registro consultável.
+- Tela de configurações globais, visível só ao superadmin: destino dos alertas (`chat_id` do Telegram e webhook do Google Chat), com botão de teste para cada canal.
+- Todas as datas e horas exibidas no fuso horário da pasta, com o fuso indicado explicitamente.
 - Ações manuais: publicar agora, pular texto, reenviar texto com erro.
 
 ---
 
-## 11\. Segurança
+## 11. Segurança
 
-- Sessão em cookie `httpOnly`, `Secure`, `SameSite=Lax`, com expiração e renovação.  
-- Rate limit no login por IP e por conta.  
-- Proteção CSRF em toda ação que altera dados.  
-- Rota de imagem autenticada e verificada contra a organização do usuário — imagem de uma organização não é acessível por outra, nem por URL direta.  
-- Validação do conteúdo real do arquivo de imagem, não apenas da extensão ou do MIME declarado.  
-- Nenhum segredo no código ou no repositório; apenas variáveis de ambiente do Railway. Nenhum token em log nem em mensagem de erro exibida na interface.  
-- Log de auditoria de toda criação, edição, exclusão e publicação.  
-- LGPD: os dados pessoais tratados são apenas nome e e-mail dos usuários administrativos, e o e-mail serve exclusivamente como identificador de login — o sistema não envia e-mail algum. Sem dados de terceiros e sem rastreamento de leitores.  
+- Sessão em cookie `httpOnly`, `Secure`, `SameSite=Lax`, com expiração e renovação.
+- Rate limit no login por IP e por conta.
+- Proteção CSRF em toda ação que altera dados.
+- Rota de imagem autenticada e verificada contra a organização do usuário — imagem de uma organização não é acessível por outra, nem por URL direta.
+- Validação do conteúdo real do arquivo de imagem, não apenas da extensão ou do MIME declarado.
+- Nenhum segredo no código ou no repositório; apenas variáveis de ambiente do Railway. Nenhum token em log nem em mensagem de erro exibida na interface.
+- Log de auditoria de toda criação, edição, exclusão e publicação.
+- LGPD: os dados pessoais tratados são apenas nome e e-mail dos usuários administrativos, e o e-mail serve exclusivamente como identificador de login — o sistema não envia e-mail algum. Sem dados de terceiros e sem rastreamento de leitores.
 - Backup do banco configurado no Railway, com teste de restauração antes de entrar em produção. Com imagens no banco, conferir o tamanho do dump periodicamente.
 
 ---
 
-## 12\. Fases de entrega
+## 12. Fases de entrega
 
 | Fase | Conteúdo | Aprovação |
-| :---- | :---- | :---- |
+|---|---|---|
 | 0 | Modelo de dados, matriz de permissões, mockup estático navegável, escolha do framework | obrigatória antes de qualquer código |
-| 1 | Projeto no Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado | obrigatória |
+| 1 | Serviços `web` e `worker` no Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado | obrigatória |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, reordenação | obrigatória |
 | 3 | Agendamentos, dispatcher, integração Telegram, idempotência testada, alertas e configurações globais | obrigatória |
 | 4 | Painel, i18n, auditoria, polimento visual | entrega final |
 
 ---
 
-## 13\. Prompt para o Claude Code
+## 13. Prompt para o Claude Code
 
-Salve este documento como `docs/ESPECIFICACAO.md` no repositório e faça o commit antes de começar. Depois cole o prompt abaixo na primeira sessão:
+Cole na primeira sessão, com o repositório `cnasajon/msg` e a branch `main` selecionados:
 
 ```
-Vamos construir uma aplicação nova neste repositório (cnasajon/oamsg). A
+Vamos construir uma aplicação nova neste repositório (cnasajon/msg). A
 especificação completa está em docs/ESPECIFICACAO.md — leia o arquivo inteiro
 antes de responder qualquer coisa.
 
@@ -383,6 +382,13 @@ PONTOS NÃO NEGOCIÁVEIS DA ESPECIFICAÇÃO
 10. O chat_id de cada pasta e o destino dos alertas são configuráveis pela
    interface. Nada de chat_id fixo no código.
 
+ESTADO DA INFRAESTRUTURA
+O projeto no Railway já existe (`msg`), com o serviço `postgres` Online e as
+variáveis TELEGRAM_BOT_TOKEN, SESSION_SECRET e ENCRYPTION_KEY cadastradas como
+variáveis compartilhadas do projeto. Os serviços `web` e `worker` ainda não
+existem: serão criados na fase 1, conforme a seção 3.3 da especificação.
+O package.json precisa expor os scripts start:web e start:worker.
+
 SEQUÊNCIA DE ENTREGA — NÃO PULE ETAPAS
 Fase 0, antes de escrever qualquer linha de código de aplicação, apresente:
   (a) o modelo de dados em Prisma schema, com os índices e as restrições únicas;
@@ -400,12 +406,11 @@ Depois da aprovação, apresente o plano de implementação das fases 1 a 4 da
 especificação, com o que entra em cada commit. Espere minha aprovação novamente
 antes de implementar.
 
-Na fase 1, siga a seção 3.3 (roteiro do Railway) e me entregue os comandos de
-geração das chaves. Eu executo manualmente no painel — não tente automatizar o
+Na fase 1, siga a seção 3.3 e me entregue os comandos que eu preciso executar.
+Eu faço o cadastro no painel do Railway manualmente — não tente automatizar o
 cadastro de segredos nem me pedir valores de segredo.
 
-Ao final de cada fase, atualize o README.md com o passo a passo de instalação e
-deploy, espelhando a seção 3 da especificação.
+Ao final de cada fase, atualize o README.md espelhando a seção 3 da especificação.
 
 Estou rodando você na nuvem (claude.ai/code), então trabalhe em branch e abra PR.
 
@@ -414,30 +419,29 @@ Comece lendo docs/ESPECIFICACAO.md e me apresentando a fase 0.
 
 ---
 
-## 14\. Decisões registradas
+## 14. Decisões registradas
 
-1. **Banco:** Postgres gerenciado do Railway. Imagens no próprio banco, sem armazenamento externo.  
-2. **Bot do Telegram:** um único bot (`@OAmsg_bot`), com campo de sobreposição por pasta mantido como hedge.  
-3. **Imagens:** incluídas na v1, com escopo enxuto — uma por texto, 2 MB, só pela edição manual.  
-4. **Notificações:** alertas no Telegram, com Google Chat opcional. Sem provedor de e-mail.  
-5. **Senha esquecida:** redefinida por um admin, ou pelo superadmin no caso dos admins.  
-6. **Destino dos alertas:** configurável pela interface, com variável de ambiente como garantia.  
-7. **Claude Code:** sessões na nuvem, em branch com PR. Mockup em `docs/mockup/` como HTML estático, para abrir pelo `htmlpreview.github.io` ou após `git pull`.  
-8. **Repositório:** `cnasajon/oamsg`, privado. O projeto no Railway continua chamado `oa12-msg`.
+1. **Banco:** Postgres gerenciado do Railway. Imagens no próprio banco, sem armazenamento externo.
+2. **Bot do Telegram:** um único bot (`@OAmsg_bot`), com campo de sobreposição por pasta mantido como hedge.
+3. **Imagens:** incluídas na v1, com escopo enxuto — uma por texto, 2 MB, só pela edição manual.
+4. **Notificações:** alertas no Telegram, com Google Chat opcional. Sem provedor de e-mail.
+5. **Senha esquecida:** redefinida por um admin, ou pelo superadmin no caso dos admins.
+6. **Destino dos alertas:** configurável pela interface, com variável de ambiente como garantia.
+7. **Claude Code:** sessões na nuvem, em branch com PR. Mockup em `docs/mockup/` como HTML estático.
+8. **Nomenclatura:** repositório `cnasajon/msg`, projeto Railway `msg`, domínio `msg.oa12.org`, bot `@OAmsg_bot`.
 
 ### Em aberto
 
-- **Framework web:** Next.js com server actions ou Fastify \+ React. Deixado para a fase 0, com justificativa do Claude Code.  
+- **Framework web:** Next.js com server actions ou Fastify + React. Deixado para a fase 0, com justificativa do Claude Code.
 - **Levantamento dos `chat_id`** restantes: grupo de alertas e grupos das OAs em espanhol e inglês (ver anexo).
 
 ---
 
-## Anexo — levantamento dos chat\_id
+## Anexo — levantamento dos chat_id
 
-Procedimento por grupo, conforme 3.2. Com o token exportado numa variável `TG` da sessão do terminal:
+Procedimento por grupo conforme 3.2. Com o token exportado numa variável `TG` da sessão do terminal:
 
-```shell
-# listar tudo que respondeu, sem repetição
+```bash
 curl -s "https://api.telegram.org/bot$TG/getUpdates" | python3 -c "
 import json,sys
 vistos=set()
@@ -446,8 +450,9 @@ for u in json.load(sys.stdin)['result']:
     if c and c['id'] not in vistos:
         vistos.add(c['id'])
         print(f\"{c['id']}  |  {c.get('title','(privado)')}  |  {c['type']}\")"
+```
 
-# testar envio
+```bash
 curl -s -X POST "https://api.telegram.org/bot$TG/sendMessage" \
   -d "chat_id=-100XXXXXXXXXX" -d "text=Teste" | python3 -c "
 import json,sys
@@ -456,11 +461,10 @@ r=json.load(sys.stdin); print('OK' if r['ok'] else 'ERRO: '+r.get('description',
 
 Ao terminar, `unset TG` e limpar o histórico do shell.
 
-| Grupo | chat\_id | Tipo | Situação |
-| :---- | :---- | :---- | :---- |
+| Grupo | chat_id | Tipo | Situação |
+|---|---|---|---|
 | Uma Visão Para Você (`cca_uvpv`) | `-1001492357816` | supergroup | definitivo, envio testado |
 | 👫 Mesa de ajuda UVPV | `-371133828` | group | promover a supergroup antes de cadastrar |
 | Grupo de alertas (a criar) | — | — | pendente |
 | OA España (a levantar) | — | — | pendente |
 | OA English (a levantar) | — | — | pendente |
-

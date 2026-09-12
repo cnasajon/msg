@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pastas · msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="home.html" style="text-decoration:none;color:inherit">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
+        <div>
+          <div class="name">msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </a>
+        <div class="navgroup nav">
+          <a href="home.html"><span class="ico">⌂</span>Início</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Painel de controle</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Textos</h4>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Lista de textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" class="active" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Configuração</div>
+          <h1>Pastas</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+<div class="mockctl" title="controles do mockup — não fazem parte da aplicação">
+          <span class="mocktag">mockup</span>
+          <select id="role-select" aria-label="Ver como">
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuário</option>
+          </select>
+          <a class="iconbtn" href="index.html" title="Índice do mockup" aria-label="Índice do mockup">☰</a>
+          <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" placeholder="Buscar pasta…">
+            <select><option>Ativas e inativas</option><option>Só ativas</option><option>Só inativas</option></select>
+            <span class="spacer"></span>
+            <a class="btn primary" href="pasta-config.html">Nova pasta</a>
+          </div>
+          <table>
+            <thead><tr><th>Pasta</th><th data-roles="superadmin">Organização</th><th>Grupo de destino</th><th>Fuso</th><th>Agendamentos</th><th>Fila</th><th>Ao esgotar</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><b>Uma Visão Para Você</b><div class="faint">textos diários da manhã</div></td>
+                <td data-roles="superadmin">OA Brasil</td>
+                <td><code>-1001492357816</code><div class="faint">supergroup · testado</div></td>
+                <td>America/Sao_Paulo</td>
+                <td>07:00 Seg–Sex</td>
+                <td><span class="pill warn">4 pendentes</span></td>
+                <td>parar e notificar</td>
+                <td><a class="btn sm" href="pasta-config.html">Configurar</a></td>
+              </tr>
+              <tr>
+                <td><b>Mesa de ajuda UVPV</b><div class="faint">grupo de apoio</div></td>
+                <td data-roles="superadmin">OA Brasil</td>
+                <td><code>-371133828</code><div class="faint" style="color:var(--warn)">grupo comum — promover a supergroup</div></td>
+                <td>America/Sao_Paulo</td>
+                <td>09:00 Sáb–Dom</td>
+                <td><span class="pill">19 pendentes</span></td>
+                <td>reiniciar fila</td>
+                <td><a class="btn sm" href="pasta-config.html">Configurar</a></td>
+              </tr>
+              <tr>
+                <td><b>Reflexões da semana</b><div class="faint">fechamento de sexta</div></td>
+                <td data-roles="superadmin">OA Brasil</td>
+                <td><code>-1001492357816</code></td>
+                <td>America/Sao_Paulo</td>
+                <td>18:30 Sex</td>
+                <td><span class="pill">18 pendentes</span></td>
+                <td>reiniciar fila</td>
+                <td><a class="btn sm" href="pasta-config.html">Configurar</a></td>
+              </tr>
+              <tr data-roles="superadmin">
+                <td><b>OA España — Diario</b><div class="faint">textos em espanhol</div></td>
+                <td>OA España</td>
+                <td class="faint">não configurado</td>
+                <td>Europe/Madrid</td>
+                <td>08:00 todos os dias</td>
+                <td><span class="pill err">0 pendentes</span></td>
+                <td>parar e notificar</td>
+                <td><a class="btn sm" href="pasta-config.html">Configurar</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="faint" data-roles="admin usuario">Você vê apenas as pastas da sua organização. O identificador de outra
+        organização na URL responde 404.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

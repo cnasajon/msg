@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primeiro acesso · msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+<div class="mockctl floating">
+  <span class="mocktag">mockup</span>
+  <a class="iconbtn" href="index.html" title="Índice do mockup" aria-label="Índice do mockup">☰</a>
+  <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
+</div>
+<div class="auth">
+  <div class="box">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
+      <div><div class="name">msg</div><div class="env">Primeiro acesso</div></div>
+    </div>
+    <div class="card">
+      <div class="body">
+        <div class="banner warn" style="margin-bottom:16px">
+          <div><div class="ttl">Senha provisória</div>
+          Sua conta foi criada com senha provisória. Defina uma senha nova para continuar.</div>
+        </div>
+        <label class="field"><span class="lbl">Senha atual (provisória)</span>
+          <input type="password" value="········">
+        </label>
+        <label class="field"><span class="lbl">Nova senha</span>
+          <input type="password">
+          <span class="hint">Mínimo de 12 caracteres. Armazenada com argon2id.</span>
+        </label>
+        <label class="field"><span class="lbl">Repita a nova senha</span>
+          <input type="password">
+        </label>
+        <a class="btn primary" href="home.html" style="width:100%;justify-content:center">Salvar e entrar</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

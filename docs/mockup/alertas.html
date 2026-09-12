@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alertas · msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="home.html" style="text-decoration:none;color:inherit">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
+        <div>
+          <div class="name">msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </a>
+        <div class="navgroup nav">
+          <a href="home.html"><span class="ico">⌂</span>Início</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Painel de controle</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="alertas.html" class="active" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Textos</h4>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Lista de textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Operação</div>
+          <h1>Painel de alertas</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+<div class="mockctl" title="controles do mockup — não fazem parte da aplicação">
+          <span class="mocktag">mockup</span>
+          <select id="role-select" aria-label="Ver como">
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuário</option>
+          </select>
+          <a class="iconbtn" href="index.html" title="Índice do mockup" aria-label="Índice do mockup">☰</a>
+          <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner info">
+          <div><div class="ttl">Destino atual dos alertas</div>
+          <code>settings.alerts_chat_id</code> vazio → <code>ALERTS_CHAT_ID</code> vazio →
+          <b>somente log da aplicação e este painel</b>. Nenhum alerta está sendo enviado ao Telegram.
+          <span data-roles="superadmin"><a href="configuracoes.html">Configurar destino</a></span></div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <select><option>Todos os tipos</option><option>Falha definitiva de publicação</option><option>Slot perdido</option><option>Fila esgotada</option><option>Fila curta</option><option>Falha de autenticação do bot</option></select>
+            <select><option>Últimos 30 dias</option><option>Últimos 7 dias</option><option>Hoje</option></select>
+            <span class="spacer"></span>
+            <button class="btn sm">Marcar todos como lidos</button>
+          </div>
+          <table>
+            <thead><tr><th style="width:170px">Quando</th><th style="width:210px">Tipo</th><th>Pasta</th><th>Detalhe</th><th style="width:120px">Envio</th></tr></thead>
+            <tbody>
+              <tr><td>11/09 07:03 <span class="tz">BRT</span></td><td><span class="pill err">falha definitiva</span></td>
+                <td>Mesa de ajuda UVPV</td><td><code>chat not found</code> após 3 tentativas com backoff. A fila não avançou.</td>
+                <td><span class="pill">só log</span></td></tr>
+              <tr><td>12/09 07:01 <span class="tz">BRT</span></td><td><span class="pill warn">fila curta</span></td>
+                <td>Uma Visão Para Você</td><td>4 textos pendentes (o aviso dispara abaixo de cinco).</td>
+                <td><span class="pill">só log</span></td></tr>
+              <tr data-roles="superadmin"><td>12/09 08:00 <span class="tz">CEST</span></td><td><span class="pill warn">fila esgotada</span></td>
+                <td>OA España — Diario</td><td>Pasta configurada como “parar e notificar”: publicação registrada sem texto, nada enviado.</td>
+                <td><span class="pill">só log</span></td></tr>
+              <tr><td>10/09 09:31 <span class="tz">BRT</span></td><td><span class="pill warn">slot perdido</span></td>
+                <td>Mesa de ajuda UVPV</td><td>Slot das 09:00 vencido há mais de 30 minutos — marcado como perdido, nunca publicado com atraso.</td>
+                <td><span class="pill">só log</span></td></tr>
+              <tr><td>02/09 11:14 <span class="tz">BRT</span></td><td><span class="pill err">autenticação do bot</span></td>
+                <td class="faint">—</td><td><code>unauthorized</code> ao chamar a Bot API. Token da variável compartilhada inválido ou revogado.</td>
+                <td><span class="pill">só log</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="faint">A falha de um canal de alerta nunca interrompe a publicação nem gera novo alerta — só registro no log.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

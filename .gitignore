@@ -1,0 +1,17 @@
+# segredos — nunca versionados; valores só no painel do Railway
+.env
+.env.*
+!.env.example
+
+# dependências e build
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# logs e temporários
+*.log
+npm-debug.log*
+.DS_Store
+coverage/

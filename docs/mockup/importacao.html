@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importação · msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="home.html" style="text-decoration:none;color:inherit">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
+        <div>
+          <div class="name">msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </a>
+        <div class="navgroup nav">
+          <a href="home.html"><span class="ico">⌂</span>Início</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Painel de controle</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Textos</h4>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Lista de textos</a>
+          <a href="importacao.html" class="active" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Uma Visão Para Você</div>
+          <h1>Importar CSV ou XLSX</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+<div class="mockctl" title="controles do mockup — não fazem parte da aplicação">
+          <span class="mocktag">mockup</span>
+          <select id="role-select" aria-label="Ver como">
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuário</option>
+          </select>
+          <a class="iconbtn" href="index.html" title="Índice do mockup" aria-label="Índice do mockup">☰</a>
+          <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner info">
+          <div>A importação é <b>somente texto</b>. Imagens entram apenas pela edição manual de cada texto.</div>
+        </div>
+
+        <div class="card">
+          <div class="tabs">
+            <a href="#" class="active">1. Arquivo</a>
+            <a href="#">2. Mapeamento</a>
+            <a href="#">3. Conferência</a>
+            <a href="#">4. Resultado</a>
+          </div>
+          <div class="body">
+            <div class="row" style="margin-bottom:16px">
+              <label class="field" style="margin:0"><span class="lbl">Pasta de destino</span>
+                <select><option>Uma Visão Para Você</option><option>Mesa de ajuda UVPV</option><option>Reflexões da semana</option></select>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Arquivo</span>
+                <input type="text" value="setembro.xlsx  ·  38 linhas" disabled>
+              </label>
+              <div class="fixed"><button class="btn">Trocar arquivo</button></div>
+            </div>
+
+            <h3 style="font-size:13px;margin:18px 0 8px">Mapeamento de colunas</h3>
+            <div class="row">
+              <label class="field" style="margin:0"><span class="lbl">Coluna do texto</span>
+                <select><option>B — mensagem</option><option>A — data</option><option>C — autor</option></select>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Coluna da data de publicação (opcional)</span>
+                <select><option>A — data</option><option>— nenhuma: tudo entra como pendente —</option></select>
+                <span class="hint">Preenchida, a linha entra como <b>publicado</b> naquela data — é assim que se traz
+                o histórico de outro aplicativo. Vazia, entra como pendente no fim da fila.</span>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Primeira linha</span>
+                <select><option>é cabeçalho</option><option>já é dado</option></select>
+              </label>
+            </div>
+            <p class="faint" style="margin:2px 0 0">A ordem da fila é a ordem das linhas do arquivo — não há coluna de
+            ordem para mapear.</p>
+          </div>
+
+          <header style="border-top:1px solid var(--border)"><h2>Conferência</h2><span class="spacer"></span>
+            <span class="sub">38 linhas · 35 importáveis (12 como histórico) · 3 ignoradas</span></header>
+          <table>
+            <thead><tr><th style="width:52px">Linha</th><th>Texto</th><th style="width:110px">Caracteres</th><th style="width:150px">Publicada em</th><th style="width:230px">Situação</th></tr></thead>
+            <tbody>
+              <tr><td class="num">2</td><td>Há dias em que a única oração possível é continuar.</td><td class="num">96</td><td>12/03/2026</td><td><span class="pill info">importar como publicado</span></td></tr>
+              <tr><td class="num">3</td><td>O encontro começa no convite, não na chegada.</td><td class="num">83</td><td>13/03/2026</td><td><span class="pill info">importar como publicado</span></td></tr>
+              <tr><td class="num">4</td><td>Gratidão não é conclusão, é começo.</td><td class="num">88</td><td>—</td><td><span class="pill warn">duplicata — já existe nesta pasta</span></td></tr>
+              <tr><td class="num">5</td><td class="faint">(vazia)</td><td class="num">0</td><td>—</td><td><span class="pill warn">ignorada — linha vazia</span></td></tr>
+              <tr><td class="num">6</td><td>Texto longo de meditação para o retiro de outubro, com a leitura completa…</td><td class="num" style="color:var(--danger)">4712</td><td>—</td><td><span class="pill err">acima de 4096 caracteres</span></td></tr>
+              <tr><td class="num">7</td><td>A mesa está posta para quem chega e para quem ainda vai chegar.</td><td class="num">62</td><td><span class="faint">(vazia)</span></td><td><span class="pill ok">importar como pendente</span></td></tr>
+            </tbody>
+          </table>
+          <div class="body" style="display:flex;gap:10px;align-items:center;border-top:1px solid var(--border)">
+            <span class="faint">Sem data, a linha entra como <b>pendente</b> no fim da fila, na ordem do arquivo. Com data,
+            entra como <b>publicado</b> e aparece no histórico marcado como importado — o dispatcher nunca reenvia.</span>
+            <span class="spacer" style="flex:1"></span>
+            <a class="btn" href="textos.html">Cancelar</a>
+            <button class="btn primary">Importar 35 textos</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Importações anteriores</h2></header>
+          <table>
+            <thead><tr><th>Arquivo</th><th>Quando</th><th>Por</th><th class="num">Linhas</th><th class="num">Importadas</th><th class="num">Histórico</th><th class="num">Duplicadas</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><code>agosto.xlsx</code></td><td>02/08 14:22 <span class="tz">BRT</span></td><td>Marta Ribeiro</td><td class="num">30</td><td class="num">30</td><td class="num">0</td><td class="num">0</td><td><span class="faint">com textos já publicados — não é possível desfazer</span></td></tr>
+              <tr><td><code>julho.csv</code></td><td>01/07 09:05 <span class="tz">BRT</span></td><td>Marta Ribeiro</td><td class="num">31</td><td class="num">28</td><td class="num">12</td><td class="num">3</td><td><span class="faint">com textos já publicados — não é possível desfazer</span></td></tr>
+              <tr><td><code>avulsos.csv</code></td><td>10/09 17:40 <span class="tz">BRT</span></td><td>Ana Duarte</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td><button class="btn sm">Desfazer importação</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
