@@ -15,14 +15,47 @@ describe('senha', () => {
     expect(await senhaConfere('qualquer coisa', 'isto-não-é-um-hash')).toBe(false);
   });
 
-  it('exige pelo menos 12 caracteres', () => {
-    expect(problemaNaSenha('curta')).toMatch(/12 caracteres/);
-    expect(problemaNaSenha('uma senha longa o bastante')).toBeNull();
+  it('exige 8 caracteres, maiúscula, número e especial', () => {
+    expect(problemaNaSenha('Ab1!cdef')).toBeNull();
+
+    expect(problemaNaSenha('Ab1!cde')).toMatch(/8 caracteres/);
+    expect(problemaNaSenha('ab1!cdef')).toMatch(/maiúscula/);
+    expect(problemaNaSenha('Abc!defg')).toMatch(/número/);
+    expect(problemaNaSenha('Abc1defg')).toMatch(/especial/);
+  });
+
+  it('reúne tudo que falta numa mensagem só', () => {
+    const problema = problemaNaSenha('abc');
+    expect(problema).toMatch(/8 caracteres/);
+    expect(problema).toMatch(/maiúscula/);
+    expect(problema).toMatch(/número/);
+    expect(problema).toMatch(/especial/);
+  });
+
+  it('senha comprida sem os requisitos continua recusada', () => {
+    // a regra antiga passava só pelo tamanho; esta não passa
+    expect(problemaNaSenha('uma senha longa o bastante')).toMatch(/maiúscula/);
+  });
+
+  it('acento não conta como caractere especial, e maiúscula acentuada conta', () => {
+    expect(problemaNaSenha('Senha123á')).toMatch(/especial/);
+    expect(problemaNaSenha('Ática123!')).toBeNull();
+  });
+
+  it('espaço nas pontas e senha longa demais são recusados', () => {
+    expect(problemaNaSenha(' Ab1!cdef')).toMatch(/espaço/);
+    expect(problemaNaSenha('Ab1!cdef'.repeat(30))).toMatch(/longa demais/);
   });
 
   it('senha provisória não usa caracteres ambíguos', () => {
     for (let i = 0; i < 50; i++) {
       expect(gerarSenhaProvisoria()).not.toMatch(/[l1IO0]/);
+    }
+  });
+
+  it('senha provisória já nasce dentro da política', () => {
+    for (let i = 0; i < 200; i++) {
+      expect(problemaNaSenha(gerarSenhaProvisoria())).toBeNull();
     }
   });
 

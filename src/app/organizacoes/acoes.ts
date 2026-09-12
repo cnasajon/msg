@@ -9,13 +9,14 @@ import { podeFazer } from '@/lib/autorizacao';
 import { NaoAutorizado } from '@/lib/erros';
 import { comEscopo } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
+import { comAviso } from '@/lib/navegacao';
 import { fusoValido } from '@/lib/fuso';
 
 const IDIOMAS = ['pt', 'es', 'en'] as const;
 type Idioma = (typeof IDIOMAS)[number];
 
 function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
-  redirect(`/organizacoes?${tipo}=${encodeURIComponent(mensagem)}`);
+  redirect(comAviso('/organizacoes', tipo, mensagem));
 }
 
 /** Troca a organização que o superadmin está operando. Fica na auditoria. */

@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createHmac, randomBytes } from 'node:crypto';
-import { prepararBanco, criarCenario, temBanco, cliente, type Cenario } from './helpers/banco';
+import { prepararBanco, criarCenario, temBanco, cliente, pngDeTeste, type Cenario } from './helpers/banco';
 
 const BASE = process.env.MSG_BASE_URL ?? null;
 
@@ -109,6 +109,61 @@ describe.skipIf(!temBanco || !BASE)('isolamento nas rotas HTTP', () => {
     const doAdmin = await (await buscar('/inicio', cookieAdminA)).text();
     expect(doAdmin).toContain('Pastas, usuários e auditoria da organização');
     expect(doAdmin).not.toContain('Organizações e configurações globais');
+  });
+
+  it('a imagem de um texto é servida para quem pode vê-la', async () => {
+    const resposta = await buscar(`/api/textos/${cenario.a.texto.id}/imagem`, cookieAdminA);
+    expect(resposta.status).toBe(200);
+    expect(resposta.headers.get('content-type')).toBe('image/png');
+    const corpo = new Uint8Array(await resposta.arrayBuffer());
+    expect(corpo.byteLength).toBeGreaterThan(0);
+    // PNG de verdade: assinatura nos primeiros bytes
+    expect([corpo[0], corpo[1], corpo[2], corpo[3]]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+  });
+
+  it('IMAGEM DE OUTRA ORGANIZAÇÃO: admin de A pede a de B e recebe 404, sem byte nenhum', async () => {
+    const resposta = await buscar(`/api/textos/${cenario.b.texto.id}/imagem`, cookieAdminA);
+    expect(resposta.status).toBe(404);
+    const corpo = new Uint8Array(await resposta.arrayBuffer());
+    expect(corpo.byteLength).toBeLessThan(64); // só a mensagem de erro
+    expect(resposta.headers.get('content-type')).not.toMatch(/^image\//);
+  });
+
+  it('a rota de imagem exige sessão', async () => {
+    const resposta = await buscar(`/api/textos/${cenario.a.texto.id}/imagem`);
+    expect(resposta.status).toBe(401);
+  });
+
+  it('usuário não alcança imagem de pasta que não lhe foi atribuída', async () => {
+    // o usuário de A tem a pasta principal; este texto está na pasta reservada
+    const textoReservado = await cliente().text.create({
+      data: {
+        folderId: cenario.a.pastaSemAtribuicao.id,
+        conteudo: 'Texto da pasta reservada',
+        ordem: 1,
+        hashConteudo: `reservado-${Date.now()}`,
+        imagem: pngDeTeste(),
+        imagemMime: 'image/png',
+      },
+    });
+    const resposta = await buscar(`/api/textos/${textoReservado.id}/imagem`, cookieUsuarioA);
+    expect(resposta.status).toBe(404);
+  });
+
+  it('exportação: admin de A não exporta pasta de B', async () => {
+    const daPropria = await buscar(`/api/exportacao?pasta=${cenario.a.pasta.id}&formato=json`, cookieAdminA);
+    expect(daPropria.status).toBe(200);
+    const conteudo = await daPropria.json();
+    expect(conteudo.textos.some((t: { conteudo: string }) => t.conteudo.includes('Organização A'))).toBe(true);
+    expect(JSON.stringify(conteudo)).not.toContain('Organização B');
+
+    const daOutra = await buscar(`/api/exportacao?pasta=${cenario.b.pasta.id}&formato=json`, cookieAdminA);
+    expect(daOutra.status).toBe(404);
+  });
+
+  it('pré-visualização da importação exige sessão', async () => {
+    const resposta = await fetch(`${BASE}/api/importacao/previa`, { method: 'POST', body: new FormData() });
+    expect(resposta.status).toBe(401);
   });
 
   it('sessão de usuário desativado para de valer na hora', async () => {

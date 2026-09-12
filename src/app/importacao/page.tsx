@@ -1,22 +1,144 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { EmConstrucao } from '@/components/em-construcao';
+import { Casca } from '@/components/casca';
+import { CampoCsrf } from '@/components/csrf';
+import { Avisos } from '@/components/avisos';
+import { AssistenteDeImportacao } from '@/components/assistente-importacao';
 import { sessaoAtual } from '@/lib/sessao';
+import { tokenCsrfPara } from '@/lib/csrf';
+import { prisma } from '@/lib/db';
+import { escopoDePasta, escopoDeImportacao } from '@/lib/escopo';
+import { formatarNoFuso } from '@/lib/fuso';
+import { desfazerImportacao, importar } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Pagina() {
+export default async function Importacao({
+  searchParams,
+}: {
+  searchParams: Promise<{ pasta?: string; erro?: string; ok?: string }>;
+}) {
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
 
+  const { pasta: pastaId, erro, ok } = await searchParams;
+  const csrf = tokenCsrfPara(sessao.sessaoId);
+
+  const pastas = await prisma.folder.findMany({
+    where: escopoDePasta(sessao),
+    orderBy: { nome: 'asc' },
+    select: { id: true, nome: true, timezone: true },
+  });
+  const pasta = pastas.find((p) => p.id === pastaId) ?? pastas[0] ?? null;
+
+  if (!pasta) {
+    return (
+      <Casca sessao={sessao} titulo="Importação" caminho="Textos" atual="/importacao">
+        <Avisos erro={erro} ok={ok} />
+        <div className="banner warn">
+          <div>Nenhuma pasta visível para você ainda.</div>
+        </div>
+      </Casca>
+    );
+  }
+
+  const importacoes = await prisma.import.findMany({
+    where: { AND: [escopoDeImportacao(sessao), { folderId: pasta.id }] },
+    orderBy: { criadoEm: 'desc' },
+    take: 20,
+    include: {
+      autor: { select: { nome: true } },
+      _count: { select: { textos: true } },
+    },
+  });
+
   return (
-    <EmConstrucao
-      sessao={sessao}
-      titulo="Importação"
-      caminho="Textos"
-      atual="/importacao"
-      fase={2}
-      descricao="Importação de CSV e XLSX com mapeamento de colunas, data de publicação opcional para trazer histórico, e duplicatas sinalizadas."
-    />
+    <Casca sessao={sessao} titulo="Importar CSV ou XLSX" caminho={`Textos · ${pasta.nome}`} atual="/importacao">
+      <Avisos erro={erro} ok={ok} />
+
+      <div className="card">
+        <form className="toolbar" method="get">
+          <select name="pasta" defaultValue={pasta.id} aria-label="Pasta de destino">
+            {pastas.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome}
+              </option>
+            ))}
+          </select>
+          <button className="btn" type="submit">
+            Trocar pasta
+          </button>
+          <span className="spacer" />
+          <Link className="btn" href={`/textos?pasta=${pasta.id}`}>
+            Ver textos
+          </Link>
+        </form>
+      </div>
+
+      <AssistenteDeImportacao
+        folderId={pasta.id}
+        csrf={<CampoCsrf token={csrf} />}
+        acao={importar}
+      />
+
+      <div className="card">
+        <header>
+          <h2>Importações anteriores</h2>
+        </header>
+        <table>
+          <thead>
+            <tr>
+              <th>Arquivo</th>
+              <th>Quando</th>
+              <th>Por</th>
+              <th className="num">Linhas</th>
+              <th className="num">Importadas</th>
+              <th className="num">Histórico</th>
+              <th className="num">Duplicadas</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {importacoes.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="faint">
+                  Nenhuma importação nesta pasta ainda.
+                </td>
+              </tr>
+            ) : (
+              importacoes.map((i) => (
+                <tr key={i.id}>
+                  <td>
+                    <code>{i.arquivoNome}</code>
+                  </td>
+                  <td>{formatarNoFuso(i.criadoEm, pasta.timezone)}</td>
+                  <td>{i.autor?.nome ?? <span className="faint">—</span>}</td>
+                  <td className="num">{i.totalLinhas}</td>
+                  <td className="num">{i.importadas}</td>
+                  <td className="num">{i.importadasComoHistorico}</td>
+                  <td className="num">{i.duplicadasIgnoradas}</td>
+                  <td>
+                    {i.desfeitoEm ? (
+                      <span className="faint">desfeita em {formatarNoFuso(i.desfeitoEm, pasta.timezone)}</span>
+                    ) : i._count.textos === 0 ? (
+                      <span className="faint">sem textos restantes</span>
+                    ) : (
+                      <form action={desfazerImportacao} style={{ display: 'inline' }}>
+                        <CampoCsrf token={csrf} />
+                        <input type="hidden" name="id" value={i.id} />
+                        <button className="btn sm" type="submit">
+                          Desfazer importação
+                        </button>
+                      </form>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Casca>
   );
 }

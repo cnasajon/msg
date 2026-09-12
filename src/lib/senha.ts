@@ -29,21 +29,54 @@ export async function senhaConfere(senha: string, hashArmazenado: string): Promi
   }
 }
 
-/** Regras mínimas de senha. Devolve a mensagem do problema, ou `null`. */
+/**
+ * Regras mínimas de senha: pelo menos 8 caracteres, com uma letra maiúscula, um
+ * número e um caractere especial. Devolve a mensagem do problema, ou `null`.
+ *
+ * A mensagem diz tudo que falta de uma vez, em vez de uma exigência por
+ * tentativa — corrigir senha aos pedaços é o caminho mais curto para a pessoa
+ * desistir e escolher algo pior.
+ */
+export const TAMANHO_MINIMO_DA_SENHA = 8;
+
 export function problemaNaSenha(senha: string): string | null {
-  if (senha.length < 12) return 'A senha precisa ter pelo menos 12 caracteres.';
   if (senha.length > 200) return 'A senha é longa demais.';
   if (/^\s|\s$/.test(senha)) return 'A senha não pode começar nem terminar com espaço.';
-  return null;
+
+  const faltando: string[] = [];
+  if (senha.length < TAMANHO_MINIMO_DA_SENHA) {
+    faltando.push(`ter pelo menos ${TAMANHO_MINIMO_DA_SENHA} caracteres`);
+  }
+  if (!/[A-ZÀ-ÖØ-Þ]/.test(senha)) faltando.push('uma letra maiúscula');
+  if (!/[0-9]/.test(senha)) faltando.push('um número');
+  // especial é tudo que não for letra (com ou sem acento), número ou espaço
+  if (!/[^\p{L}\p{N}\s]/u.test(senha)) faltando.push('um caractere especial (por exemplo ! @ # $ % & *)');
+
+  if (faltando.length === 0) return null;
+  if (faltando.length === 1) return `A senha precisa ${faltando[0]}.`;
+  const ultimo = faltando.pop()!;
+  return `A senha precisa ${faltando.join(', ')} e ${ultimo}.`;
 }
 
-/** Senha provisória legível, para o admin repassar à pessoa. */
+/**
+ * Senha provisória legível, para o admin repassar à pessoa — em geral ditada por
+ * telefone ou mensagem, daí a ausência de caracteres ambíguos e os grupos de
+ * quatro. Sai sempre dentro da política acima: os hífens cobrem o caractere
+ * especial, e o sorteio é repetido até cair uma maiúscula e um número.
+ */
 export function gerarSenhaProvisoria(): string {
-  // sem caracteres ambíguos (l, 1, I, O, 0) — a senha costuma ser ditada
+  // sem caracteres ambíguos (l, 1, I, O, 0)
   const alfabeto = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  let saida = '';
-  for (const b of bytes) saida += alfabeto[b % alfabeto.length];
-  return `${saida.slice(0, 4)}-${saida.slice(4, 8)}-${saida.slice(8, 12)}-${saida.slice(12, 16)}`;
+
+  for (let tentativa = 0; tentativa < 50; tentativa++) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    let sorteado = '';
+    for (const b of bytes) sorteado += alfabeto[b % alfabeto.length];
+
+    const senha = `${sorteado.slice(0, 4)}-${sorteado.slice(4, 8)}-${sorteado.slice(8, 12)}-${sorteado.slice(12, 16)}`;
+    if (problemaNaSenha(senha) === null) return senha;
+  }
+  // com 16 sorteios sobre este alfabeto, chegar aqui é praticamente impossível
+  throw new Error('Não foi possível gerar uma senha provisória dentro da política.');
 }
