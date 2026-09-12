@@ -7,7 +7,7 @@ O nome da aplicação é **msg** — genérico de propósito, para servir a outr
 além da OA. O repositório é `cnasajon/msg`; o bot continua `@OAmsg_bot`, porque
 o username de um bot não se troca sem criar outro no BotFather.
 
-Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.4).
+Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.5).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
 > **Situação: fase 1 entregue.** Autenticação, organizações, usuários,
@@ -161,7 +161,16 @@ existir código; os demais exigem `package.json` com `start:web` e
    botão de variável compartilhada e acrescentar as específicas. Usar sempre
    referência (`${{postgres.DATABASE_URL}}`), nunca a string copiada.
 9. **Migrações** no build/release, nunca no start, para não competirem entre
-   réplicas.
+   réplicas. No Railway isso é o campo **Pre-Deploy Command** do serviço, com
+   `npm run migrate:deploy`. Se o seu plano não tiver esse campo, rode a
+   migração manualmente a cada deploy que mude o schema — não a coloque no start
+   command.
+
+O `package.json` traz um script `start` apontando para `start:web`: o builder do
+Railway (Railpack) exige esse script e falha no *prepare* sem ele, mesmo quando o
+serviço define um Custom Start Command. Cada serviço continua subindo pelo seu
+comando próprio — `npm run start:web` no `web`, `npm run start:worker` no
+`worker`.
 
 Alterar variável dispara redeploy — evite fazê-lo perto de um horário de
 publicação.
