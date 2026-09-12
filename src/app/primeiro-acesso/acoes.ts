@@ -6,6 +6,7 @@ import { exigirSessao, encerrarSessoesDoUsuario, criarSessao } from '@/lib/sessa
 import { exigirCsrf } from '@/lib/csrf';
 import { gerarHashDeSenha, problemaNaSenha, senhaConfere } from '@/lib/senha';
 import { registrarAuditoria } from '@/lib/auditoria';
+import { comAviso } from '@/lib/navegacao';
 
 /**
  * Troca obrigatória da senha provisória.
@@ -24,15 +25,15 @@ export async function trocarSenha(dados: FormData) {
   const usuario = await prisma.user.findUniqueOrThrow({ where: { id: sessao.usuarioId } });
 
   if (!(await senhaConfere(atual, usuario.senhaHash))) {
-    redirect('/primeiro-acesso?erro=' + encodeURIComponent('A senha atual não confere.'));
+    redirect(comAviso('/primeiro-acesso', 'erro', 'A senha atual não confere.'));
   }
   if (nova !== repetida) {
-    redirect('/primeiro-acesso?erro=' + encodeURIComponent('A confirmação não bate com a nova senha.'));
+    redirect(comAviso('/primeiro-acesso', 'erro', 'A confirmação não bate com a nova senha.'));
   }
   const problema = problemaNaSenha(nova);
-  if (problema) redirect('/primeiro-acesso?erro=' + encodeURIComponent(problema));
+  if (problema) redirect(comAviso('/primeiro-acesso', 'erro', problema));
   if (await senhaConfere(nova, usuario.senhaHash)) {
-    redirect('/primeiro-acesso?erro=' + encodeURIComponent('A nova senha precisa ser diferente da atual.'));
+    redirect(comAviso('/primeiro-acesso', 'erro', 'A nova senha precisa ser diferente da atual.'));
   }
 
   await prisma.user.update({

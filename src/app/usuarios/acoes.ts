@@ -9,9 +9,10 @@ import { NaoAutorizado, NaoEncontrado } from '@/lib/erros';
 import { comEscopo, escopoDePasta, organizacaoEmVigor, type Sessao } from '@/lib/escopo';
 import { gerarHashDeSenha, gerarSenhaProvisoria } from '@/lib/senha';
 import { registrarAuditoria } from '@/lib/auditoria';
+import { comAviso } from '@/lib/navegacao';
 
 function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
-  redirect(`/usuarios?${tipo}=${encodeURIComponent(mensagem)}`);
+  redirect(comAviso('/usuarios', tipo, mensagem));
 }
 
 const IDIOMAS = ['pt', 'es', 'en'] as const;

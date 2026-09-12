@@ -52,12 +52,15 @@ export default async function PrimeiroAcesso({
                 </label>
                 <label className="field">
                   <span className="lbl">Nova senha</span>
-                  <input type="password" name="nova" autoComplete="new-password" required minLength={12} />
-                  <span className="hint">Mínimo de 12 caracteres. Armazenada com argon2id.</span>
+                  <input type="password" name="nova" autoComplete="new-password" required minLength={8} />
+                  <span className="hint">
+                    Pelo menos 8 caracteres, com uma letra maiúscula, um número e um caractere
+                    especial. Armazenada com argon2id.
+                  </span>
                 </label>
                 <label className="field">
                   <span className="lbl">Repita a nova senha</span>
-                  <input type="password" name="repetida" autoComplete="new-password" required minLength={12} />
+                  <input type="password" name="repetida" autoComplete="new-password" required minLength={8} />
                 </label>
                 <button className="btn primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
                   Salvar e entrar

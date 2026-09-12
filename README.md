@@ -10,9 +10,10 @@ o username de um bot não se troca sem criar outro no BotFather.
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.5).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
-> **Situação: fase 1 entregue.** Autenticação, organizações, usuários,
-> permissões e o isolamento entre organizações testado. As telas das fases 2 a 4
-> existem e avisam em que fase chegam.
+> **Situação: fase 2 entregue.** Além da fase 1 (autenticação, organizações,
+> usuários e isolamento testado), agora existem pastas, textos com imagem,
+> importação de CSV/XLSX, exportação em cinco formatos e reordenação da fila. O
+> que ainda não existe é a publicação automática no Telegram — é a fase 3.
 
 ## O que já existe
 
@@ -24,6 +25,10 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | `src/lib/escopo.ts` | **Isolamento entre organizações** — o filtro por onde passa toda consulta |
 | `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
 | `src/app/` | Interface e server actions (Next.js App Router) |
+| `src/lib/textos.ts` | Os dois limites (4096/1024), tags aceitas e hash de duplicata |
+| `src/lib/imagem.ts` | Processamento das imagens com `sharp` antes de irem para o `bytea` |
+| `src/lib/telegram.ts` | Bot API sem biblioteca intermediária, com os envios serializados |
+| `src/lib/cifra.ts` | AES-256-GCM do token de sobreposição da pasta |
 | `src/worker/` | Serviço `worker`; o dispatcher entra na fase 3 |
 | `tests/` | Isolamento, permissões, autenticação e rotas HTTP |
 | `docs/mockup/` | Mockup navegável em HTML estático, sem build |
@@ -232,10 +237,13 @@ npm install
 ```
 
 O que já está coberto: **isolamento entre organizações** na camada de dados e
-nas rotas HTTP (inclusive a leitura de imagem), a matriz de permissões linha a
-linha, senha com argon2id e o limite de tentativas de login. Falta cobrir, nas
-fases seguintes: idempotência do dispatcher, limites de 4096/1024 caracteres e
-precedência do destino dos alertas.
+nas rotas HTTP — inclusive a rota de imagem, onde um admin pedindo a imagem de
+outra organização recebe 404 e zero byte —, a matriz de permissões linha a
+linha, senha com argon2id e limite de tentativas, **os dois limites de 4096 e
+1024 caracteres**, as tags aceitas pelo Telegram, o hash de duplicata, as datas
+da importação, a cifra do token de sobreposição e os cinco formatos de
+exportação. Falta cobrir, na fase 3: idempotência do dispatcher e precedência do
+destino dos alertas.
 
 ## Fases
 
@@ -243,9 +251,25 @@ precedência do destino dos alertas.
 | :-- | :-- | :-- |
 | 0 | Modelo de dados, permissões, mockup, escolha do framework | **aprovada** |
 | 1 | Railway, autenticação, organizações, usuários, permissões, isolamento testado | **entregue** |
-| 2 | Pastas, textos, imagens, importação CSV/XLSX, reordenação | — |
+| 2 | Pastas, textos, imagens, importação CSV/XLSX, exportação, reordenação | **entregue** |
 | 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | — |
 | 4 | Painel, i18n, auditoria, polimento visual | — |
+
+## Política de senha
+
+Mínimo de 8 caracteres, com pelo menos uma letra maiúscula, um número e um
+caractere especial. A mensagem de recusa diz tudo que falta de uma vez — corrigir
+senha aos pedaços é o caminho mais curto para a pessoa desistir e escolher algo
+pior. As senhas provisórias geradas pelo sistema já nascem dentro da política.
+
+## Bibliotecas de planilha
+
+A especificação cita SheetJS para CSV e XLSX. A versão publicada no npm está
+parada na 0.18.5, com vulnerabilidades conhecidas — as versões novas saíram do
+registro público. O projeto usa **`exceljs`** (mantido no npm) para XLSX e
+**`papaparse`** para CSV; a exportação em PDF usa **`pdfkit`**. O `npm audit`
+acusa um aviso moderado em `uuid`, dependência do `exceljs`, referente a APIs de
+UUID v3/v5/v6 que não são usadas aqui.
 
 ## Decisões de segurança que valem registro
 
@@ -265,4 +289,14 @@ precedência do destino dos alertas.
 - **Senha provisória aparece uma vez só**, na tela de quem a criou. Só o hash
   argon2id é guardado.
 - **Nenhum segredo em log, mensagem de erro ou auditoria** — a auditoria
-  registra que um valor mudou, nunca o valor.
+  registra que um valor mudou, nunca o valor. O token de sobreposição da pasta é
+  cifrado com AES-256-GCM, conferido no Telegram antes de ser gravado e nunca
+  reexibido.
+- **O formato da imagem vem do conteúdo do arquivo**, não da extensão nem do
+  MIME que o navegador declarou. Metadados EXIF são descartados no
+  processamento.
+- **A rota de imagem não tem atalho**: o identificador da URL passa pelo mesmo
+  escopo das outras consultas, e imagem de outra organização responde 404 com
+  zero byte — há teste para isso.
+- **A exportação respeita o escopo**: quem enxerga duas pastas exporta duas
+  pastas, qualquer que seja o identificador na URL.
