@@ -4,11 +4,11 @@
 **Repositório:** https://github.com/cnasajon/msg (privado)
 **Projeto no Railway:** `msg` — id `656b5e1d-4133-4d5f-80a0-215a493a537e`
 **Bot do Telegram:** @OAmsg_bot
-**Versão do documento:** 1.4 — 12/09/2026
+**Versão do documento:** 1.5 — 12/09/2026
 
-Mudanças em relação à 1.3: nomenclatura unificada (repositório `msg`, projeto Railway `msg`); registrado o estado atual da configuração do Railway; markdown limpo, sem escapes.
+Mudanças em relação à 1.4: incorpora as decisões tomadas na aprovação da fase 0 e o que a fase 1 entregou. São elas: quarto estado do texto (`arquivado`), com exclusão mantida para casos excepcionais; exportação dos textos em cinco formatos; importação de histórico por coluna de data de publicação; telefone e usuário do Telegram no cadastro de pessoas; tela inicial de quatro blocos e tema escuro como padrão; framework decidido (Next.js com server actions); dias da semana por sigla; e os campos que o modelo de dados ganhou para sustentar tudo isso.
 
-Histórico: 1.1 fechou banco, bot único, imagens na v1 e alertas por Telegram. 1.2 tornou o destino dos alertas híbrido. 1.3 acrescentou o roteiro de configuração completo.
+Histórico: 1.1 fechou banco, bot único, imagens na v1 e alertas por Telegram. 1.2 tornou o destino dos alertas híbrido. 1.3 acrescentou o roteiro de configuração completo. 1.4 unificou a nomenclatura em `msg` e registrou o estado da infraestrutura.
 
 ---
 
@@ -79,7 +79,12 @@ Concluído:
 - Projeto `msg` criado no Railway, serviço `postgres` Online.
 - `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET` e `ENCRYPTION_KEY` cadastrados como variáveis compartilhadas do projeto. Ainda não distribuídas a nenhum serviço, porque `web` e `worker` só existem na fase 1.
 
-Pendente: passos 5 a 9 de 3.3 (fase 1), o DNS de 3.4 e o levantamento dos `chat_id` restantes de 3.2.
+Também concluído, na fase 1:
+
+- Fases 0 e 1 entregues e mescladas na `main`: modelo de dados, matriz de permissões, mockup, autenticação, organizações, usuários e o isolamento entre organizações coberto por testes.
+- `package.json` com os scripts `start:web` e `start:worker`, o que destrava os passos 5 a 9 de 3.3.
+
+Pendente: passos 5 a 9 de 3.3, o DNS de 3.4 e o levantamento dos `chat_id` restantes de 3.2.
 
 ### 3.1 Claude Code
 
@@ -140,7 +145,7 @@ Se um serviço vazio for criado por engano no canvas (o Railway sugere um nome a
 ## 4. Stack
 
 - **Runtime:** Node.js 22 + TypeScript
-- **Framework web:** Next.js (App Router) com server actions, ou Fastify + React — a decidir na fase 0
+- **Framework web:** **Next.js (App Router) com server actions** — decidido na fase 0. Uma aplicação só cobre interface, ações e as rotas servidas pelo Node, com destaque para a rota de imagem autenticada, que lê `bytea` e responde o binário sob a mesma verificação de organização da interface. O dispatcher vive fora do framework, no serviço `worker`.
 - **Banco:** PostgreSQL 16 gerenciado pelo Railway
 - **ORM e migrações:** Prisma
 - **Agendamento:** `node-cron` dentro do serviço `worker`, com trava de idempotência no banco
@@ -161,7 +166,14 @@ Se um serviço vazio for criado por engano no canvas (o Railway sugere um nome a
 `id`, `nome`, `idioma_padrao` (pt | es | en), `timezone_padrao`, `ativa`, `criada_em`
 
 ### users
-`id`, `organization_id` (nulo para superadmin), `nome`, `email` (único), `senha_hash`, `perfil` (superadmin | admin | usuario), `ativo`, `senha_provisoria` (booleano), `ultimo_login_em`, `criado_em`
+`id`, `organization_id` (nulo para superadmin), `nome`, `email` (único), `telefone` (nulo), `telegram_username` (nulo), `senha_hash`, `perfil` (superadmin | admin | usuario), `idioma` (nulo — sobrepõe o idioma da organização), `ativo`, `senha_provisoria` (booleano), `ultimo_login_em`, `criado_em`
+
+O e-mail é a credencial de entrada e continua obrigatório. Telefone e usuário do Telegram são opcionais e puramente cadastrais: servem para localizar a pessoa, o que na OA costuma valer mais que o e-mail. Entrar pelo Telegram fica como evolutiva.
+
+### sessions
+`id`, `user_id`, `token_hash`, `organization_ativa_id` (nulo), `ip`, `user_agent`, `expira_em`, `criada_em`
+
+O cookie leva um token aleatório e o banco guarda apenas o HMAC dele, de modo que o dump do banco não devolve sessão utilizável. A validade é do registro, não do cookie, o que permite renovar a sessão a cada uso e revogá-la na hora quando o usuário é desativado ou tem a senha redefinida. É aqui também que fica a organização ativa do superadmin.
 
 ### user_folders
 Relação muitos-para-muitos usada apenas pelo perfil `usuario`: `user_id`, `folder_id`
@@ -170,19 +182,33 @@ Relação muitos-para-muitos usada apenas pelo perfil `usuario`: `user_id`, `fol
 `id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `ao_esgotar` (parar_notificar | reiniciar), `ativa`, `criada_em`
 
 ### texts
-`id`, `folder_id`, `conteudo`, `ordem`, `imagem` (bytea, nulo), `imagem_mime`, `imagem_bytes`, `imagem_nome_original`, `status` (pendente | publicado | erro), `publicado_em`, `erro_mensagem`, `import_id`, `hash_conteudo`, `criado_por`, `criado_em`
+`id`, `folder_id`, `conteudo`, `ordem`, `imagem` (bytea, nulo), `imagem_mime`, `imagem_bytes`, `imagem_nome_original`, `status` (pendente | publicado | erro | arquivado), `publicado_em`, `arquivado_em`, `erro_mensagem`, `import_id`, `hash_conteudo`, `criado_por`, `criado_em`
 
 Índice único em (`folder_id`, `hash_conteudo`) para detectar duplicatas na importação. O `hash_conteudo` considera apenas o texto, não a imagem.
+
+**Quatro situações, e duas formas de sair da lista.** `arquivar` é a ação normal: tira o texto da fila e da lista de trabalho, preserva o registro e guarda a data em `arquivado_em`. `excluir` continua existindo para o admin, para casos excepcionais, e apaga a linha. O histórico sobrevive à exclusão porque a publicação guarda o que foi ao ar (ver `publications`).
+
+A `ordem` é o que sustenta a fila e a reordenação por arrastar. Na importação não há coluna de ordem para mapear: vale a ordem das linhas do arquivo.
 
 ### schedules
 `id`, `folder_id`, `hora_local` (HH:MM), `dias_semana` (conjunto de 1 a 7), `ativo`
 
 Uma pasta pode ter vários agendamentos — por exemplo, 07:00 de segunda a sexta e 09:00 nos fins de semana.
 
+Os dias são gravados em ISO-8601 (1 = segunda … 7 = domingo), que é o padrão de qualquer biblioteca de data, e exibidos por sigla começando no domingo: **Dom Seg Ter Qua Qui Sex Sáb**. As siglas são traduzidas junto com o resto da interface.
+
+Índice único em (`folder_id`, `hora_local`): dois agendamentos no mesmo horário da mesma pasta gerariam um slot só, então o cadastro é bloqueado com mensagem clara.
+
 ### publications
-`id`, `folder_id`, `text_id` (nulo quando a fila está vazia), `data_prevista` (date), `hora_prevista` (time), `status` (reivindicada | enviada | erro | perdida), `tentativas`, `telegram_message_id`, `erro_mensagem`, `enviada_em`
+`id`, `folder_id`, `text_id` (nulo quando a fila está vazia ou quando o texto foi excluído), `origem` (dispatcher | manual | importacao), `data_prevista` (date), `hora_prevista` (time, nula apenas no histórico importado), `status` (reivindicada | enviada | erro | perdida), `conteudo_publicado`, `tinha_imagem`, `tentativas`, `telegram_message_id`, `erro_mensagem`, `reivindicada_em`, `enviada_em`
 
 **Índice único em (`folder_id`, `data_prevista`, `hora_prevista`).** É esta restrição que garante a idempotência.
+
+`conteudo_publicado` e `tinha_imagem` são a cópia do que foi enviado. Sem eles, excluir um texto deixaria o histórico com uma linha vazia: `text_id` vira nulo e ninguém mais sabe o que foi publicado naquele dia. A imagem não é copiada — some junto com o texto, e o histórico apenas indica que havia uma.
+
+`origem` separa o slot calculado pelo dispatcher da ação "publicar agora" e do histórico trazido de outro aplicativo. Só o histórico importado tem `hora_prevista` nula: o Postgres trata nulos como distintos na restrição única, então duas mensagens importadas na mesma data não colidem, enquanto todo slot do dispatcher continua tendo hora — que é exatamente o caso que a restrição protege. O dispatcher nunca reenvia uma linha importada.
+
+`reivindicada_em` é o que permite identificar um slot preso em `reivindicada` porque o processo morreu no meio do envio.
 
 ### settings
 Linha única, global ao sistema: `id`, `alerts_chat_id` (nulo), `google_chat_webhook` (nulo), `atualizado_por`, `atualizado_em`
@@ -190,7 +216,7 @@ Linha única, global ao sistema: `id`, `alerts_chat_id` (nulo), `google_chat_web
 Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 
 ### imports
-`id`, `folder_id`, `arquivo_nome`, `total_linhas`, `importadas`, `duplicadas_ignoradas`, `criado_por`, `criado_em`
+`id`, `folder_id`, `arquivo_nome`, `total_linhas`, `importadas`, `importadas_como_historico`, `duplicadas_ignoradas`, `desfeito_em`, `criado_por`, `criado_em`
 
 ### audit_log
 `id`, `organization_id`, `user_id`, `acao`, `entidade`, `entidade_id`, `detalhes` (jsonb), `ip`, `criado_em`
@@ -216,6 +242,9 @@ Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 | Importar CSV/XLSX | sim | sim | nas pastas atribuídas |
 | Reordenar a fila | sim | sim | nas pastas atribuídas |
 | Publicar agora, pular, reenviar | sim | sim | nas pastas atribuídas |
+| Arquivar texto | sim | sim | nas pastas atribuídas |
+| Exportar textos | sim | sim | nas pastas atribuídas |
+| Ver ou baixar a imagem de um texto | sim | toda a organização | pastas atribuídas |
 | Ver painel e histórico | todas as organizações | toda a organização | pastas atribuídas |
 | Ver log de auditoria | sim | da sua organização | não |
 
@@ -224,6 +253,8 @@ Regras de isolamento:
 - Todo acesso a dados é filtrado por `organization_id` na camada de dados, não na interface. Nenhuma consulta parte de um identificador vindo da URL sem verificar a organização do usuário autenticado.
 - O superadmin opera com uma organização ativa selecionada, visível no topo da tela, e toda troca fica registrada na auditoria.
 - Não existe cadastro público. Usuários são criados por quem está acima deles na hierarquia, com senha provisória e troca obrigatória no primeiro acesso.
+- Recurso de outra organização responde **404, nunca 403**: um 403 confirmaria que aquele identificador existe.
+- A linha da imagem vale tanto para a miniatura na lista quanto para a rota que serve o binário — a rota não tem atalho próprio, passa pela mesma verificação das demais consultas.
 
 ---
 
@@ -293,15 +324,20 @@ A falha de um canal de alerta nunca interrompe a publicação nem gera novo aler
 - A imagem é guardada no Postgres como `bytea`, servida pelo `web` em rota autenticada e lida pelo `worker` diretamente do banco na hora de publicar.
 - Importação de CSV e XLSX é **somente texto**. Imagens entram apenas pela edição manual — importação de imagens em lote fica para evolutiva.
 - A importação mostra pré-visualização com mapeamento de colunas antes de confirmar. Duplicatas (mesmo texto na mesma pasta) são sinalizadas e ignoradas, com o total exibido no resultado.
+- **A importação pode trazer histórico.** Uma coluna de data de publicação, opcional, permite subir mensagens já publicadas em outro aplicativo de mensageria: a linha entra com status `publicado` e a data informada, e aparece no histórico marcada como importada. O dispatcher nunca a reenvia. Sem essa coluna, a linha entra como `pendente` no fim da fila.
+- Não há coluna de ordem para mapear: a ordem da fila é a ordem das linhas do arquivo.
 - Cada importação fica registrada, com possibilidade de desfazer enquanto nenhum texto daquele lote tiver sido publicado.
 - A lista de textos mostra miniatura da imagem, conteúdo, ordem, status e data-hora da publicação, com busca por conteúdo, filtro por status e reordenação manual por arrastar.
-- Textos publicados não podem ser reordenados nem excluídos — apenas arquivados, para preservar o histórico.
+- Textos publicados não voltam para a fila nem são reordenados. **Arquivar** é a ação normal para tirá-los da lista preservando o registro; **excluir** existe para o admin, em casos excepcionais, e mesmo assim o histórico sobrevive, porque a publicação guarda o conteúdo que foi ao ar.
+- **Exportação dos textos em PDF, XLSX, CSV, JSON e XML**, respeitando o filtro ativo da lista e o escopo do usuário — quem só enxerga duas pastas exporta apenas o que enxerga.
 
 ---
 
 ## 10. Interface
 
-- Clean, elegante e moderna, com tema claro e escuro.
+- Clean, elegante e moderna. **O tema escuro é o padrão**, com alternador para o claro na mesma linha do cabeçalho, sem faixa própria, para não gastar altura útil.
+- **A entrada é uma tela de quatro blocos**, cada um com ilustração, título e explicação: *Painel de controle*, *Textos* (com importação e histórico dentro), *Configuração* (pastas, usuários e auditoria; admin e superadmin) e *Sistema* (só superadmin). O menu lateral das telas internas segue a mesma divisão, e cada bloco aparece conforme o perfil.
+- Identidade visual própria: a marca é `msg`, um balão de fala com três pontos em quadrado arredondado, com o wordmark em minúsculas.
 - Interface traduzida em português, espanhol e inglês. O idioma padrão vem da organização e pode ser trocado por usuário.
 - Painel inicial, por pasta: últimos textos publicados com data-hora e miniatura, próximo texto da fila, próxima publicação programada, total de textos pendentes e alertas de erro ou fila curta.
 - Painel de alertas na própria interface, com os erros e as filas curtas das pastas visíveis ao usuário. O Telegram é o aviso imediato; a interface é o registro consultável.
@@ -330,7 +366,7 @@ A falha de um canal de alerta nunca interrompe a publicação nem gera novo aler
 | Fase | Conteúdo | Aprovação |
 |---|---|---|
 | 0 | Modelo de dados, matriz de permissões, mockup estático navegável, escolha do framework | obrigatória antes de qualquer código |
-| 1 | Serviços `web` e `worker` no Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado | obrigatória |
+| 1 | Serviços `web` e `worker` no Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado | **código concluído**; falta criar os serviços no painel |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, reordenação | obrigatória |
 | 3 | Agendamentos, dispatcher, integração Telegram, idempotência testada, alertas e configurações globais | obrigatória |
 | 4 | Painel, i18n, auditoria, polimento visual | entrega final |
@@ -338,6 +374,8 @@ A falha de um canal de alerta nunca interrompe a publicação nem gera novo aler
 ---
 
 ## 13. Prompt para o Claude Code
+
+Este é o prompt que abriu o projeto, mantido como registro. As fases 0 e 1 já foram entregues; uma sessão nova continua de onde o `CLAUDE.md` e o `README.md` do repositório indicam, e não precisa recomeçar por aqui.
 
 Cole na primeira sessão, com o repositório `cnasajon/msg` e a branch `main` selecionados:
 
@@ -375,6 +413,10 @@ PONTOS NÃO NEGOCIÁVEIS DA ESPECIFICAÇÃO
    pelo worker direto do banco. Sem serviço de armazenamento externo, sem volume.
 8. Ao esgotar a fila de uma pasta, o comportamento é configurável por pasta
    (parar e alertar, ou reiniciar a fila).
+8b. Quatro situações do texto: pendente, publicado, erro e arquivado. Arquivar é
+   a ação normal para tirar um texto da lista; excluir fica para o admin, em
+   casos excepcionais, e o histórico sobrevive porque a publicação guarda o
+   conteúdo que foi ao ar.
 9. Destino dos alertas com a precedência da seção 7.4: tabela settings, depois
    variável de ambiente, depois só log e painel. O worker precisa conseguir
    alertar mesmo com o banco inacessível. As duas configurações podem estar
@@ -429,10 +471,18 @@ Comece lendo docs/ESPECIFICACAO.md e me apresentando a fase 0.
 6. **Destino dos alertas:** configurável pela interface, com variável de ambiente como garantia.
 7. **Claude Code:** sessões na nuvem, em branch com PR. Mockup em `docs/mockup/` como HTML estático.
 8. **Nomenclatura:** repositório `cnasajon/msg`, projeto Railway `msg`, domínio `msg.oa12.org`, bot `@OAmsg_bot`.
+9. **Framework:** Next.js (App Router) com server actions.
+10. **Situações do texto:** quatro — `pendente`, `publicado`, `erro`, `arquivado`. Arquivar é o caminho normal; excluir fica para o admin, em casos excepcionais.
+11. **Exportação:** PDF, XLSX, CSV, JSON e XML, respeitando filtro e escopo.
+12. **Importação de histórico:** coluna opcional de data de publicação, com `origem = importacao` e `hora_prevista` nula na publicação.
+13. **Cadastro de pessoas:** telefone e usuário do Telegram, opcionais; e-mail obrigatório, porque é a credencial de entrada.
+14. **Dias da semana:** ISO-8601 no banco (1 = segunda … 7 = domingo), siglas na interface começando no domingo.
+15. **Fuso padrão das organizações:** `America/Sao_Paulo` como valor inicial, editável por organização e sobreposto por pasta.
+16. **Interface:** tema escuro por padrão; entrada em quatro blocos.
 
 ### Em aberto
 
-- **Framework web:** Next.js com server actions ou Fastify + React. Deixado para a fase 0, com justificativa do Claude Code.
+- **Entrar pelo Telegram:** hoje o login é por e-mail e senha. Autenticar pelo usuário do Telegram, ou aceitar qualquer um dos dois, fica como evolutiva a decidir.
 - **Levantamento dos `chat_id`** restantes: grupo de alertas e grupos das OAs em espanhol e inglês (ver anexo).
 
 ---

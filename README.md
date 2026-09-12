@@ -7,7 +7,7 @@ O nome da aplicação é **msg** — genérico de propósito, para servir a outr
 além da OA. O repositório é `cnasajon/msg`; o bot continua `@OAmsg_bot`, porque
 o username de um bot não se troca sem criar outro no BotFather.
 
-Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.4).
+Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.5).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
 > **Situação: fase 1 entregue.** Autenticação, organizações, usuários,

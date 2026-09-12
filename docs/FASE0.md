@@ -1,6 +1,6 @@
 # Fase 0 — modelo de dados, permissões, mockup e escolha do framework
 
-Referência: `docs/ESPECIFICACAO.md` v1.4. Cada item abaixo aguarda aprovação
+Referência: `docs/ESPECIFICACAO.md` v1.5. Cada item abaixo aguarda aprovação
 antes de qualquer código de aplicação.
 
 ---
