@@ -164,6 +164,10 @@ model Text {
   importId           String?     @map("import_id") @db.Uuid
   // hash do conteúdo textual apenas — a imagem não entra no cálculo
   hashConteudo       String      @map("hash_conteudo")
+  // Arquivamento: o `status` continua sendo pendente | publicado | erro. Esta
+  // coluna só é preenchida em texto já publicado ou com erro — texto pendente
+  // não se arquiva, se exclui. A migração acrescenta o CHECK:
+  //   arquivado_em IS NULL OR status IN ('publicado', 'erro')
   arquivadoEm        DateTime?   @map("arquivado_em") @db.Timestamptz(3)
   criadoPor          String?     @map("criado_por") @db.Uuid
   criadoEm           DateTime    @default(now()) @map("criado_em") @db.Timestamptz(3)
@@ -185,7 +189,9 @@ model Schedule {
   id        String  @id @default(uuid()) @db.Uuid
   folderId  String  @map("folder_id") @db.Uuid
   horaLocal String  @map("hora_local") // "HH:MM" no fuso da pasta
-  // ISO-8601: 1 = segunda ... 7 = domingo
+  // Armazenado em ISO-8601: 1 = segunda ... 7 = domingo.
+  // A interface exibe e marca por sigla, começando no domingo:
+  // Dom Seg Ter Qua Qui Sex Sáb.
   diasSemana Int[]  @map("dias_semana")
   ativo     Boolean @default(true)
 

@@ -176,35 +176,29 @@ abrir o arquivo, ou colar a URL do arquivo em `htmlpreview.github.io`.
 
 ---
 
-## Perguntas antes de seguir
+## Decisões aprovadas
 
-Cinco pontos onde a especificação admite mais de uma leitura. Segui a opção
-marcada como **proposta** para não travar a entrega; qualquer uma pode ser
-trocada sem custo nesta fase.
+Os cinco pontos que estavam em aberto foram respondidos e já estão aplicados ao
+schema e ao mockup.
 
-1. **Arquivamento de texto.** A seção 9 fala em arquivar textos publicados, mas
-   `status` só tem `pendente | publicado | erro`. *Proposta:* campo
-   `arquivado_em` separado, preservando o `status`. Alternativa: acrescentar
-   `arquivado` ao enum.
-2. **Duplicata depois de publicada.** O índice único `(folder_id,
-   hash_conteudo)` impede reimportar um texto já usado naquela pasta, mesmo
-   arquivado — o que também impede reaproveitar o mesmo texto em uma pasta
-   configurada como `reiniciar` via nova importação. *Proposta:* manter o índice
-   como está (é o que a especificação pede) e, na importação, listar as
-   duplicatas ignoradas com o motivo. Alternativa: permitir reimportar quando o
-   texto anterior estiver arquivado.
-3. **Vários agendamentos no mesmo minuto.** Duas pastas podem coincidir no mesmo
-   slot — isso está previsto, o dispatcher serializa. Mas *a mesma* pasta com
-   dois agendamentos no mesmo `hora_local` geraria um slot só. *Proposta:*
-   índice único `(folder_id, hora_local)` bloqueando o cadastro duplicado, com
-   mensagem clara. Confirma?
-4. **Convenção de dias da semana.** A seção 5 diz "conjunto de 1 a 7".
-   *Proposta:* ISO-8601, 1 = segunda, 7 = domingo. Confirma?
-5. **Fuso padrão das organizações.** Não consta na especificação.
-   *Proposta:* `America/Sao_Paulo` como valor inicial de
-   `timezone_padrao`, sempre editável por organização e sobreposto por pasta.
+1. **Arquivamento de texto — aprovado.** O `status` continua sendo
+   `pendente | publicado | erro`; o arquivamento é a coluna `texts.arquivado_em`.
+   Ela só é preenchida em texto **já publicado ou com erro** — texto pendente não
+   se arquiva, se exclui. A migração acrescenta o CHECK correspondente:
+   `arquivado_em IS NULL OR status IN ('publicado', 'erro')`.
+2. **Duplicata depois de publicada — aprovado.** O índice único
+   `(folder_id, hash_conteudo)` fica como a especificação pede. A importação
+   lista as duplicatas ignoradas com o motivo.
+3. **Agendamentos — aprovado.** Índice único `(folder_id, hora_local)` bloqueia
+   dois agendamentos no mesmo horário da mesma pasta, com mensagem clara.
+4. **Dias da semana — aprovado com ajuste de interface.** O armazenamento é
+   ISO-8601 (1 = segunda … 7 = domingo). A interface exibe e marca por sigla,
+   começando no domingo: **Dom Seg Ter Qua Qui Sex Sáb**. As siglas são
+   traduzidas junto com o resto da interface (pt/es/en).
+5. **Fuso padrão das organizações — aprovado.** `America/Sao_Paulo` como valor
+   inicial de `timezone_padrao`, editável por organização e sobreposto por pasta.
 
-Além disso, um alerta operacional: `folders.telegram_chat_id` é texto, não
+Registro de uma escolha adjacente: `folders.telegram_chat_id` é texto, não
 número — `-1001492357816` cabe em `bigint`, mas guardar como texto evita
 qualquer surpresa de precisão em JavaScript e aceita o formato `-100...` como
 digitado. A validação de formato fica na aplicação.

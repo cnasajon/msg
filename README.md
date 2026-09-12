@@ -6,9 +6,10 @@ em grupos de Telegram. Domínio: `msg.oa12.org`. Bot: `@OAmsg_bot`.
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.3).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
-> **Situação: fase 0 (aguardando aprovação).** Ainda não há código de aplicação.
-> Esta fase entrega modelo de dados, matriz de permissões, mockup e a escolha do
-> framework — ver [`docs/FASE0.md`](docs/FASE0.md).
+> **Situação: fase 0 aprovada.** Ainda não há código de aplicação. Esta fase
+> entrega modelo de dados, matriz de permissões, mockup e a escolha do framework
+> — ver [`docs/FASE0.md`](docs/FASE0.md). O próximo passo é o plano de
+> implementação das fases 1 a 4, também sujeito a aprovação.
 
 ## O que já existe
 
@@ -182,7 +183,7 @@ precedência do destino dos alertas.
 
 | Fase | Conteúdo | Situação |
 | :-- | :-- | :-- |
-| 0 | Modelo de dados, permissões, mockup, escolha do framework | **em aprovação** |
+| 0 | Modelo de dados, permissões, mockup, escolha do framework | **aprovada** |
 | 1 | Railway, autenticação, organizações, usuários, permissões, isolamento testado | — |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, reordenação | — |
 | 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | — |
