@@ -1,7 +1,12 @@
-# oa12-msg
+# msg
 
 Aplicação web multi-organização para publicação programada de textos e imagens
 em grupos de Telegram. Domínio: `msg.oa12.org`. Bot: `@OAmsg_bot`.
+
+O nome da aplicação é **msg** — genérico de propósito, para servir a outros usos
+além da OA. O repositório ainda se chama `oamsg` e o bot `@OAmsg_bot`; a
+renomeação do repositório no GitHub e a criação de um bot com outro nome, se
+desejada, são decisões independentes deste código.
 
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.3).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
@@ -19,6 +24,7 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | `docs/FASE0.md` | Entrega da fase 0 e perguntas em aberto |
 | `prisma/schema.prisma` | Modelo de dados com índices e restrições únicas |
 | `docs/mockup/` | Mockup navegável em HTML estático, sem build |
+| `docs/mockup/assets/logo.svg` | Logomarca (símbolo + wordmark) e `mark.svg`, só o símbolo |
 | `CLAUDE.md` | Regras de trabalho e pontos não negociáveis |
 
 ### Abrir o mockup
@@ -28,12 +34,13 @@ de um `git pull` da branch. Trabalhando pela nuvem, também dá para colar a URL
 do arquivo no GitHub em `htmlpreview.github.io` — o GitHub não renderiza HTML do
 repositório, mostra o código-fonte.
 
-O seletor **Ver como** (superadmin / admin / usuário) e o botão de tema, na
-faixa do topo, valem para todas as telas.
+O seletor **Ver como** (superadmin / admin / usuário) e o botão de tema ficam na
+mesma linha do cabeçalho e valem para todas as telas. O **tema escuro é o
+padrão**.
 
 ## Arquitetura
 
-Um projeto no Railway chamado `oa12-msg`, com três serviços e um repositório só:
+Um projeto no Railway chamado `msg`, com três serviços e um repositório só:
 
 | Serviço | Função | Start | Observação |
 | :-- | :-- | :-- | :-- |
@@ -116,7 +123,7 @@ Espelha a seção 3.3 da especificação. Os passos 1 a 4 podem ser feitos antes
 existir código; os demais exigem `package.json` com `start:web` e
 `start:worker`, senão o build falha.
 
-1. **Criar o projeto.** New Project → Empty Project, renomear para `oa12-msg`.
+1. **Criar o projeto.** New Project → Empty Project, renomear para `msg`.
 2. **Adicionar o Postgres.** + Create → Database → Add PostgreSQL, renomear o
    serviço para `postgres` — é esse nome que `${{postgres.DATABASE_URL}}` usa.
 3. **Gerar as chaves** (comandos acima) e guardar no gerenciador de senhas.

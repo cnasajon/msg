@@ -1,32 +1,19 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Histórico · oa12-msg (mockup)</title>
+<title>Histórico · msg (mockup)</title>
 <link rel="stylesheet" href="assets/mockup.css">
 <script src="assets/mockup.js" defer></script>
 </head>
 <body>
-  <div class="mockbar">
-    <strong>Mockup — fase 0</strong>
-    <span>sem back-end; dados fictícios</span>
-    <span class="spacer"></span>
-    <label for="role-select">Ver como</label>
-    <select id="role-select">
-      <option value="superadmin">Superadmin</option>
-      <option value="admin">Admin</option>
-      <option value="usuario">Usuário</option>
-    </select>
-    <button id="theme-toggle" type="button">☾ Tema escuro</button>
-    <a href="index.html" style="color:inherit">Índice</a>
-  </div>
   <div class="shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="mark">OA</div>
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
         <div>
-          <div class="name">oa12-msg</div>
+          <div class="name">msg</div>
           <div class="env">msg.oa12.org</div>
         </div>
       </div>
@@ -70,6 +57,16 @@
         <div class="orgpicker" data-roles="admin usuario">
           <span class="dot"></span>
           <span>OA Brasil</span>
+        </div>
+<div class="mockctl" title="controles do mockup — não fazem parte da aplicação">
+          <span class="mocktag">mockup</span>
+          <select id="role-select" aria-label="Ver como">
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuário</option>
+          </select>
+          <a class="iconbtn" href="index.html" title="Índice do mockup" aria-label="Índice do mockup">☰</a>
+          <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
         </div>
       </div>
       <div class="content">
@@ -119,7 +116,8 @@
               <tr>
                 <td>06/09 18:30 <span class="tz">BRT</span></td>
                 <td>Reflexões da semana</td>
-                <td class="textcell"><img class="thumb" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23805ad5%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23b794f4%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%9C%A6%3C%2Ftext%3E%3C%2Fsvg%3E" alt=""><div class="t"><p>O encontro começa no convite.</p></div></td>
+                <td class="textcell"><div class="thumb empty">✕</div><div class="t"><p>O encontro começa no convite.</p>
+                  <div class="meta">texto excluído depois da publicação — conteúdo preservado na publicação</div></div></td>
                 <td><span class="pill ok">enviada</span></td>
                 <td>06/09 18:30:02</td><td class="num">4790</td><td></td>
               </tr>

@@ -1,32 +1,19 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Textos · oa12-msg (mockup)</title>
+<title>Textos · msg (mockup)</title>
 <link rel="stylesheet" href="assets/mockup.css">
 <script src="assets/mockup.js" defer></script>
 </head>
 <body>
-  <div class="mockbar">
-    <strong>Mockup — fase 0</strong>
-    <span>sem back-end; dados fictícios</span>
-    <span class="spacer"></span>
-    <label for="role-select">Ver como</label>
-    <select id="role-select">
-      <option value="superadmin">Superadmin</option>
-      <option value="admin">Admin</option>
-      <option value="usuario">Usuário</option>
-    </select>
-    <button id="theme-toggle" type="button">☾ Tema escuro</button>
-    <a href="index.html" style="color:inherit">Índice</a>
-  </div>
   <div class="shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="mark">OA</div>
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
         <div>
-          <div class="name">oa12-msg</div>
+          <div class="name">msg</div>
           <div class="env">msg.oa12.org</div>
         </div>
       </div>
@@ -71,6 +58,16 @@
           <span class="dot"></span>
           <span>OA Brasil</span>
         </div>
+<div class="mockctl" title="controles do mockup — não fazem parte da aplicação">
+          <span class="mocktag">mockup</span>
+          <select id="role-select" aria-label="Ver como">
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuário</option>
+          </select>
+          <a class="iconbtn" href="index.html" title="Índice do mockup" aria-label="Índice do mockup">☰</a>
+          <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
+        </div>
       </div>
       <div class="content">
         <div class="banner warn">
@@ -81,7 +78,7 @@
         <div class="card">
           <div class="toolbar">
             <input type="text" placeholder="Buscar no conteúdo…">
-            <select><option>Todos os status</option><option>Pendente</option><option>Publicado</option><option>Erro</option><option>Arquivado</option></select>
+            <select><option>Todos os status</option><option>Pendente</option><option>Publicado</option><option>Erro</option></select>
             <select><option>Com e sem imagem</option><option>Só com imagem</option><option>Só sem imagem</option></select>
             <span class="spacer"></span>
             <span class="faint">arraste <span class="drag">⠿</span> para reordenar a fila</span>
@@ -130,7 +127,7 @@
                   <div class="meta">Publicado · <code>message_id 4821</code></div></div></td>
                 <td><span class="pill ok">publicado</span></td>
                 <td>12/09 07:00 <span class="tz">BRT</span></td>
-                <td><button class="btn sm">Arquivar</button></td>
+                <td><button class="btn sm danger">Excluir</button></td>
               </tr>
               <tr>
                 <td class="faint">—</td><td class="num faint">—</td>
@@ -144,7 +141,8 @@
             </tbody>
           </table>
         </div>
-        <p class="faint">Textos publicados não podem ser reordenados nem excluídos — apenas arquivados, para preservar o histórico.</p>
+        <p class="faint">Textos publicados não entram mais na fila e não são reordenados. Excluir apaga o texto e ele
+        some da lista — o histórico não se perde: a publicação guarda o conteúdo que foi ao ar.</p>
       </div>
     </div>
   </div>

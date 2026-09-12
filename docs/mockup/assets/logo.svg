@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 32" width="118" height="32" role="img" aria-label="msg">
+  <rect width="32" height="32" rx="8" fill="#1f6f6b"/>
+  <path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="#ffffff"/>
+  <rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="#ffffff"/>
+  <circle cx="11.6" cy="14.3" r="1.45" fill="#1f6f6b"/>
+  <circle cx="16" cy="14.3" r="1.45" fill="#1f6f6b"/>
+  <circle cx="20.4" cy="14.3" r="1.45" fill="#1f6f6b"/>
+  <!-- wordmark em currentColor: acompanha o tema quando o SVG é embutido inline -->
+  <text x="42" y="23.5" fill="currentColor" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="22" font-weight="700" letter-spacing="-0.8">msg</text>
+</svg>

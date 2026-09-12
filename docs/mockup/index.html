@@ -1,35 +1,32 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<html lang="pt-BR" data-theme="dark" data-role="superadmin">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mockup oa12-msg — fase 0</title>
+<title>Mockup msg — fase 0</title>
 <link rel="stylesheet" href="assets/mockup.css">
 <script src="assets/mockup.js" defer></script>
 </head>
 <body>
-  <div class="mockbar">
-    <strong>Mockup — fase 0</strong>
-    <span>sem back-end; dados fictícios</span>
-    <span class="spacer"></span>
-    <label for="role-select">Ver como</label>
-    <select id="role-select">
+  <div class="mockctl floating">
+    <span class="mocktag">mockup</span>
+    <select id="role-select" aria-label="Ver como">
       <option value="superadmin">Superadmin</option>
       <option value="admin">Admin</option>
       <option value="usuario">Usuário</option>
     </select>
-    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <button class="iconbtn" id="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar tema">☀</button>
   </div>
   <div class="content" style="margin:0 auto;max-width:900px;padding:32px 22px">
     <div class="brand" style="padding:0">
-      <div class="mark">OA</div>
-      <div><div class="name" style="font-size:18px">oa12-msg — mockup navegável</div>
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M11.2 19.6h5.3l-5.1 4.05a.55.55 0 0 1-.9-.43V19.6z" fill="var(--accent-text)"/><rect x="7.4" y="8.4" width="17.2" height="11.8" rx="3.6" fill="var(--accent-text)"/><circle cx="11.6" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="16" cy="14.3" r="1.45" fill="var(--accent)"/><circle cx="20.4" cy="14.3" r="1.45" fill="var(--accent)"/></svg>
+      <div><div class="name" style="font-size:20px">msg — mockup navegável</div>
       <div class="env">Fase 0 · especificação v1.3 · msg.oa12.org</div></div>
     </div>
 
     <div class="banner info">
       <div><div class="ttl">Como usar</div>
-      O seletor <b>Ver como</b> e o botão de tema, na faixa amarela do topo, valem para todas as
+      O seletor <b>Ver como</b> e o botão de tema, no canto superior direito, valem para todas as
       telas e acompanham a navegação. Troque o perfil e repare no que some do menu lateral e
       dos botões: é a matriz de permissões da seção 6 aplicada à interface. Nada aqui chama
       servidor — os dados são fictícios.</div>

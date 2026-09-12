@@ -1,4 +1,4 @@
-# CLAUDE.md — oa12-msg
+# CLAUDE.md — msg
 
 Guia de trabalho para qualquer sessão do Claude Code neste repositório.
 A fonte da verdade funcional é `docs/ESPECIFICACAO.md` (v1.3). Este arquivo
@@ -8,6 +8,13 @@ consolida as regras de trabalho e os pontos não negociáveis.
 
 Aplicação web multi-organização para publicar textos e imagens programados em
 grupos de Telegram, hospedada em `msg.oa12.org` sobre Railway.
+
+**Nome da aplicação: `msg`.** Genérico de propósito, para servir a outros usos
+além da OA. O projeto no Railway também se chama `msg`. O repositório
+(`cnasajon/oamsg`) e o bot (`@OAmsg_bot`) mantêm os nomes atuais.
+
+**Interface: tema escuro é o padrão**, com alternador para o claro na mesma
+linha do cabeçalho.
 
 ## Regras de trabalho
 

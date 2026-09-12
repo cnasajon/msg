@@ -68,26 +68,32 @@ body {
 
 a { color: var(--accent); }
 
-/* ---------- faixa de mockup ---------- */
-.mockbar {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 6px 16px;
-  background: var(--warn-soft);
-  border-bottom: 1px solid var(--border);
-  color: var(--warn);
-  font-size: 12px;
+/* ---------- controles do mockup (não fazem parte da aplicação) ---------- */
+.mockctl { display: flex; align-items: center; gap: 6px; }
+.mockctl.floating { position: fixed; top: 14px; right: 16px; z-index: 10; }
+/* dentro do cabeçalho, separado dos controles reais da aplicação */
+.topbar .mockctl { border-left: 1px solid var(--border); padding-left: 12px; margin-left: 4px; }
+.mockctl .mocktag {
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600;
+  color: var(--warn); background: var(--warn-soft); padding: 2px 7px; border-radius: 99px;
 }
-.mockbar strong { letter-spacing: .04em; text-transform: uppercase; font-size: 11px; }
-.mockbar .spacer { flex: 1; }
-.mockbar label { color: var(--text-muted); }
-.mockbar select, .mockbar button {
-  font: inherit; color: var(--text);
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: 6px; padding: 3px 8px; cursor: pointer;
+.mockctl select {
+  font: inherit; font-size: 12.5px; width: auto;
+  padding: 4px 8px; border-radius: 8px;
+  border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text);
+  cursor: pointer;
 }
+.iconbtn {
+  width: 30px; height: 30px; flex: none;
+  display: grid; place-items: center;
+  border: 1px solid var(--border-strong); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+  font-size: 14px; line-height: 1; cursor: pointer; text-decoration: none;
+}
+.iconbtn:hover { background: var(--surface-2); }
 
 /* ---------- layout ---------- */
-.shell { display: flex; min-height: calc(100vh - 33px); }
+.shell { display: flex; min-height: 100vh; }
 
 .sidebar {
   width: var(--sidebar); flex: none;
@@ -97,12 +103,8 @@ a { color: var(--accent); }
   display: flex; flex-direction: column; gap: 18px;
 }
 .brand { display: flex; align-items: center; gap: 9px; padding: 4px 8px 0; }
-.brand .mark {
-  width: 28px; height: 28px; border-radius: 8px; flex: none;
-  background: var(--accent); color: var(--accent-text);
-  display: grid; place-items: center; font-weight: 700; font-size: 13px;
-}
-.brand .name { font-weight: 650; letter-spacing: -.01em; }
+.brand .mark { width: 30px; height: 30px; flex: none; display: block; }
+.brand .name { font-weight: 700; letter-spacing: -.02em; font-size: 16px; }
 .brand .env { font-size: 11px; color: var(--text-faint); }
 
 .navgroup { display: flex; flex-direction: column; gap: 2px; }

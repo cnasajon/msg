@@ -11,7 +11,7 @@
     try { localStorage.setItem(key, value); } catch (e) { /* file:// sem storage */ }
   }
 
-  var theme = read(THEME_KEY, 'light');
+  var theme = read(THEME_KEY, 'dark');  // tema escuro é o padrão
   var role = read(ROLE_KEY, 'superadmin');
   document.documentElement.setAttribute('data-theme', theme);
   document.documentElement.setAttribute('data-role', role);
@@ -35,7 +35,7 @@
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     var b = document.getElementById('theme-toggle');
-    if (b) b.textContent = t === 'dark' ? '☀ Tema claro' : '☾ Tema escuro';
+    if (b) { b.textContent = t === 'dark' ? '☀' : '☾'; b.title = t === 'dark' ? 'Tema claro' : 'Tema escuro'; }
   }
 
   document.addEventListener('DOMContentLoaded', function () {

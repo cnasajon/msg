@@ -158,17 +158,14 @@ model Text {
   imagemMime         String?     @map("imagem_mime")
   imagemBytes        Int?        @map("imagem_bytes")
   imagemNomeOriginal String?     @map("imagem_nome_original")
+  // Três estados, só. Excluir um texto apaga a linha e ele some da lista; o
+  // histórico não se perde porque `publications` guarda o conteúdo publicado.
   status             StatusTexto @default(pendente)
   publicadoEm        DateTime?   @map("publicado_em") @db.Timestamptz(3)
   erroMensagem       String?     @map("erro_mensagem")
   importId           String?     @map("import_id") @db.Uuid
   // hash do conteúdo textual apenas — a imagem não entra no cálculo
   hashConteudo       String      @map("hash_conteudo")
-  // Arquivamento: o `status` continua sendo pendente | publicado | erro. Esta
-  // coluna só é preenchida em texto já publicado ou com erro — texto pendente
-  // não se arquiva, se exclui. A migração acrescenta o CHECK:
-  //   arquivado_em IS NULL OR status IN ('publicado', 'erro')
-  arquivadoEm        DateTime?   @map("arquivado_em") @db.Timestamptz(3)
   criadoPor          String?     @map("criado_por") @db.Uuid
   criadoEm           DateTime    @default(now()) @map("criado_em") @db.Timestamptz(3)
 
@@ -209,6 +206,10 @@ model Publication {
   dataPrevista      DateTime         @map("data_prevista") @db.Date
   horaPrevista      DateTime         @map("hora_prevista") @db.Time(0)
   status            StatusPublicacao @default(reivindicada)
+  // Cópia do texto no momento do envio. Sem ela, excluir um texto deixaria o
+  // histórico com uma linha vazia — `text_id` vira nulo quando o texto some.
+  conteudoPublicado String?          @map("conteudo_publicado")
+  tinhaImagem       Boolean          @default(false) @map("tinha_imagem")
   tentativas        Int              @default(0)
   telegramMessageId String?          @map("telegram_message_id")
   erroMensagem      String?          @map("erro_mensagem")

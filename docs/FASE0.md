@@ -46,9 +46,10 @@ derivados de requisitos do próprio documento:
    hash do token.
 2. **`users.idioma`** — a seção 10 diz que o idioma "pode ser trocado por
    usuário". Nulo = herda o idioma da organização.
-3. **`texts.arquivado_em`** — a seção 9 diz que texto publicado não é excluído,
-   "apenas arquivado". Preferi um carimbo de data a um quarto valor de `status`,
-   para não perder a informação de que o texto foi publicado. **Ver pergunta 1.**
+3. **`publications.conteudo_publicado` e `publications.tinha_imagem`** — cópia do
+   texto no momento do envio. Com ela, excluir um texto não deixa buraco no
+   histórico: `text_id` vira nulo, mas a linha continua mostrando o que foi
+   publicado. É o que sustenta a decisão 1 abaixo.
 4. **`publications.reivindicada_em`** — sem ele não dá para medir há quanto
    tempo um slot está preso em `reivindicada` (processo morto no meio do envio).
 5. **`imports.desfeito_em`** — a seção 9 prevê desfazer a importação enquanto
@@ -125,11 +126,12 @@ Cenário base: organizações A e B, cada uma com admin, usuário, pasta e texto
 ## (c) Mockup
 
 Arquivos estáticos em [`docs/mockup/`](mockup/), sem build e sem CDN — basta
-abrir `docs/mockup/index.html` no navegador. Cada tela tem, no topo:
+abrir `docs/mockup/index.html` no navegador. O tema escuro é o padrão. Na mesma
+linha do cabeçalho, sem faixa própria, ficam:
 
 - **seletor de perfil** (superadmin / admin / usuário), que muda a navegação e
-  os controles visíveis;
-- **alternador de tema** claro/escuro;
+  os controles visíveis — é artifício do mockup, não existe na aplicação;
+- **alternador de tema**, em ícone;
 - **seletor de organização**, visível apenas para o superadmin.
 
 Perfil e tema ficam no `localStorage` e acompanham a navegação entre as telas.
@@ -181,11 +183,16 @@ abrir o arquivo, ou colar a URL do arquivo em `htmlpreview.github.io`.
 Os cinco pontos que estavam em aberto foram respondidos e já estão aplicados ao
 schema e ao mockup.
 
-1. **Arquivamento de texto — aprovado.** O `status` continua sendo
-   `pendente | publicado | erro`; o arquivamento é a coluna `texts.arquivado_em`.
-   Ela só é preenchida em texto **já publicado ou com erro** — texto pendente não
-   se arquiva, se exclui. A migração acrescenta o CHECK correspondente:
-   `arquivado_em IS NULL OR status IN ('publicado', 'erro')`.
+1. **Sem arquivamento: três estados e exclusão de verdade.** O `status` do texto
+   é `pendente | publicado | erro`, e nada mais. Excluir apaga a linha e o texto
+   some da lista — não existe estado intermediário nem coluna de arquivamento.
+   Para que o histórico não fique com linhas vazias, `publications` passa a
+   guardar `conteudo_publicado` e `tinha_imagem`: o que foi ao ar fica registrado
+   na publicação, não no texto. A imagem em si não é copiada — some junto com o
+   texto, e o histórico indica que havia uma.
+   *Isto altera a seção 9 da especificação*, que diz que texto publicado "não
+   pode ser excluído, apenas arquivado". A troca é deliberada e vale atualizar a
+   especificação para a v1.4.
 2. **Duplicata depois de publicada — aprovado.** O índice único
    `(folder_id, hash_conteudo)` fica como a especificação pede. A importação
    lista as duplicatas ignoradas com o motivo.
@@ -195,6 +202,17 @@ schema e ao mockup.
    ISO-8601 (1 = segunda … 7 = domingo). A interface exibe e marca por sigla,
    começando no domingo: **Dom Seg Ter Qua Qui Sex Sáb**. As siglas são
    traduzidas junto com o resto da interface (pt/es/en).
+
+6. **Nome e identidade — `msg`.** A aplicação passa a se chamar `msg`, nome
+   genérico de propósito. Vale para a interface, a documentação e o projeto no
+   Railway. Ficam como estão, por serem externos ao código: o repositório
+   `cnasajon/oamsg` (renomeável no GitHub a qualquer momento, com redirecionamento
+   automático) e o bot `@OAmsg_bot` (trocar o nome exige outro bot no BotFather e
+   novo token). A logomarca está em `docs/mockup/assets/logo.svg`, com o símbolo
+   isolado em `mark.svg`.
+
+7. **Tema escuro é o padrão**, com alternador para o claro na mesma linha do
+   cabeçalho — sem faixa própria, para não gastar altura útil.
 5. **Fuso padrão das organizações — aprovado.** `America/Sao_Paulo` como valor
    inicial de `timezone_padrao`, editável por organização e sobreposto por pasta.
 
