@@ -1,0 +1,274 @@
+// oa12-msg — modelo de dados (fase 0)
+// Referência: docs/ESPECIFICACAO.md seção 5.
+// Convenções:
+//  - nomes de tabelas e colunas em snake_case no banco (@@map / @map);
+//  - todo dado de organização é alcançado por folder/organization_id, nunca por
+//    identificador vindo direto da URL (isolamento na camada de dados);
+//  - datas em timestamptz; TZ=UTC nos serviços, conversão para o fuso da pasta
+//    acontece na aplicação.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Idioma {
+  pt
+  es
+  en
+}
+
+enum Perfil {
+  superadmin
+  admin
+  usuario
+}
+
+enum AoEsgotar {
+  parar_notificar
+  reiniciar
+}
+
+enum StatusTexto {
+  pendente
+  publicado
+  erro
+}
+
+enum StatusPublicacao {
+  reivindicada
+  enviada
+  erro
+  perdida
+}
+
+model Organization {
+  id            String   @id @default(uuid()) @db.Uuid
+  nome          String
+  idiomaPadrao  Idioma   @default(pt) @map("idioma_padrao")
+  timezonePadrao String  @default("America/Sao_Paulo") @map("timezone_padrao")
+  ativa         Boolean  @default(true)
+  criadaEm      DateTime @default(now()) @map("criada_em") @db.Timestamptz(3)
+
+  users     User[]
+  folders   Folder[]
+  auditLogs AuditLog[]
+
+  @@index([ativa])
+  @@map("organizations")
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  // nulo apenas para superadmin — superadmin não pertence a organização
+  organizationId  String?   @map("organization_id") @db.Uuid
+  nome            String
+  email           String    @unique
+  senhaHash       String    @map("senha_hash")
+  perfil          Perfil
+  idioma          Idioma?   // sobreposição por usuário; nulo = idioma da organização
+  ativo           Boolean   @default(true)
+  senhaProvisoria Boolean   @default(true) @map("senha_provisoria")
+  ultimoLoginEm   DateTime? @map("ultimo_login_em") @db.Timestamptz(3)
+  criadoEm        DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  folders      UserFolder[]
+  sessions     Session[]
+  textos       Text[]        @relation("TextoCriadoPor")
+  imports      Import[]
+  auditLogs    AuditLog[]
+  settings     Settings[]    @relation("SettingsAtualizadoPor")
+
+  @@index([organizationId, perfil])
+  @@map("users")
+}
+
+// Sessão persistida para permitir revogação imediata (desativar usuário,
+// trocar senha, sair de todos os dispositivos). O cookie guarda apenas o hash
+// do token de sessão.
+model Session {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @map("user_id") @db.Uuid
+  tokenHash            String   @unique @map("token_hash")
+  // organização ativa do superadmin durante esta sessão
+  organizationAtivaId  String?  @map("organization_ativa_id") @db.Uuid
+  ip                   String?
+  userAgent            String?  @map("user_agent")
+  expiraEm             DateTime @map("expira_em") @db.Timestamptz(3)
+  criadaEm             DateTime @default(now()) @map("criada_em") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiraEm])
+  @@map("sessions")
+}
+
+// Relação muitos-para-muitos usada apenas pelo perfil `usuario`.
+model UserFolder {
+  userId   String @map("user_id") @db.Uuid
+  folderId String @map("folder_id") @db.Uuid
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@id([userId, folderId])
+  @@index([folderId])
+  @@map("user_folders")
+}
+
+model Folder {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  nome           String
+  descricao      String?
+  timezone       String
+  telegramChatId String?   @map("telegram_chat_id")
+  // Sobreposição opcional do bot: NULO POR PADRÃO. Quando nulo, usa o bot
+  // global de TELEGRAM_BOT_TOKEN. Cifrado com AES-256-GCM, editável só pelo
+  // superadmin, nunca reexibido por inteiro.
+  telegramBotTokenCifrado String? @map("telegram_bot_token_cifrado")
+  aoEsgotar      AoEsgotar @default(parar_notificar) @map("ao_esgotar")
+  ativa          Boolean   @default(true)
+  criadaEm       DateTime  @default(now()) @map("criada_em") @db.Timestamptz(3)
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  usuarios     UserFolder[]
+  textos       Text[]
+  schedules    Schedule[]
+  publications Publication[]
+  imports      Import[]
+
+  @@unique([organizationId, nome])
+  @@index([organizationId, ativa])
+  @@map("folders")
+}
+
+model Text {
+  id                 String      @id @default(uuid()) @db.Uuid
+  folderId           String      @map("folder_id") @db.Uuid
+  conteudo           String
+  ordem              Int
+  imagem             Bytes?      // bytea — imagem opcional, uma por texto
+  imagemMime         String?     @map("imagem_mime")
+  imagemBytes        Int?        @map("imagem_bytes")
+  imagemNomeOriginal String?     @map("imagem_nome_original")
+  status             StatusTexto @default(pendente)
+  publicadoEm        DateTime?   @map("publicado_em") @db.Timestamptz(3)
+  erroMensagem       String?     @map("erro_mensagem")
+  importId           String?     @map("import_id") @db.Uuid
+  // hash do conteúdo textual apenas — a imagem não entra no cálculo
+  hashConteudo       String      @map("hash_conteudo")
+  arquivadoEm        DateTime?   @map("arquivado_em") @db.Timestamptz(3)
+  criadoPor          String?     @map("criado_por") @db.Uuid
+  criadoEm           DateTime    @default(now()) @map("criado_em") @db.Timestamptz(3)
+
+  folder       Folder        @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  importacao   Import?       @relation(fields: [importId], references: [id], onDelete: SetNull)
+  autor        User?         @relation("TextoCriadoPor", fields: [criadoPor], references: [id], onDelete: SetNull)
+  publications Publication[]
+
+  // detecção de duplicata na importação (mesmo texto na mesma pasta)
+  @@unique([folderId, hashConteudo])
+  // seleção do próximo texto da fila: menor `ordem` entre os pendentes
+  @@index([folderId, status, ordem])
+  @@index([importId])
+  @@map("texts")
+}
+
+model Schedule {
+  id        String  @id @default(uuid()) @db.Uuid
+  folderId  String  @map("folder_id") @db.Uuid
+  horaLocal String  @map("hora_local") // "HH:MM" no fuso da pasta
+  // ISO-8601: 1 = segunda ... 7 = domingo
+  diasSemana Int[]  @map("dias_semana")
+  ativo     Boolean @default(true)
+
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@unique([folderId, horaLocal])
+  @@index([folderId, ativo])
+  @@map("schedules")
+}
+
+model Publication {
+  id                String           @id @default(uuid()) @db.Uuid
+  folderId          String           @map("folder_id") @db.Uuid
+  textId            String?          @map("text_id") @db.Uuid // nulo quando a fila está vazia
+  dataPrevista      DateTime         @map("data_prevista") @db.Date
+  horaPrevista      DateTime         @map("hora_prevista") @db.Time(0)
+  status            StatusPublicacao @default(reivindicada)
+  tentativas        Int              @default(0)
+  telegramMessageId String?          @map("telegram_message_id")
+  erroMensagem      String?          @map("erro_mensagem")
+  reivindicadaEm    DateTime         @default(now()) @map("reivindicada_em") @db.Timestamptz(3)
+  enviadaEm         DateTime?        @map("enviada_em") @db.Timestamptz(3)
+
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  texto  Text?  @relation(fields: [textId], references: [id], onDelete: SetNull)
+
+  // ESTA é a restrição que garante a idempotência. A linha é inserida antes da
+  // chamada ao Telegram; violação da restrição = slot já reivindicado.
+  @@unique([folderId, dataPrevista, horaPrevista])
+  @@index([folderId, dataPrevista])
+  @@index([status])
+  @@map("publications")
+}
+
+// Linha única, global ao sistema. Editável apenas pelo superadmin.
+// Precedência do destino dos alertas (seção 7.4):
+//   settings.alerts_chat_id -> env ALERTS_CHAT_ID -> apenas log e painel.
+model Settings {
+  id                String   @id @default("singleton")
+  alertsChatId      String?  @map("alerts_chat_id")
+  googleChatWebhook String?  @map("google_chat_webhook")
+  atualizadoPor     String?  @map("atualizado_por") @db.Uuid
+  atualizadoEm      DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  autor User? @relation("SettingsAtualizadoPor", fields: [atualizadoPor], references: [id], onDelete: SetNull)
+
+  @@map("settings")
+}
+
+model Import {
+  id                  String   @id @default(uuid()) @db.Uuid
+  folderId            String   @map("folder_id") @db.Uuid
+  arquivoNome         String   @map("arquivo_nome")
+  totalLinhas         Int      @map("total_linhas")
+  importadas          Int
+  duplicadasIgnoradas Int      @map("duplicadas_ignoradas")
+  desfeitoEm          DateTime? @map("desfeito_em") @db.Timestamptz(3)
+  criadoPor           String?  @map("criado_por") @db.Uuid
+  criadoEm            DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  autor  User?  @relation(fields: [criadoPor], references: [id], onDelete: SetNull)
+  textos Text[]
+
+  @@index([folderId, criadoEm])
+  @@map("imports")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  userId         String?  @map("user_id") @db.Uuid
+  acao           String
+  entidade       String
+  entidadeId     String?  @map("entidade_id")
+  detalhes       Json?    @db.JsonB
+  ip             String?
+  criadoEm       DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, criadoEm])
+  @@index([entidade, entidadeId])
+  @@map("audit_log")
+}

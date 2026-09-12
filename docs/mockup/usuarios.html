@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Usuários · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" class="active" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Configuração</div>
+          <h1>Usuários</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner info">
+          <div>Não existe cadastro público. Cada conta é criada por quem está acima na hierarquia, com
+          <b>senha provisória</b> e troca obrigatória no primeiro acesso. O e-mail serve apenas como
+          identificador de login — o sistema não envia e-mail algum.</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" placeholder="Buscar por nome ou e-mail…">
+            <select><option>Todos os perfis</option><option data-roles="superadmin">Superadmin</option><option>Admin</option><option>Usuário</option></select>
+            <span class="spacer"></span>
+            <button class="btn primary">Novo usuário</button>
+          </div>
+          <table>
+            <thead><tr><th>Nome</th><th>E-mail</th><th data-roles="superadmin">Organização</th><th>Perfil</th><th>Pastas atribuídas</th><th>Último acesso</th><th></th></tr></thead>
+            <tbody>
+              <tr data-roles="superadmin">
+                <td><b>Claudio Nasajon</b></td><td class="mono">claudio@…</td><td class="faint">— (global)</td>
+                <td><span class="pill accent">superadmin</span></td><td class="faint">todas</td><td>hoje 08:12</td>
+                <td><button class="btn sm">Editar</button></td>
+              </tr>
+              <tr>
+                <td><b>Marta Ribeiro</b></td><td class="mono">marta@oabrasil.org</td><td data-roles="superadmin">OA Brasil</td>
+                <td><span class="pill info">admin</span></td><td class="faint">todas da organização</td><td>hoje 07:40</td>
+                <td><button class="btn sm" data-roles="superadmin">Editar</button><span class="faint" data-roles="admin usuario">—</span></td>
+              </tr>
+              <tr>
+                <td><b>Ana Duarte</b></td><td class="mono">ana@oabrasil.org</td><td data-roles="superadmin">OA Brasil</td>
+                <td><span class="pill">usuário</span></td><td>Uma Visão Para Você, Reflexões da semana</td><td>ontem 19:02</td>
+                <td><button class="btn sm">Editar</button></td>
+              </tr>
+              <tr>
+                <td><b>João Prado</b> <span class="pill warn">senha provisória</span></td><td class="mono">joao@oabrasil.org</td><td data-roles="superadmin">OA Brasil</td>
+                <td><span class="pill">usuário</span></td><td class="faint">nenhuma</td><td class="faint">nunca entrou</td>
+                <td><button class="btn sm">Editar</button></td>
+              </tr>
+              <tr data-roles="superadmin">
+                <td><b>Lucía Ferrer</b></td><td class="mono">lucia@oaespana.org</td><td>OA España</td>
+                <td><span class="pill info">admin</span></td><td class="faint">todas da organização</td><td>09/09 10:31</td>
+                <td><button class="btn sm">Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <header><h2>Editar usuário — Ana Duarte</h2></header>
+          <div class="body">
+            <div class="row">
+              <label class="field" style="margin:0"><span class="lbl">Nome</span><input type="text" value="Ana Duarte"></label>
+              <label class="field" style="margin:0"><span class="lbl">E-mail (login)</span><input type="email" value="ana@oabrasil.org"></label>
+              <label class="field" style="margin:0"><span class="lbl">Perfil</span>
+                <select><option>Usuário</option><option>Admin</option><option data-roles="superadmin">Superadmin</option></select>
+                <span class="hint" data-roles="admin">Admins não criam outros admins — isso é do superadmin.</span>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Idioma da interface</span>
+                <select><option>Padrão da organização (português)</option><option>Português</option><option>Español</option><option>English</option></select>
+              </label>
+            </div>
+
+            <h3 style="font-size:13px;margin:18px 0 8px">Pastas atribuídas <span class="faint" style="font-weight:400">— só valem para o perfil usuário</span></h3>
+            <div class="check"><input type="checkbox" id="p1" checked><label for="p1">Uma Visão Para Você</label></div>
+            <div class="check"><input type="checkbox" id="p2"><label for="p2">Mesa de ajuda UVPV</label></div>
+            <div class="check"><input type="checkbox" id="p3" checked><label for="p3">Reflexões da semana</label></div>
+            <p class="faint" style="margin:4px 0 0">Só aparecem pastas da mesma organização do usuário. Atribuir pasta de outra organização é rejeitado na camada de dados.</p>
+
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+              <button class="btn primary">Salvar</button>
+              <button class="btn">Redefinir senha (gera provisória)</button>
+              <span class="spacer" style="flex:1"></span>
+              <button class="btn danger">Desativar usuário</button>
+            </div>
+            <p class="faint" style="margin:10px 0 0">Redefinir a senha encerra todas as sessões abertas do usuário.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configurações globais · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" class="active" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Sistema · só superadmin</div>
+          <h1>Configurações globais</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner info">
+          <div><div class="ttl">Precedência do destino dos alertas (seção 7.4)</div>
+          1. <code>settings.alerts_chat_id</code>, preenchido aqui · 2. senão a variável de ambiente
+          <code>ALERTS_CHAT_ID</code> · 3. senão apenas o log da aplicação e o painel de alertas.<br>
+          A variável de ambiente é o destino garantido: continua funcionando quando o próprio banco está
+          inacessível — justamente quando o alerta é mais necessário. O campo desta tela existe para trocar o
+          grupo de alertas sem redeploy. <b>Os dois podem ficar vazios</b> sem quebrar o deploy.</div>
+        </div>
+
+        <div class="grid c2">
+          <div class="card">
+            <header><h2>Telegram — grupo de alertas</h2></header>
+            <div class="body">
+              <label class="field"><span class="lbl">chat_id do grupo de alertas</span>
+                <input type="text" placeholder="(vazio — usando ALERTS_CHAT_ID, se houver)">
+                <span class="hint">Grupo só com os superadmins. O bot <b>@OAmsg_bot</b> precisa ser membro.
+                Promova a supergroup antes de anotar o número.</span>
+              </label>
+              <dl class="kv" style="grid-template-columns:230px 1fr;margin-bottom:14px">
+                <dt>Valor em <code>settings</code></dt><dd class="faint">vazio</dd>
+                <dt>Variável <code>ALERTS_CHAT_ID</code></dt><dd class="faint">vazia</dd>
+                <dt><b>Destino em vigor</b></dt><dd><span class="pill warn">somente log e painel</span></dd>
+              </dl>
+              <button class="btn">Enviar alerta de teste</button>
+              <div class="banner warn" style="margin-top:14px">
+                <div>Nenhum destino configurado: o teste falharia com “sem destino”. Assim que o
+                <code>chat_id</code> for cadastrado, os alertas passam a chegar ao Telegram sem redeploy.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <header><h2>Google Chat — webhook (opcional)</h2></header>
+            <div class="body">
+              <label class="field"><span class="lbl">URL do webhook</span>
+                <input type="text" placeholder="(vazio — usando GOOGLE_CHAT_WEBHOOK, se houver)">
+                <span class="hint">Canal adicional, nunca substituto do Telegram. Se vazio nos dois lugares,
+                o alerta segue só pelo Telegram e pelo painel.</span>
+              </label>
+              <dl class="kv" style="grid-template-columns:230px 1fr;margin-bottom:14px">
+                <dt>Valor em <code>settings</code></dt><dd class="faint">vazio</dd>
+                <dt>Variável <code>GOOGLE_CHAT_WEBHOOK</code></dt><dd class="faint">vazia</dd>
+                <dt><b>Destino em vigor</b></dt><dd><span class="pill">desativado</span></dd>
+              </dl>
+              <button class="btn">Enviar alerta de teste</button>
+              <p class="faint" style="margin:14px 0 0">A falha de um canal de alerta nunca interrompe a publicação
+              nem gera novo alerta — apenas registro no log.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Bot do Telegram</h2><span class="spacer"></span><span class="sub">somente leitura</span></header>
+          <div class="body">
+            <dl class="kv">
+              <dt>Bot em uso</dt><dd><b>@OAmsg_bot</b> — único para todas as organizações</dd>
+              <dt>Token</dt><dd>variável compartilhada <code>TELEGRAM_BOT_TOKEN</code> · <span class="pill ok">autenticando</span>
+                <div class="faint">O valor nunca é exibido, nem aqui nem em log ou mensagem de erro. Em caso de
+                suspeita de vazamento, <code>/revoke</code> no @BotFather e atualização da variável no Railway.</div></dd>
+              <dt>Modo de privacidade</dt><dd>Enabled — o bot não lê as conversas dos grupos</dd>
+              <dt>Sobreposições por pasta</dt><dd>nenhuma pasta com token próprio <span class="faint">(o campo é nulo por padrão)</span></dd>
+              <dt>Limite de taxa</dt><dd>Com bot único, todas as publicações compartilham a mesma cota — o dispatcher serializa os envios quando várias pastas coincidem no mesmo slot.</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Dispatcher</h2><span class="spacer"></span><span class="sub">somente leitura · serviço <code>worker</code></span></header>
+          <div class="body">
+            <dl class="kv">
+              <dt>Intervalo do ciclo</dt><dd>5 minutos <span class="faint">(<code>DISPATCH_INTERVAL_MINUTES</code>)</span></dd>
+              <dt>Tolerância</dt><dd>30 minutos <span class="faint">(<code>DISPATCH_GRACE_MINUTES</code>) — slot mais antigo vira “perdido”, nunca publicado com atraso</span></dd>
+              <dt>Réplicas</dt><dd>1 <span class="pill ok">fixa</span> <span class="faint">separada do serviço <code>web</code></span></dd>
+              <dt>Último ciclo</dt><dd>hoje 08:15:00 UTC <span class="faint">· 4 pastas avaliadas · 1 slot reivindicado</span></dd>
+              <dt>Fuso dos serviços</dt><dd><code>TZ=UTC</code> — a conversão para o fuso da pasta acontece na aplicação</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

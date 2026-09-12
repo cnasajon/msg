@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuração da pasta · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" class="active" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Pastas</div>
+          <h1>Uma Visão Para Você</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="grid c2">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <header><h2>Identificação</h2></header>
+              <div class="body">
+                <label class="field"><span class="lbl">Nome</span><input type="text" value="Uma Visão Para Você"></label>
+                <label class="field"><span class="lbl">Descrição</span><input type="text" value="Textos diários da manhã"></label>
+                <div class="row">
+                  <label class="field" style="margin:0"><span class="lbl">Fuso horário da pasta</span>
+                    <select><option>America/Sao_Paulo</option><option>Europe/Madrid</option><option>America/New_York</option><option>UTC</option></select>
+                    <span class="hint">Os serviços rodam em <code>TZ=UTC</code>. Agendamento e exibição usam sempre este fuso.</span>
+                  </label>
+                  <label class="field" style="margin:0"><span class="lbl">Situação</span>
+                    <select><option>Ativa</option><option>Inativa</option></select>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <header><h2>Destino no Telegram</h2></header>
+              <div class="body">
+                <label class="field"><span class="lbl">chat_id do grupo</span>
+                  <input type="text" value="-1001492357816">
+                  <span class="hint">Sempre o número, nunca o link ou o @username — o username pode ser trocado por
+                  um administrador. Supergrupos começam com <code>-100</code>. Promova o grupo a supergroup
+                  <b>antes</b> de anotar o número: o <code>chat_id</code> muda na promoção.</span>
+                </label>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                  <button class="btn">Testar conexão</button>
+                  <span class="pill ok">último teste OK · 12/09 06:58</span>
+                </div>
+                <div class="banner err" style="margin-top:14px">
+                  <div><div class="ttl">Exemplo de erro exibido pelo teste</div>
+                  <code>bot was kicked from the group chat</code> — o bot precisa ser membro do grupo (e administrador, se for canal).</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" data-roles="superadmin">
+              <header><h2>Token de sobreposição</h2><span class="spacer"></span><span class="pill accent">só superadmin</span></header>
+              <div class="body">
+                <div class="banner info" style="margin-bottom:14px">
+                  <div>Vazio por padrão. Todas as organizações usam o bot único <b>@OAmsg_bot</b>, com o token na
+                  variável compartilhada <code>TELEGRAM_BOT_TOKEN</code>. Preencha apenas para isolar uma
+                  organização em outro bot.</div>
+                </div>
+                <label class="field"><span class="lbl">Token do bot desta pasta</span>
+                  <input type="text" placeholder="(vazio — usando o bot global)">
+                  <span class="hint">Cifrado com AES-256-GCM e nunca reexibido por inteiro — apenas os últimos
+                  caracteres. Trocar a <code>ENCRYPTION_KEY</code> invalida os tokens já cifrados.</span>
+                </label>
+                <p class="faint" style="margin:0">Se estivesse preenchido: <code>••••••••••••••••4821</code>
+                <button class="btn sm" style="margin-left:8px">Remover sobreposição</button></p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <header><h2>Agendamentos</h2><span class="spacer"></span>
+                <span class="sub">horários no fuso da pasta</span></header>
+              <div class="body tight">
+                <table>
+                  <thead><tr><th>Hora</th><th>Dias</th><th>Situação</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td class="num"><b>07:00</b> <span class="tz">BRT</span></td>
+                      <td><div class="days"><span class="on">seg</span><span class="on">ter</span><span class="on">qua</span><span class="on">qui</span><span class="on">sex</span><span>sáb</span><span>dom</span></div></td>
+                      <td><span class="pill ok">ativo</span></td>
+                      <td><button class="btn sm danger">Excluir</button></td></tr>
+                    <tr><td class="num"><b>18:30</b> <span class="tz">BRT</span></td>
+                      <td><div class="days"><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span class="on">sex</span><span>sáb</span><span>dom</span></div></td>
+                      <td><span class="pill">inativo</span></td>
+                      <td><button class="btn sm danger">Excluir</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="body" style="border-top:1px solid var(--border)">
+                <div class="row">
+                  <label class="field fixed" style="margin:0;width:110px"><span class="lbl">Nova hora</span><input type="time" value="09:00"></label>
+                  <div><span class="lbl" style="display:block;font-size:12.5px;font-weight:600;margin-bottom:5px">Dias da semana</span>
+                    <div class="days"><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span><span class="on">sáb</span><span class="on">dom</span></div></div>
+                  <div class="fixed"><button class="btn primary">Adicionar</button></div>
+                </div>
+                <p class="faint" style="margin:12px 0 0">Uma pasta pode ter vários agendamentos. Cada combinação de
+                data e hora vira um slot único — o dispatcher acorda a cada 5 minutos e tem 30 minutos de tolerância.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <header><h2>Ao esgotar a fila</h2></header>
+              <div class="body">
+                <div class="check"><input type="radio" name="esgotar" id="e1" checked>
+                  <label for="e1"><b>Parar e notificar</b> — registra a publicação sem texto, alerta os administradores e não publica nada.</label></div>
+                <div class="check"><input type="radio" name="esgotar" id="e2">
+                  <label for="e2"><b>Reiniciar a fila</b> — devolve todos os textos da pasta a pendente, preservando a ordem, e publica o primeiro. O evento fica na auditoria.</label></div>
+                <div class="banner warn" style="margin-top:12px">
+                  <div>Esta pasta tem <b>4 textos pendentes</b>. O painel avisa abaixo de cinco.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <header><h2>Acesso</h2></header>
+              <div class="body">
+                <p class="faint" style="margin-top:0">Usuários do perfil <b>usuário</b> só enxergam as pastas atribuídas a eles.
+                Admins enxergam todas as pastas da própria organização.</p>
+                <div class="check"><input type="checkbox" checked id="u1"><label for="u1">Ana Duarte <span class="faint">· usuário</span></label></div>
+                <div class="check"><input type="checkbox" id="u2"><label for="u2">João Prado <span class="faint">· usuário</span></label></div>
+                <a class="btn sm" href="usuarios.html">Gerenciar usuários</a>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <a class="btn" href="pastas.html">Cancelar</a>
+              <a class="btn primary" href="pastas.html">Salvar pasta</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organizações · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" class="active" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Sistema · só superadmin</div>
+          <h1>Organizações</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner info">
+          <div>Tela exclusiva do superadmin. Cada organização opera de forma independente: suas pastas, seus
+          grupos de Telegram e seus usuários. Toda troca de organização ativa fica registrada na auditoria.</div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" placeholder="Buscar organização…">
+            <span class="spacer"></span>
+            <button class="btn primary">Nova organização</button>
+          </div>
+          <table>
+            <thead><tr><th>Organização</th><th>Idioma padrão</th><th>Fuso padrão</th><th class="num">Pastas</th><th class="num">Usuários</th><th>Situação</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><b>OA Brasil</b><div class="faint">criada em 01/07/2026</div></td><td>Português</td><td>America/Sao_Paulo</td><td class="num">3</td><td class="num">3</td><td><span class="pill ok">ativa</span></td>
+                <td><button class="btn sm">Editar</button> <button class="btn sm">Entrar como organização ativa</button></td></tr>
+              <tr><td><b>OA España</b><div class="faint">criada em 15/08/2026</div></td><td>Español</td><td>Europe/Madrid</td><td class="num">2</td><td class="num">1</td><td><span class="pill ok">ativa</span></td>
+                <td><button class="btn sm">Editar</button> <button class="btn sm">Entrar como organização ativa</button></td></tr>
+              <tr><td><b>OA English</b><div class="faint">criada em 15/08/2026</div></td><td>English</td><td>America/New_York</td><td class="num">2</td><td class="num">1</td><td><span class="pill">inativa</span></td>
+                <td><button class="btn sm">Editar</button> <button class="btn sm">Reativar</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <header><h2>Editar organização — OA España</h2></header>
+          <div class="body">
+            <div class="row">
+              <label class="field" style="margin:0"><span class="lbl">Nome</span><input type="text" value="OA España"></label>
+              <label class="field" style="margin:0"><span class="lbl">Idioma padrão</span>
+                <select><option>Español</option><option>Português</option><option>English</option></select>
+                <span class="hint">Cada usuário pode sobrepor o idioma no próprio perfil.</span></label>
+              <label class="field" style="margin:0"><span class="lbl">Fuso padrão</span>
+                <select><option>Europe/Madrid</option><option>America/Sao_Paulo</option><option>UTC</option></select>
+                <span class="hint">Valor inicial das pastas novas; cada pasta tem o seu.</span></label>
+              <label class="field" style="margin:0"><span class="lbl">Situação</span>
+                <select><option>Ativa</option><option>Inativa</option></select>
+                <span class="hint">Desativar não apaga nada: suspende publicações e o acesso dos usuários.</span></label>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:16px">
+              <button class="btn primary">Salvar</button>
+              <button class="btn">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

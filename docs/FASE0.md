@@ -1,0 +1,210 @@
+# Fase 0 — modelo de dados, permissões, mockup e escolha do framework
+
+Referência: `docs/ESPECIFICACAO.md` v1.3. Cada item abaixo aguarda aprovação
+antes de qualquer código de aplicação.
+
+---
+
+## (a) Modelo de dados
+
+Arquivo: [`prisma/schema.prisma`](../prisma/schema.prisma).
+
+### Restrições únicas
+
+| Tabela | Restrição | Por quê |
+| :-- | :-- | :-- |
+| `publications` | **`(folder_id, data_prevista, hora_prevista)`** | **Idempotência.** A linha é inserida com status `reivindicada` antes da chamada ao Telegram, dentro de uma transação. Violação = outro processo já pegou o slot; este desiste em silêncio. |
+| `texts` | `(folder_id, hash_conteudo)` | Detecção de duplicata na importação. O hash considera só o texto, não a imagem. |
+| `users` | `(email)` | Identificador de login. |
+| `folders` | `(organization_id, nome)` | Evita duas pastas homônimas na mesma organização. |
+| `schedules` | `(folder_id, hora_local)` | Evita dois agendamentos no mesmo horário da mesma pasta gerando o mesmo slot. |
+| `sessions` | `(token_hash)` | Lookup da sessão. |
+
+### Índices
+
+| Tabela | Índice | Uso |
+| :-- | :-- | :-- |
+| `texts` | `(folder_id, status, ordem)` | Seleção do próximo texto da fila: menor `ordem` entre os `pendente`. |
+| `texts` | `(import_id)` | Desfazer importação. |
+| `publications` | `(folder_id, data_prevista)` | Cálculo de slots vencidos no ciclo do dispatcher. |
+| `publications` | `(status)` | Varredura de slots `reivindicada` a reprocessar e `perdida` a alertar. |
+| `folders` | `(organization_id, ativa)` | Listagem por organização e varredura do dispatcher. |
+| `users` | `(organization_id, perfil)` | Listagem de usuários da organização. |
+| `user_folders` | `(folder_id)` | Quem tem acesso à pasta. |
+| `audit_log` | `(organization_id, criado_em)`, `(entidade, entidade_id)` | Consulta do log. |
+| `sessions` | `(user_id)`, `(expira_em)` | Revogação e limpeza. |
+
+### Acréscimos ao que está na seção 5 da especificação
+
+Cinco campos e uma tabela não listados explicitamente na seção 5, todos
+derivados de requisitos do próprio documento:
+
+1. **`sessions`** (tabela nova) — a seção 11 exige sessão com expiração e
+   renovação, e a 6 exige que o superadmin opere com uma organização ativa
+   registrada na auditoria. A sessão persistida guarda `organization_ativa_id` e
+   permite revogação imediata ao desativar um usuário. O cookie carrega apenas o
+   hash do token.
+2. **`users.idioma`** — a seção 10 diz que o idioma "pode ser trocado por
+   usuário". Nulo = herda o idioma da organização.
+3. **`texts.arquivado_em`** — a seção 9 diz que texto publicado não é excluído,
+   "apenas arquivado". Preferi um carimbo de data a um quarto valor de `status`,
+   para não perder a informação de que o texto foi publicado. **Ver pergunta 1.**
+4. **`publications.reivindicada_em`** — sem ele não dá para medir há quanto
+   tempo um slot está preso em `reivindicada` (processo morto no meio do envio).
+5. **`imports.desfeito_em`** — a seção 9 prevê desfazer a importação enquanto
+   nenhum texto do lote tiver sido publicado.
+
+`publications.data_prevista` é `date` e `hora_prevista` é `time`, ambos **no fuso
+da pasta** — é essa a chave natural do slot. O instante real do envio fica em
+`enviada_em`, em `timestamptz`.
+
+---
+
+## (b) Matriz de permissões
+
+Confirma a seção 6 da especificação, com a coluna "aplicação" dizendo onde a
+regra é imposta. Toda linha é verificada na camada de dados: o identificador da
+URL só é usado depois de resolvido contra a organização do usuário autenticado.
+
+| Ação | Superadmin | Admin | Usuário | Onde a regra é imposta |
+| :-- | :-: | :-: | :-: | :-- |
+| Criar, editar, desativar organizações | sim | não | não | perfil |
+| Transitar entre organizações | sim | não | não | perfil + registro na auditoria |
+| Criar e gerenciar admins | sim | não | não | perfil |
+| Criar e gerenciar usuários da sua organização | sim | sim | não | `users.organization_id` = org do autenticado |
+| Redefinir senha de usuário | sim | da sua organização | não | idem |
+| Atribuir pastas a usuários | sim | sim | não | pasta e usuário na mesma organização |
+| Criar, editar, excluir pastas | sim | sim | não | `folders.organization_id` |
+| Configurar `chat_id` da pasta | sim | sim | não | `folders.organization_id` |
+| Configurar token de sobreposição da pasta | sim | **não** | não | perfil + `folders.organization_id` |
+| Configurar destino dos alertas | sim | não | não | perfil (tabela `settings`, linha única) |
+| Configurar agendamentos | sim | sim | não | `schedules.folder → organization_id` |
+| Criar, editar, excluir textos e imagens | sim | sim | nas pastas atribuídas | `texts.folder → organization_id` (+ `user_folders` para `usuario`) |
+| Importar CSV/XLSX | sim | sim | nas pastas atribuídas | idem |
+| Reordenar a fila | sim | sim | nas pastas atribuídas | idem |
+| Publicar agora, pular, reenviar | sim | sim | nas pastas atribuídas | idem |
+| **Ver/baixar imagem de um texto** | sim | toda a organização | pastas atribuídas | `texts.folder → organization_id` (+ `user_folders`) na própria rota |
+| Ver painel e histórico | todas as organizações | toda a organização | pastas atribuídas | escopo da consulta |
+| Ver log de auditoria | sim | da sua organização | não | `audit_log.organization_id` |
+
+A linha da imagem não está na tabela da seção 6, mas está na seção 11 e é um
+ponto não negociável do prompt — por isso aparece aqui explicitamente.
+
+### Regras de isolamento
+
+1. Nenhuma consulta parte de identificador vindo da URL sem verificar a
+   organização do usuário autenticado. Na prática: toda leitura passa por um
+   escopo (`escopoDoUsuario`) que devolve o `where` já com
+   `organization_id` — e, para o perfil `usuario`, com `folder_id IN
+   (pastas atribuídas)`.
+2. Recurso de outra organização responde **404**, não 403: 403 confirmaria a
+   existência do identificador.
+3. O superadmin opera com uma organização ativa selecionada, visível no topo da
+   tela; toda troca fica na auditoria.
+4. Não existe cadastro público. Usuário é criado por quem está acima na
+   hierarquia, com senha provisória e troca obrigatória no primeiro acesso.
+
+### Testes de isolamento previstos na fase 1
+
+Cenário base: organizações A e B, cada uma com admin, usuário, pasta e texto.
+
+| # | Teste | Esperado |
+| :-- | :-- | :-- |
+| 1 | Admin de A faz `GET /orgs/B/...` | 404 |
+| 2 | Admin de A abre pasta de B pelo `id` na URL | 404 |
+| 3 | Admin de A edita/exclui texto de B pelo `id` | 404, nada alterado |
+| 4 | Admin de A baixa **imagem** de texto de B pela rota autenticada | 404, zero bytes |
+| 5 | Requisição sem sessão à rota de imagem | 401 |
+| 6 | Usuário de A acessa pasta de A **não atribuída** a ele | 404 |
+| 7 | Admin de A atribui pasta de B a usuário de A | rejeitado |
+| 8 | Admin de A tenta gravar token de sobreposição na própria pasta | rejeitado (só superadmin) |
+| 9 | Superadmin com organização ativa A lista textos | só os de A; a troca aparece na auditoria |
+
+---
+
+## (c) Mockup
+
+Arquivos estáticos em [`docs/mockup/`](mockup/), sem build e sem CDN — basta
+abrir `docs/mockup/index.html` no navegador. Cada tela tem, no topo:
+
+- **seletor de perfil** (superadmin / admin / usuário), que muda a navegação e
+  os controles visíveis;
+- **alternador de tema** claro/escuro;
+- **seletor de organização**, visível apenas para o superadmin.
+
+Perfil e tema ficam no `localStorage` e acompanham a navegação entre as telas.
+
+| Arquivo | Tela |
+| :-- | :-- |
+| `index.html` | Guia do mockup, com o roteiro de navegação |
+| `login.html` | Entrada |
+| `primeiro-acesso.html` | Troca obrigatória de senha provisória |
+| `painel.html` | Painel inicial por pasta (varia por perfil) |
+| `organizacoes.html` | Organizações (superadmin) |
+| `usuarios.html` | Usuários, atribuição de pastas, redefinição de senha |
+| `pastas.html` | Lista de pastas |
+| `pasta-config.html` | Pasta: `chat_id`, fuso, ao esgotar, agendamentos, token de sobreposição, testar conexão |
+| `textos.html` | Lista de textos com miniatura, busca, filtro e reordenação |
+| `texto-editor.html` | Editor com contador dinâmico (4096/1024), upload de imagem e pré-visualização |
+| `importacao.html` | Importação CSV/XLSX com mapeamento de colunas, pré-visualização e resultado |
+| `historico.html` | Histórico de publicações |
+| `alertas.html` | Painel de alertas |
+| `configuracoes.html` | Configurações globais (superadmin): destino dos alertas com teste por canal |
+| `auditoria.html` | Log de auditoria |
+
+Como abrir trabalhando na nuvem, conforme a seção 3.1: `git pull` da branch e
+abrir o arquivo, ou colar a URL do arquivo em `htmlpreview.github.io`.
+
+---
+
+## (d) Escolha do framework
+
+**Next.js (App Router) com server actions.**
+
+1. Uma única aplicação cobre interface, server actions e as rotas que precisam
+   ser servidas pelo Node — a de imagem autenticada em especial, que lê `bytea`
+   e responde com o binário sob a mesma verificação de organização da interface;
+   com Fastify + React seriam dois builds, dois deploys e uma fronteira de
+   autenticação a mais para manter em sincronia, sem ganho aqui.
+2. O trecho que realmente importa — dispatcher, idempotência, Telegram, cifra do
+   token — vive no serviço `worker`, fora do framework, compartilhando com o
+   `web` apenas o Prisma e os módulos de domínio; a escolha do framework não
+   afeta nenhum dos pontos não negociáveis.
+3. Sessão em cookie `httpOnly`, CSRF nas server actions, `next-intl` para pt/es/en
+   e Tailwind são caminho batido no Next, e o serviço `web` no Railway fica com
+   um `npm run start:web` e um health check — exatamente o que a seção 3.3 pede.
+
+---
+
+## Perguntas antes de seguir
+
+Cinco pontos onde a especificação admite mais de uma leitura. Segui a opção
+marcada como **proposta** para não travar a entrega; qualquer uma pode ser
+trocada sem custo nesta fase.
+
+1. **Arquivamento de texto.** A seção 9 fala em arquivar textos publicados, mas
+   `status` só tem `pendente | publicado | erro`. *Proposta:* campo
+   `arquivado_em` separado, preservando o `status`. Alternativa: acrescentar
+   `arquivado` ao enum.
+2. **Duplicata depois de publicada.** O índice único `(folder_id,
+   hash_conteudo)` impede reimportar um texto já usado naquela pasta, mesmo
+   arquivado — o que também impede reaproveitar o mesmo texto em uma pasta
+   configurada como `reiniciar` via nova importação. *Proposta:* manter o índice
+   como está (é o que a especificação pede) e, na importação, listar as
+   duplicatas ignoradas com o motivo. Alternativa: permitir reimportar quando o
+   texto anterior estiver arquivado.
+3. **Vários agendamentos no mesmo minuto.** Duas pastas podem coincidir no mesmo
+   slot — isso está previsto, o dispatcher serializa. Mas *a mesma* pasta com
+   dois agendamentos no mesmo `hora_local` geraria um slot só. *Proposta:*
+   índice único `(folder_id, hora_local)` bloqueando o cadastro duplicado, com
+   mensagem clara. Confirma?
+4. **Convenção de dias da semana.** A seção 5 diz "conjunto de 1 a 7".
+   *Proposta:* ISO-8601, 1 = segunda, 7 = domingo. Confirma?
+5. **Fuso padrão das organizações.** Não consta na especificação.
+   *Proposta:* `America/Sao_Paulo` como valor inicial de
+   `timezone_padrao`, sempre editável por organização e sobreposto por pasta.
+
+Além disso, um alerta operacional: `folders.telegram_chat_id` é texto, não
+número — `-1001492357816` cabe em `bigint`, mas guardar como texto evita
+qualquer surpresa de precisão em JavaScript e aceita o formato `-100...` como
+digitado. A validação de formato fica na aplicação.

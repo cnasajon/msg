@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importação · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" class="active" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Uma Visão Para Você</div>
+          <h1>Importar CSV ou XLSX</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner info">
+          <div>A importação é <b>somente texto</b>. Imagens entram apenas pela edição manual de cada texto.</div>
+        </div>
+
+        <div class="card">
+          <div class="tabs">
+            <a href="#" class="active">1. Arquivo</a>
+            <a href="#">2. Mapeamento</a>
+            <a href="#">3. Conferência</a>
+            <a href="#">4. Resultado</a>
+          </div>
+          <div class="body">
+            <div class="row" style="margin-bottom:16px">
+              <label class="field" style="margin:0"><span class="lbl">Pasta de destino</span>
+                <select><option>Uma Visão Para Você</option><option>Mesa de ajuda UVPV</option><option>Reflexões da semana</option></select>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Arquivo</span>
+                <input type="text" value="setembro.xlsx  ·  38 linhas" disabled>
+              </label>
+              <div class="fixed"><button class="btn">Trocar arquivo</button></div>
+            </div>
+
+            <h3 style="font-size:13px;margin:18px 0 8px">Mapeamento de colunas</h3>
+            <div class="row">
+              <label class="field" style="margin:0"><span class="lbl">Coluna do texto</span>
+                <select><option>B — mensagem</option><option>A — data</option><option>C — autor</option></select>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Coluna da ordem (opcional)</span>
+                <select><option>— usar a ordem das linhas —</option><option>A — data</option></select>
+              </label>
+              <label class="field" style="margin:0"><span class="lbl">Primeira linha</span>
+                <select><option>é cabeçalho</option><option>já é dado</option></select>
+              </label>
+            </div>
+          </div>
+
+          <header style="border-top:1px solid var(--border)"><h2>Conferência</h2><span class="spacer"></span>
+            <span class="sub">38 linhas · 35 importáveis · 3 ignoradas</span></header>
+          <table>
+            <thead><tr><th style="width:52px">Linha</th><th>Texto</th><th style="width:110px">Caracteres</th><th style="width:220px">Situação</th></tr></thead>
+            <tbody>
+              <tr><td class="num">2</td><td>Há dias em que a única oração possível é continuar.</td><td class="num">96</td><td><span class="pill ok">importar</span></td></tr>
+              <tr><td class="num">3</td><td>O encontro começa no convite, não na chegada.</td><td class="num">83</td><td><span class="pill ok">importar</span></td></tr>
+              <tr><td class="num">4</td><td>Gratidão não é conclusão, é começo.</td><td class="num">88</td><td><span class="pill warn">duplicata — já existe nesta pasta</span></td></tr>
+              <tr><td class="num">5</td><td class="faint">(vazia)</td><td class="num">0</td><td><span class="pill warn">ignorada — linha vazia</span></td></tr>
+              <tr><td class="num">6</td><td>Texto longo de meditação para o retiro de outubro, com a leitura completa…</td><td class="num" style="color:var(--danger)">4712</td><td><span class="pill err">acima de 4096 caracteres</span></td></tr>
+              <tr><td class="num">7</td><td>A mesa está posta para quem chega e para quem ainda vai chegar.</td><td class="num">62</td><td><span class="pill ok">importar</span></td></tr>
+            </tbody>
+          </table>
+          <div class="body" style="display:flex;gap:10px;align-items:center;border-top:1px solid var(--border)">
+            <span class="faint">Os textos importados entram como <b>pendentes</b>, no fim da fila, na ordem do arquivo.</span>
+            <span class="spacer" style="flex:1"></span>
+            <a class="btn" href="textos.html">Cancelar</a>
+            <button class="btn primary">Importar 35 textos</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Importações anteriores</h2></header>
+          <table>
+            <thead><tr><th>Arquivo</th><th>Quando</th><th>Por</th><th class="num">Linhas</th><th class="num">Importadas</th><th class="num">Duplicadas</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><code>agosto.xlsx</code></td><td>02/08 14:22 <span class="tz">BRT</span></td><td>Marta Ribeiro</td><td class="num">30</td><td class="num">30</td><td class="num">0</td><td><span class="faint">com textos já publicados — não é possível desfazer</span></td></tr>
+              <tr><td><code>julho.csv</code></td><td>01/07 09:05 <span class="tz">BRT</span></td><td>Marta Ribeiro</td><td class="num">31</td><td class="num">28</td><td class="num">3</td><td><span class="faint">com textos já publicados — não é possível desfazer</span></td></tr>
+              <tr><td><code>avulsos.csv</code></td><td>10/09 17:40 <span class="tz">BRT</span></td><td>Ana Duarte</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td><button class="btn sm">Desfazer importação</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

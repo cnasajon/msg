@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" class="active" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Início</div>
+          <h1>Painel</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="banner err">
+          <div><div class="ttl">Publicação com erro em “Mesa de ajuda UVPV”</div>
+          11/09 às 07:00 (America/Sao_Paulo) — <code>chat not found</code> após 3 tentativas. A fila não avançou.
+          <a href="historico.html">Ver histórico</a> · <a href="pasta-config.html">Conferir chat_id</a></div>
+        </div>
+        <div class="banner warn">
+          <div><div class="ttl">Fila curta</div>
+          “Uma Visão Para Você” tem 4 textos pendentes. Abaixo de cinco, o sistema alerta.
+          <a href="importacao.html">Importar mais textos</a></div>
+        </div>
+
+        <div class="grid c4">
+          <div class="card stat"><div class="k">Pastas ativas</div><div class="v num" data-roles="superadmin">7</div><div class="v num" data-roles="admin">3</div><div class="v num" data-roles="usuario">2</div>
+            <div class="d" data-roles="superadmin">em 3 organizações</div><div class="d" data-roles="admin usuario">OA Brasil</div></div>
+          <div class="card stat"><div class="k">Textos pendentes</div><div class="v num">41</div><div class="d">2 pastas com fila curta</div></div>
+          <div class="card stat"><div class="k">Publicados em 30 dias</div><div class="v num">86</div><div class="d">1 com erro, 0 perdidos</div></div>
+          <div class="card stat"><div class="k">Próxima publicação</div><div class="v">07:00</div><div class="d">amanhã · <span class="tz">America/Sao_Paulo</span></div></div>
+        </div>
+
+        <div class="card">
+          <header><h2>Pastas</h2><span class="spacer"></span>
+            <span class="faint">horários no fuso de cada pasta</span></header>
+          <div class="body tight">
+            <table>
+              <thead><tr><th>Pasta</th><th>Próxima publicação</th><th>Próximo da fila</th><th>Pendentes</th><th>Situação</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><b>Uma Visão Para Você</b><div class="faint">OA Brasil · America/Sao_Paulo</div></td>
+                  <td>amanhã 07:00 <span class="tz">BRT</span><div class="faint">seg a sex</div></td>
+                  <td class="textcell"><img class="thumb" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232b6cb0%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2363b3ed%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%98%80%3C%2Ftext%3E%3C%2Fsvg%3E" alt=""><div class="t"><p>O amanhecer não pede licença…</p></div></td>
+                  <td class="num">4</td>
+                  <td><span class="pill warn">fila curta</span></td>
+                  <td><a class="btn sm" href="textos.html">Abrir</a></td>
+                </tr>
+                <tr>
+                  <td><b>Mesa de ajuda UVPV</b><div class="faint">OA Brasil · America/Sao_Paulo</div></td>
+                  <td>amanhã 09:00 <span class="tz">BRT</span><div class="faint">sáb e dom</div></td>
+                  <td class="textcell"><div class="thumb empty">—</div><div class="t"><p>A mesa está posta para quem chega…</p></div></td>
+                  <td class="num">19</td>
+                  <td><span class="pill err">erro</span></td>
+                  <td><a class="btn sm" href="textos.html">Abrir</a></td>
+                </tr>
+                <tr data-roles="superadmin admin">
+                  <td><b>Reflexões da semana</b><div class="faint">OA Brasil · America/Sao_Paulo</div></td>
+                  <td>sexta 18:30 <span class="tz">BRT</span><div class="faint">sex</div></td>
+                  <td class="textcell"><img class="thumb" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232c5282%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2390cdf4%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%98%BE%3C%2Ftext%3E%3C%2Fsvg%3E" alt=""><div class="t"><p>Há um silêncio que não é ausência…</p></div></td>
+                  <td class="num">18</td>
+                  <td><span class="pill ok">em dia</span></td>
+                  <td><a class="btn sm" href="textos.html">Abrir</a></td>
+                </tr>
+                <tr data-roles="superadmin">
+                  <td><b>OA España — Diario</b><div class="faint">OA España · Europe/Madrid</div></td>
+                  <td>amanhã 08:00 <span class="tz">CEST</span><div class="faint">todos os dias</div></td>
+                  <td class="textcell"><div class="thumb empty">—</div><div class="t"><p>El día empieza antes del ruido…</p></div></td>
+                  <td class="num">0</td>
+                  <td><span class="pill err">fila esgotada</span></td>
+                  <td><a class="btn sm" href="textos.html">Abrir</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid c2">
+          <div class="card">
+            <header><h2>Últimos publicados</h2><span class="spacer"></span><a class="btn sm" href="historico.html">Histórico</a></header>
+            <div class="body tight">
+              <table>
+                <tbody>
+                  <tr><td class="textcell"><img class="thumb" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23c05621%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23f6ad55%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%9D%A6%3C%2Ftext%3E%3C%2Fsvg%3E" alt=""><div class="t"><p>Gratidão não é conclusão, é começo.</p><div class="meta">Uma Visão Para Você · 12/09 07:00 <span class="tz">BRT</span></div></div></td><td style="text-align:right"><span class="pill ok">enviada</span></td></tr>
+                  <tr><td class="textcell"><div class="thumb empty">—</div><div class="t"><p>Quem chega cansado também chega.</p><div class="meta">Mesa de ajuda UVPV · 11/09 09:00 <span class="tz">BRT</span></div></div></td><td style="text-align:right"><span class="pill ok">enviada</span></td></tr>
+                  <tr><td class="textcell"><img class="thumb" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23805ad5%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23b794f4%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%9C%A6%3C%2Ftext%3E%3C%2Fsvg%3E" alt=""><div class="t"><p>O encontro começa no convite.</p><div class="meta">Reflexões da semana · 06/09 18:30 <span class="tz">BRT</span></div></div></td><td style="text-align:right"><span class="pill ok">enviada</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <header><h2>Alertas recentes</h2><span class="spacer"></span><a class="btn sm" href="alertas.html">Ver todos</a></header>
+            <div class="body" style="display:grid;gap:10px">
+              <div class="banner err"><div><b>Falha definitiva</b> · Mesa de ajuda UVPV · 11/09 07:03<div class="faint">chat not found — 3 tentativas</div></div></div>
+              <div class="banner warn"><div><b>Fila curta</b> · Uma Visão Para Você · 12/09 07:01<div class="faint">4 textos pendentes</div></div></div>
+              <div class="banner warn" data-roles="superadmin"><div><b>Fila esgotada</b> · OA España — Diario · 12/09 08:00<div class="faint">pasta configurada como “parar e notificar”</div></div></div>
+              <p class="faint" style="margin:0">Destino atual dos alertas: <code>settings.alerts_chat_id</code> não preenchido → <code>ALERTS_CHAT_ID</code> não preenchido → <b>somente log e este painel</b>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

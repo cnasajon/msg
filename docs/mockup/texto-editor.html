@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="superadmin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor de texto · oa12-msg (mockup)</title>
+<link rel="stylesheet" href="assets/mockup.css">
+<script src="assets/mockup.js" defer></script>
+</head>
+<body>
+  <div class="mockbar">
+    <strong>Mockup — fase 0</strong>
+    <span>sem back-end; dados fictícios</span>
+    <span class="spacer"></span>
+    <label for="role-select">Ver como</label>
+    <select id="role-select">
+      <option value="superadmin">Superadmin</option>
+      <option value="admin">Admin</option>
+      <option value="usuario">Usuário</option>
+    </select>
+    <button id="theme-toggle" type="button">☾ Tema escuro</button>
+    <a href="index.html" style="color:inherit">Índice</a>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">OA</div>
+        <div>
+          <div class="name">oa12-msg</div>
+          <div class="env">msg.oa12.org</div>
+        </div>
+      </div>
+        <div class="navgroup nav" data-roles="superadmin admin usuario">
+          <h4>Operação</h4>
+          <a href="painel.html" data-roles="superadmin admin usuario"><span class="ico">▦</span>Painel</a>
+          <a href="textos.html" class="active" data-roles="superadmin admin usuario"><span class="ico">☰</span>Textos</a>
+          <a href="importacao.html" data-roles="superadmin admin usuario"><span class="ico">⇪</span>Importação</a>
+          <a href="historico.html" data-roles="superadmin admin usuario"><span class="ico">↻</span>Histórico</a>
+          <a href="alertas.html" data-roles="superadmin admin usuario"><span class="ico">⚠</span>Alertas<span class="tag">2</span></a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin admin">
+          <h4>Configuração</h4>
+          <a href="pastas.html" data-roles="superadmin admin"><span class="ico">🗀</span>Pastas</a>
+          <a href="usuarios.html" data-roles="superadmin admin"><span class="ico">☺</span>Usuários</a>
+          <a href="auditoria.html" data-roles="superadmin admin"><span class="ico">⎘</span>Auditoria</a>
+        </div>
+        <div class="navgroup nav" data-roles="superadmin">
+          <h4>Sistema</h4>
+          <a href="organizacoes.html" data-roles="superadmin"><span class="ico">⬡</span>Organizações</a>
+          <a href="configuracoes.html" data-roles="superadmin"><span class="ico">⚙</span>Configurações globais</a>
+        </div>
+      <div class="foot">
+        <div class="who">Claudio Nasajon</div>
+        <div class="role">Superadmin · claudio@…</div>
+        <div style="margin-top:8px"><a href="login.html" class="faint">Sair</a></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="crumb">Uma Visão Para Você · Textos</div>
+          <h1>Editar texto</h1>
+        </div>
+        <span class="spacer"></span>
+        <div class="orgpicker" data-roles="superadmin">
+          <span class="dot"></span>
+          <span class="faint">Organização ativa</span>
+          <select><option>OA Brasil</option><option>OA España</option><option>OA English</option></select>
+        </div>
+        <div class="orgpicker" data-roles="admin usuario">
+          <span class="dot"></span>
+          <span>OA Brasil</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="grid c2">
+          <div class="card">
+            <header><h2>Conteúdo</h2><span class="spacer"></span>
+              <span class="sub">limite <b id="limite-lbl">4096 (texto sem imagem)</b></span></header>
+            <div class="body">
+              <label class="field">
+                <span class="lbl">Texto · <code>parse_mode: HTML</code></span>
+                <textarea id="conteudo">O amanhecer não pede licença para chegar.
+
+Ele chega, e com ele a chance de recomeçar o que ontem ficou pela metade. <b>Hoje</b> ainda é cedo para desistir.</textarea>
+                <span class="hint">Tags aceitas: <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code> <code>&lt;s&gt;</code> <code>&lt;a href&gt;</code> <code>&lt;code&gt;</code> <code>&lt;pre&gt;</code> <code>&lt;blockquote&gt;</code></span>
+              </label>
+              <div class="counter" id="counter"><div class="bar"><i style="width:4%"></i></div><span class="n">0 / 4096 caracteres</span></div>
+
+              <div class="banner err" id="aviso-limite" hidden style="margin-top:14px">
+                <div><div class="ttl">Acima do limite de legenda</div>
+                Com imagem anexada o limite é 1024 caracteres. Reduza o texto ou remova a imagem para voltar ao limite de 4096.</div>
+              </div>
+
+              <hr style="border:0;border-top:1px solid var(--border);margin:18px 0">
+
+              <div class="check">
+                <input type="checkbox" id="tem-imagem" checked>
+                <label for="tem-imagem"><b>Anexar imagem</b> — no mockup, use esta caixa para ver a validação mudar de 4096 para 1024</label>
+              </div>
+
+              <div id="img-vazio" hidden>
+                <div class="drop">
+                  <div class="big">⇪</div>
+                  <div>Arraste uma imagem ou <a href="#">escolha um arquivo</a></div>
+                  <div class="faint" style="margin-top:6px">JPEG, PNG ou WebP · até 2 MB depois do processamento<br>
+                  redimensionada para no máximo 1600 px no lado maior · EXIF removido</div>
+                </div>
+              </div>
+
+              <div id="img-box" style="display:flex;gap:14px;align-items:flex-start">
+                <img class="thumb lg" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232b6cb0%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2363b3ed%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%98%80%3C%2Ftext%3E%3C%2Fsvg%3E" alt="">
+                <div>
+                  <div><b>amanhecer-serra.jpg</b></div>
+                  <dl class="kv" style="grid-template-columns:100px 1fr;margin-top:8px">
+                    <dt>Guardada</dt><dd>Postgres <code>bytea</code> · 318 KB</dd>
+                    <dt>Formato</dt><dd><code>image/jpeg</code> · 1600 × 1067</dd>
+                    <dt>Original</dt><dd>4032 × 3024 · 3,8 MB</dd>
+                    <dt>EXIF</dt><dd>removido no upload</dd>
+                  </dl>
+                  <div style="margin-top:10px;display:flex;gap:8px">
+                    <button class="btn sm">Substituir</button>
+                    <button class="btn sm danger">Remover imagem</button>
+                  </div>
+                  <p class="faint" style="margin:10px 0 0;max-width:320px">Servida em rota autenticada
+                  (<code>/api/textos/&lt;id&gt;/imagem</code>) e verificada contra a organização do usuário.
+                  O worker lê o binário direto do banco na hora de publicar.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <header><h2>Pré-visualização no Telegram</h2></header>
+              <div class="body">
+                <div class="preview">
+                  <div class="tg-bubble">
+                    <img src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22320%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232b6cb0%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2363b3ed%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22320%22%20height%3D%22320%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22160%22%20y%3D%22205%22%20font-size%3D%22150%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.82%22%20font-family%3D%22sans-serif%22%3E%E2%98%80%3C%2Ftext%3E%3C%2Fsvg%3E" alt="">
+                    O amanhecer não pede licença para chegar.<br><br>
+                    Ele chega, e com ele a chance de recomeçar o que ontem ficou pela metade. <b>Hoje</b> ainda é cedo para desistir.
+                    <div class="time">07:00</div>
+                  </div>
+                </div>
+                <p class="faint" style="margin:12px 0 0">Com imagem, o envio usa <code>sendPhoto</code> com o texto como legenda.
+                Sem imagem, <code>sendMessage</code>.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <header><h2>Publicação</h2></header>
+              <div class="body">
+                <dl class="kv">
+                  <dt>Pasta</dt><dd>Uma Visão Para Você</dd>
+                  <dt>Grupo de destino</dt><dd>Uma Visão Para Você <code>-1001492357816</code></dd>
+                  <dt>Posição na fila</dt><dd>1 de 4 — próximo a publicar</dd>
+                  <dt>Previsão</dt><dd>amanhã 07:00 <span class="tz">America/Sao_Paulo</span></dd>
+                  <dt>Status</dt><dd><span class="pill">pendente</span></dd>
+                </dl>
+                <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+                  <a class="btn primary" href="textos.html">Salvar</a>
+                  <button class="btn">Salvar e publicar agora</button>
+                  <a class="btn" href="textos.html">Cancelar</a>
+                  <span class="spacer" style="flex:1"></span>
+                  <button class="btn danger">Excluir</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
