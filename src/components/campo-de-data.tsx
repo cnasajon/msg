@@ -25,7 +25,14 @@ export function CampoDeData({ valorInicial }: { valorInicial: string }) {
     <label className="field" style={{ marginTop: 14 }}>
       <span className="lbl">
         {t('dataDaPublicacao')}
-        <Ajuda texto={t('dataHint')} rotulo={comum('ajudaSobre', { campo: t('dataDaPublicacao') })} />
+        <Ajuda
+          rotulo={comum('ajudaSobre', { campo: t('dataDaPublicacao') })}
+          texto={
+            <>
+              {t('dataHint')} {t('duasCondicoes')}
+            </>
+          }
+        />
       </span>
       <input
         type="text"
@@ -38,7 +45,6 @@ export function CampoDeData({ valorInicial }: { valorInicial: string }) {
         spellCheck={false}
         style={{ maxWidth: 200 }}
       />
-      <span className="hint">{t('duasCondicoes')}</span>
     </label>
   );
 }

@@ -179,9 +179,9 @@ export default async function Usuarios({
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">
                     {t('email')} <span className="faint">{t('opcional')}</span>
+                    <Ajuda texto={t('emailHint')} rotulo={comum('ajudaSobre', { campo: t('email') })} />
                   </span>
                   <input type="email" name="email" defaultValue={emEdicao.email ?? ''} />
-                  <span className="hint">{t('emailHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">

@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
+import { Ajuda } from '@/components/ajuda';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -34,6 +35,7 @@ export default async function Configuracoes({
 
   const t = await getTranslations('configuracoes');
   const menu = await getTranslations('menu');
+  const comum = await getTranslations('comum');
   const idioma = await getLocale();
   const { frase } = await tradutorDeAvisos();
 
@@ -75,14 +77,16 @@ export default async function Configuracoes({
             </header>
             <div className="body">
               <label className="field">
-                <span className="lbl">{t('chatIdAlertas')}</span>
+                <span className="lbl">
+                  {t('chatIdAlertas')}
+                  <Ajuda texto={t('chatIdHint')} rotulo={comum('ajudaSobre', { campo: t('chatIdAlertas') })} />
+                </span>
                 <input
                   type="text"
                   name="alertsChatId"
                   defaultValue={configuracao?.alertsChatId ?? ''}
                   placeholder={t('chatIdPlaceholder')}
                 />
-                <span className="hint">{t('chatIdHint')}</span>
               </label>
               <dl className="kv" style={{ gridTemplateColumns: '230px 1fr' }}>
                 <dt>{t('valorNestaTela')}</dt>
@@ -126,14 +130,16 @@ export default async function Configuracoes({
             </header>
             <div className="body">
               <label className="field">
-                <span className="lbl">{t('urlWebhook')}</span>
+                <span className="lbl">
+                  {t('urlWebhook')}
+                  <Ajuda texto={t('webhookHint')} rotulo={comum('ajudaSobre', { campo: t('urlWebhook') })} />
+                </span>
                 <input
                   type="text"
                   name="googleChatWebhook"
                   defaultValue={configuracao?.googleChatWebhook ?? ''}
                   placeholder={t('webhookPlaceholder')}
                 />
-                <span className="hint">{t('webhookHint')}</span>
               </label>
               <dl className="kv" style={{ gridTemplateColumns: '230px 1fr' }}>
                 <dt>{t('valorNestaTela')}</dt>

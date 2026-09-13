@@ -24,7 +24,9 @@
     "pararNotificar": "parar e notificar",
     "descricaoDoApp": "Publicação programada de textos e imagens em grupos de Telegram.",
     "ajudaSobre": "Ajuda sobre {campo}",
-    "fechar": "Fechar"
+    "fechar": "Fechar",
+    "semPastaTitulo": "Você ainda não tem nenhuma pasta atribuída",
+    "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui."
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -174,7 +176,8 @@
     "escolherTodos": "Escolher todos",
     "semOutraPasta": "Não há outra pasta para onde mover.",
     "dataDaPublicacao": "Data da publicação",
-    "qualquerData": "qualquer data"
+    "qualquerData": "qualquer data",
+    "semPastaTitulo": "Nenhuma pasta cadastrada ainda"
   },
   "editor": {
     "conteudo": "Conteúdo",

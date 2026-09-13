@@ -4,6 +4,7 @@ import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
+import { Ajuda } from '@/components/ajuda';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { trocarSenha } from './acoes';
@@ -20,6 +21,7 @@ export default async function PrimeiroAcesso({
   if (!sessao) redirect('/entrar');
   const { erro } = await searchParams;
   const t = await getTranslations('primeiroAcesso');
+  const comum = await getTranslations('comum');
 
   return (
     <>
@@ -55,9 +57,11 @@ export default async function PrimeiroAcesso({
                   <input type="password" name="atual" autoComplete="current-password" required />
                 </label>
                 <label className="field">
-                  <span className="lbl">{t('novaSenha')}</span>
+                  <span className="lbl">
+                    {t('novaSenha')}
+                    <Ajuda texto={t('regra')} rotulo={comum('ajudaSobre', { campo: t('novaSenha') })} />
+                  </span>
                   <input type="password" name="nova" autoComplete="new-password" required minLength={8} />
-                  <span className="hint">{t('regra')}</span>
                 </label>
                 <label className="field">
                   <span className="lbl">{t('repita')}</span>

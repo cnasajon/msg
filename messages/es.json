@@ -24,7 +24,9 @@
     "pararNotificar": "parar y notificar",
     "descricaoDoApp": "Publicación programada de textos e imágenes en grupos de Telegram.",
     "ajudaSobre": "Ayuda sobre {campo}",
-    "fechar": "Cerrar"
+    "fechar": "Cerrar",
+    "semPastaTitulo": "Todavía no tiene ninguna carpeta asignada",
+    "semPastaExplicacao": "No es que el sistema esté vacío: su perfil solo ve las carpetas que un administrador le asigna. Pida a un administrador de su organización que lo haga en Configuración → Usuarios. En cuanto le asignen la carpeta, sus textos y publicaciones aparecen aquí."
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -174,7 +176,8 @@
     "escolherTodos": "Elegir todos",
     "semOutraPasta": "No hay otra carpeta a la que mover.",
     "dataDaPublicacao": "Fecha de publicación",
-    "qualquerData": "cualquier fecha"
+    "qualquerData": "cualquier fecha",
+    "semPastaTitulo": "Ninguna carpeta registrada todavía"
   },
   "editor": {
     "conteudo": "Contenido",

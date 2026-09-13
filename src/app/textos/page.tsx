@@ -60,7 +60,12 @@ export default async function Textos({
       <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('textos')} atual="/textos">
         <Avisos erro={filtros.erro} ok={filtros.ok} />
         <div className="banner warn">
-          <div>{t('semPasta')}</div>
+          <div>
+            <div className="ttl">
+              {sessao.perfil === 'usuario' ? comum('semPastaTitulo') : t('semPastaTitulo')}
+            </div>
+            {sessao.perfil === 'usuario' ? comum('semPastaExplicacao') : t('semPasta')}
+          </div>
         </div>
       </Casca>
     );

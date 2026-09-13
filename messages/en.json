@@ -24,7 +24,9 @@
     "pararNotificar": "stop and notify",
     "descricaoDoApp": "Scheduled publishing of texts and images to Telegram groups.",
     "ajudaSobre": "Help about {campo}",
-    "fechar": "Close"
+    "fechar": "Close",
+    "semPastaTitulo": "No folder has been assigned to you yet",
+    "semPastaExplicacao": "The system is not empty: your role only sees the folders an administrator assigns to you. Ask an administrator in your organization to do it under Configuration → Users. Once a folder is assigned, its texts and publications show up here."
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -174,7 +176,8 @@
     "escolherTodos": "Select all",
     "semOutraPasta": "There is no other folder to move to.",
     "dataDaPublicacao": "Publication date",
-    "qualquerData": "any date"
+    "qualquerData": "any date",
+    "semPastaTitulo": "No folder created yet"
   },
   "editor": {
     "conteudo": "Content",

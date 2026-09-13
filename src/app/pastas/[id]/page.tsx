@@ -103,40 +103,53 @@ export default async function ConfigurarPasta({
 
                 <div className="row">
                   <label className="field" style={{ margin: 0 }}>
-                    <span className="lbl">{t('fusoDaPasta')}</span>
-                    <input type="text" name="timezone" defaultValue={pasta.timezone} required />
-                    <span className="hint">
-                      {t('agoraSao', {
-                        hora: new Date().toLocaleTimeString(idioma, {
-                          timeZone: pasta.timezone,
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }),
-                      })}{' '}
-                      <span className="tz">{siglaDoFuso(pasta.timezone)}</span> {t('nestaPasta')}
+                    <span className="lbl">
+                      {t('fusoDaPasta')}
+                      <Ajuda
+                        rotulo={comum('ajudaSobre', { campo: t('fusoDaPasta') })}
+                        texto={
+                          <>
+                            {t('fusoHint')}{' '}
+                            {t('agoraSao', {
+                              hora: new Date().toLocaleTimeString(idioma, {
+                                timeZone: pasta.timezone,
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }),
+                            })}{' '}
+                            <span className="tz">{siglaDoFuso(pasta.timezone)}</span> {t('nestaPasta')}
+                          </>
+                        }
+                      />
                     </span>
+                    <input type="text" name="timezone" defaultValue={pasta.timezone} required />
                   </label>
                   <label className="field" style={{ margin: 0 }}>
-                    <span className="lbl">{t('situacao')}</span>
+                    <span className="lbl">
+                      {t('situacao')}
+                      <Ajuda texto={t('useACaixa')} rotulo={comum('ajudaSobre', { campo: t('situacao') })} />
+                    </span>
                     <select name="ativaSelect" defaultValue={pasta.ativa ? 'sim' : 'nao'} disabled>
                       <option value="sim">{t('ativaOpcao')}</option>
                       <option value="nao">{t('inativa')}</option>
                     </select>
-                    <span className="hint">{t('useACaixa')}</span>
                   </label>
                 </div>
 
                 <label className="field">
-                  <span className="lbl">{t('chatIdDoGrupo')}</span>
+                  <span className="lbl">
+                    {t('chatIdDoGrupo')}
+                    <Ajuda
+                      texto={t.rich('chatIdExplicacao', { b: (partes) => <b>{partes}</b> })}
+                      rotulo={comum('ajudaSobre', { campo: t('chatIdDoGrupo') })}
+                    />
+                  </span>
                   <input
                     type="text"
                     name="telegramChatId"
                     defaultValue={pasta.telegramChatId ?? ''}
                     placeholder="-100…"
                   />
-                  <span className="hint">
-                    {t.rich('chatIdExplicacao', { b: (partes) => <b>{partes}</b> })}
-                  </span>
                 </label>
 
                 <CamposDoTipoDeLista
@@ -194,7 +207,10 @@ export default async function ConfigurarPasta({
                   <CampoCsrf token={csrf} />
                   <input type="hidden" name="id" value={pasta.id} />
                   <label className="field">
-                    <span className="lbl">{t('tokenDaPasta')}</span>
+                    <span className="lbl">
+                      {t('tokenDaPasta')}
+                      <Ajuda texto={t('tokenHint')} rotulo={comum('ajudaSobre', { campo: t('tokenDaPasta') })} />
+                    </span>
                     <input
                       type="text"
                       name="token"
@@ -205,7 +221,6 @@ export default async function ConfigurarPasta({
                       }
                       autoComplete="off"
                     />
-                    <span className="hint">{t('tokenHint')}</span>
                   </label>
                   <button className="btn" type="submit">
                     {pasta.telegramBotTokenCifrado

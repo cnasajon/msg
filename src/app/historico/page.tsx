@@ -73,9 +73,22 @@ export default async function Historico({
     },
   });
 
+  // Sem pasta atribuída a lista fica vazia, e vazio parece "nada aconteceu"
+  // em vez de "você ainda não tem acesso a nenhuma pasta".
+  const semPastaAtribuida = sessao.perfil === 'usuario' && pastas.length === 0;
+
   return (
     <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('textos')} atual="/historico">
       <Avisos erro={filtros.erro} ok={filtros.ok} />
+
+      {semPastaAtribuida ? (
+        <div className="banner warn">
+          <div>
+            <div className="ttl">{comum('semPastaTitulo')}</div>
+            {comum('semPastaExplicacao')}
+          </div>
+        </div>
+      ) : null}
 
       <div className="card">
         <form className="toolbar" method="get">
