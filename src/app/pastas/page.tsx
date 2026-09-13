@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -12,11 +13,6 @@ import { criarPasta } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
-const AO_ESGOTAR = {
-  parar_notificar: 'parar e notificar',
-  reiniciar: 'reiniciar fila',
-} as const;
-
 export default async function Pastas({
   searchParams,
 }: {
@@ -26,6 +22,10 @@ export default async function Pastas({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
   if (!podeFazer(sessao.perfil, 'pastas.gerenciar')) redirect('/inicio');
+
+  const t = await getTranslations('pastas');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
 
   const { erro, ok } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -48,34 +48,31 @@ export default async function Pastas({
     : null;
 
   return (
-    <Casca sessao={sessao} titulo="Pastas" caminho="Configuração" atual="/pastas">
+    <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('configuracao')} atual="/pastas">
       <Avisos erro={erro} ok={ok} />
 
       {!orgEmVigor ? (
         <div className="banner warn">
-          <div>
-            Nenhuma organização ativa escolhida. Escolha uma no seletor do topo para ver e criar
-            pastas.
-          </div>
+          <div>{t('semOrganizacao')}</div>
         </div>
       ) : null}
 
       <div className="card">
         <header>
-          <h2>Pastas da organização</h2>
+          <h2>{t('daOrganizacao')}</h2>
           <span className="spacer" />
-          <span className="sub">{pastas.length} no total</span>
+          <span className="sub">{t('noTotal', { quantidade: pastas.length })}</span>
         </header>
         <table>
           <thead>
             <tr>
-              <th>Pasta</th>
-              <th>Grupo de destino</th>
-              <th>Fuso</th>
-              <th className="num">Agendamentos</th>
-              <th>Fila</th>
-              <th>Ao esgotar</th>
-              <th>Situação</th>
+              <th>{t('pasta')}</th>
+              <th>{t('grupoDeDestino')}</th>
+              <th>{t('fuso')}</th>
+              <th className="num">{t('agendamentos')}</th>
+              <th>{t('fila')}</th>
+              <th>{t('aoEsgotar')}</th>
+              <th>{t('situacao')}</th>
               <th />
             </tr>
           </thead>
@@ -83,7 +80,7 @@ export default async function Pastas({
             {pastas.length === 0 ? (
               <tr>
                 <td colSpan={8} className="faint">
-                  Nenhuma pasta ainda. Crie a primeira no formulário abaixo.
+                  {t('nenhumaPasta')}
                 </td>
               </tr>
             ) : (
@@ -99,29 +96,35 @@ export default async function Pastas({
                       {p.telegramChatId ? (
                         <code>{p.telegramChatId}</code>
                       ) : (
-                        <span className="faint">não configurado</span>
+                        <span className="faint">{t('naoConfigurado')}</span>
                       )}
                       {p.telegramBotTokenCifrado ? (
-                        <div className="faint">bot próprio (sobreposição)</div>
+                        <div className="faint">{t('botProprio')}</div>
                       ) : null}
                     </td>
                     <td>{p.timezone}</td>
                     <td className="num">{p._count.schedules}</td>
                     <td>
                       <span className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill'}>
-                        {pendentes} pendente{pendentes === 1 ? '' : 's'}
+                        {t('pendentes', { quantidade: pendentes })}
                       </span>
                     </td>
-                    <td>{AO_ESGOTAR[p.aoEsgotar]}</td>
                     <td>
-                      <span className={p.ativa ? 'pill ok' : 'pill'}>{p.ativa ? 'ativa' : 'inativa'}</span>
+                      {p.aoEsgotar === 'reiniciar'
+                        ? comum('reiniciarFila')
+                        : comum('pararNotificar')}
+                    </td>
+                    <td>
+                      <span className={p.ativa ? 'pill ok' : 'pill'}>
+                        {p.ativa ? t('ativa') : comum('inativa')}
+                      </span>
                     </td>
                     <td style={{ whiteSpace: 'nowrap' }}>
                       <Link className="btn sm" href={`/pastas/${p.id}`}>
-                        Configurar
+                        {t('configurar')}
                       </Link>{' '}
                       <Link className="btn sm" href={`/textos?pasta=${p.id}`}>
-                        Textos
+                        {menu('textos')}
                       </Link>
                     </td>
                   </tr>
@@ -135,45 +138,45 @@ export default async function Pastas({
       {orgEmVigor ? (
         <div className="card">
           <header>
-            <h2>Nova pasta</h2>
+            <h2>{t('novaPasta')}</h2>
           </header>
           <div className="body">
             <form action={criarPasta}>
               <CampoCsrf token={csrf} />
               <div className="row">
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Nome</span>
+                  <span className="lbl">{t('nome')}</span>
                   <input type="text" name="nome" required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Descrição</span>
+                  <span className="lbl">{t('descricao')}</span>
                   <input type="text" name="descricao" />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Fuso horário</span>
+                  <span className="lbl">{t('fusoHorario')}</span>
                   <input
                     type="text"
                     name="timezone"
                     defaultValue={organizacao?.timezonePadrao ?? 'America/Sao_Paulo'}
                     required
                   />
-                  <span className="hint">Agendamento e exibição usam sempre este fuso.</span>
+                  <span className="hint">{t('fusoHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">chat_id do grupo</span>
+                  <span className="lbl">{t('chatId')}</span>
                   <input type="text" name="telegramChatId" placeholder="-100…" />
-                  <span className="hint">Pode ficar em branco e ser preenchido depois.</span>
+                  <span className="hint">{t('chatIdHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Ao esgotar a fila</span>
+                  <span className="lbl">{t('aoEsgotarFila')}</span>
                   <select name="aoEsgotar" defaultValue="parar_notificar">
-                    <option value="parar_notificar">Parar e notificar</option>
-                    <option value="reiniciar">Reiniciar a fila</option>
+                    <option value="parar_notificar">{t('pararNotificarOpcao')}</option>
+                    <option value="reiniciar">{t('reiniciarOpcao')}</option>
                   </select>
                 </label>
               </div>
               <button className="btn primary" type="submit" style={{ marginTop: 4 }}>
-                Criar pasta
+                {t('criarPasta')}
               </button>
             </form>
           </div>

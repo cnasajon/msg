@@ -14,6 +14,10 @@ import {
   resumirDias,
   type Agendamento,
 } from '@/lib/agenda';
+import pt from '../messages/pt.json';
+import en from '../messages/en.json';
+
+const mensagens = { pt, en };
 
 const SP = 'America/Sao_Paulo';
 const MADRI = 'Europe/Madrid';
@@ -172,10 +176,18 @@ describe('hora e dias', () => {
     expect(problemaNaHora('sete')).not.toBeNull();
   });
 
-  it('resume os dias como a interface mostra', () => {
-    expect(resumirDias([1, 2, 3, 4, 5, 6, 7])).toBe('todos os dias');
-    expect(resumirDias([1, 2, 3, 4, 5])).toBe('Seg a Sex');
-    expect(resumirDias([6, 7])).toBe('Sab e Dom');
-    expect(resumirDias([7, 3])).toBe('Dom, Qua');
+  it('resume os dias como a interface mostra, no idioma escolhido', () => {
+    const rotulos = (idioma: 'pt' | 'en') => (chave: string) =>
+      (mensagens[idioma].dias as Record<string, string>)[chave] ?? chave;
+    const pt = rotulos('pt');
+    const en = rotulos('en');
+
+    expect(resumirDias([1, 2, 3, 4, 5, 6, 7], pt)).toBe('todos os dias');
+    expect(resumirDias([1, 2, 3, 4, 5], pt)).toBe('Seg a Sex');
+    expect(resumirDias([6, 7], pt)).toBe('Sab e Dom');
+    expect(resumirDias([7, 3], pt)).toBe('Dom, Qua');
+
+    expect(resumirDias([1, 2, 3, 4, 5], en)).toBe('Mon to Fri');
+    expect(resumirDias([7, 3], en)).toBe('Sun, Wed');
   });
 });

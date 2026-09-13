@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -7,15 +8,11 @@ import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao } from '@/lib/escopo';
+import { IDIOMAS, NOME_DO_IDIOMA, type Idioma } from '@/i18n/idiomas';
 import { criarOrganizacao, editarOrganizacao } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
-const IDIOMAS = [
-  { valor: 'pt', rotulo: 'Português' },
-  { valor: 'es', rotulo: 'Español' },
-  { valor: 'en', rotulo: 'English' },
-];
 
 export default async function Organizacoes({
   searchParams,
@@ -26,6 +23,11 @@ export default async function Organizacoes({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
   if (!podeFazer(sessao.perfil, 'organizacoes.gerenciar')) redirect('/inicio');
+
+  const t = await getTranslations('organizacoes');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const { erro, ok, editar } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -38,31 +40,33 @@ export default async function Organizacoes({
   const emEdicao = editar ? organizacoes.find((o) => o.id === editar) : undefined;
 
   return (
-    <Casca sessao={sessao} titulo="Organizações" caminho="Sistema · só superadmin" atual="/organizacoes">
+    <Casca
+      sessao={sessao}
+      titulo={t('titulo')}
+      caminho={`${menu('sistema')} · ${t('soSuperadmin')}`}
+      atual="/organizacoes"
+    >
       <Avisos erro={erro} ok={ok} />
 
       <div className="banner info">
-        <div>
-          Cada organização opera de forma independente: suas pastas, seus grupos de Telegram e seus
-          usuários. Toda troca de organização ativa fica registrada na auditoria.
-        </div>
+        <div>{t('explicacao')}</div>
       </div>
 
       <div className="card">
         <header>
-          <h2>Organizações cadastradas</h2>
+          <h2>{t('cadastradas')}</h2>
           <span className="spacer" />
-          <span className="sub">{organizacoes.length} no total</span>
+          <span className="sub">{t('noTotal', { quantidade: organizacoes.length })}</span>
         </header>
         <table>
           <thead>
             <tr>
-              <th>Organização</th>
-              <th>Idioma padrão</th>
-              <th>Fuso padrão</th>
-              <th className="num">Pastas</th>
-              <th className="num">Usuários</th>
-              <th>Situação</th>
+              <th>{t('organizacao')}</th>
+              <th>{t('idiomaPadrao')}</th>
+              <th>{t('fusoPadrao')}</th>
+              <th className="num">{t('pastas')}</th>
+              <th className="num">{t('usuarios')}</th>
+              <th>{t('situacao')}</th>
               <th />
             </tr>
           </thead>
@@ -70,7 +74,7 @@ export default async function Organizacoes({
             {organizacoes.length === 0 ? (
               <tr>
                 <td colSpan={7} className="faint">
-                  Nenhuma organização ainda. Crie a primeira no formulário abaixo.
+                  {t('nenhuma')}
                 </td>
               </tr>
             ) : (
@@ -78,18 +82,22 @@ export default async function Organizacoes({
                 <tr key={o.id}>
                   <td>
                     <b>{o.nome}</b>
-                    <div className="faint">criada em {o.criadaEm.toLocaleDateString('pt-BR')}</div>
+                    <div className="faint">
+                      {t('criadaEm', { quando: o.criadaEm.toLocaleDateString(idioma) })}
+                    </div>
                   </td>
-                  <td>{IDIOMAS.find((i) => i.valor === o.idiomaPadrao)?.rotulo ?? o.idiomaPadrao}</td>
+                  <td>{NOME_DO_IDIOMA[o.idiomaPadrao as Idioma] ?? o.idiomaPadrao}</td>
                   <td>{o.timezonePadrao}</td>
                   <td className="num">{o._count.folders}</td>
                   <td className="num">{o._count.users}</td>
                   <td>
-                    <span className={o.ativa ? 'pill ok' : 'pill'}>{o.ativa ? 'ativa' : 'inativa'}</span>
+                    <span className={o.ativa ? 'pill ok' : 'pill'}>
+                      {o.ativa ? t('ativa') : comum('inativa')}
+                    </span>
                   </td>
                   <td>
                     <a className="btn sm" href={`/organizacoes?editar=${o.id}`}>
-                      Editar
+                      {t('editar')}
                     </a>
                   </td>
                 </tr>
@@ -101,7 +109,7 @@ export default async function Organizacoes({
 
       <div className="card">
         <header>
-          <h2>{emEdicao ? `Editar — ${emEdicao.nome}` : 'Nova organização'}</h2>
+          <h2>{emEdicao ? t('editarTitulo', { nome: emEdicao.nome }) : t('nova')}</h2>
         </header>
         <div className="body">
           <form action={emEdicao ? editarOrganizacao : criarOrganizacao}>
@@ -109,46 +117,47 @@ export default async function Organizacoes({
             {emEdicao ? <input type="hidden" name="id" value={emEdicao.id} /> : null}
             <div className="row">
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">Nome</span>
+                <span className="lbl">{t('nome')}</span>
                 <input type="text" name="nome" defaultValue={emEdicao?.nome ?? ''} required />
               </label>
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">Idioma padrão</span>
+                <span className="lbl">{t('idiomaPadrao')}</span>
                 <select name="idiomaPadrao" defaultValue={emEdicao?.idiomaPadrao ?? 'pt'}>
-                  {IDIOMAS.map((i) => (
-                    <option key={i.valor} value={i.valor}>
-                      {i.rotulo}
+                  {IDIOMAS.map((codigo) => (
+                    <option key={codigo} value={codigo}>
+                      {NOME_DO_IDIOMA[codigo]}
                     </option>
                   ))}
                 </select>
-                <span className="hint">Cada usuário pode sobrepor o idioma no próprio perfil.</span>
+                <span className="hint">{t('idiomaHint')}</span>
               </label>
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">Fuso padrão</span>
+                <span className="lbl">{t('fusoPadrao')}</span>
                 <input
                   type="text"
                   name="timezonePadrao"
                   defaultValue={emEdicao?.timezonePadrao ?? 'America/Sao_Paulo'}
                   required
                 />
-                <span className="hint">Valor inicial das pastas novas; cada pasta tem o seu.</span>
+                <span className="hint">{t('fusoHint')}</span>
               </label>
             </div>
             {emEdicao ? (
               <div className="check">
                 <input type="checkbox" id="ativa" name="ativa" defaultChecked={emEdicao.ativa} />
                 <label htmlFor="ativa">
-                  Organização ativa <span className="faint">— desativar suspende publicações e acesso, sem apagar nada</span>
+                  {t('organizacaoAtiva')}{' '}
+                  <span className="faint">{t('desativarSuspende')}</span>
                 </label>
               </div>
             ) : null}
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <button className="btn primary" type="submit">
-                {emEdicao ? 'Salvar' : 'Criar organização'}
+                {emEdicao ? comum('salvar') : t('criar')}
               </button>
               {emEdicao ? (
                 <a className="btn" href="/organizacoes">
-                  Cancelar
+                  {comum('cancelar')}
                 </a>
               ) : null}
             </div>

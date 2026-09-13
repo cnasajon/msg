@@ -36,6 +36,7 @@ export default async function Painel() {
   const menu = await getTranslations('menu');
   const comum = await getTranslations('comum');
   const historico = await getTranslations('historico');
+  const dias = await getTranslations('dias');
 
   const agora = new Date();
   const orgEmVigor = organizacaoEmVigor(sessao);
@@ -227,7 +228,7 @@ export default async function Painel() {
                         <span className="tz">{siglaDoFuso(pasta.timezone)}</span>
                         <div className="faint">
                           {quando(proximo.instante, agora, t)} ·{' '}
-                          {resumirDias(agendamentosAtivos.flatMap((a) => a.diasSemana))}
+                          {resumirDias(agendamentosAtivos.flatMap((a) => a.diasSemana), dias)}
                         </div>
                       </>
                     ) : (

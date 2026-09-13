@@ -20,3 +20,22 @@ export const NOME_DO_IDIOMA: Record<Idioma, string> = {
 export function idiomaValido(valor: string | null | undefined): Idioma | null {
   return valor && IDIOMAS.includes(valor as Idioma) ? (valor as Idioma) : null;
 }
+
+/**
+ * Grupos de mensagens que vão para o navegador.
+ *
+ * O provedor do next-intl serializa na página tudo que recebe. Mandar o arquivo
+ * inteiro faria a tela inicial de um usuário comum carregar os rótulos das
+ * telas de sistema — peso desnecessário e informação que aquele perfil não
+ * precisa ver. Aqui ficam só os grupos que algum componente de cliente usa.
+ */
+export const GRUPOS_DO_CLIENTE = [
+  'agendamentos',
+  'comum',
+  'dias',
+  'editor',
+  'entrada',
+  'importacao',
+  'situacoesDaLinha',
+  'textos',
+] as const;

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { sessaoAtual } from '@/lib/sessao';
 import { podeFazer } from '@/lib/autorizacao';
@@ -16,30 +17,31 @@ export const dynamic = 'force-dynamic';
  * senha mudou, nunca o que eles passaram a ser.
  */
 
-const ROTULO_DA_ACAO: Record<string, string> = {
-  criar: 'criar',
-  editar: 'editar',
-  excluir: 'excluir',
-  login: 'entrar',
-  trocar_senha: 'trocar senha',
-  redefinir_senha: 'redefinir senha',
-  atribuir_pastas: 'atribuir pastas',
-  trocar_organizacao: 'trocar organização',
-  importar: 'importar',
-  desfazer_importacao: 'desfazer importação',
-  exportar: 'exportar',
-  arquivar: 'arquivar',
-  desarquivar: 'desarquivar',
-  reordenar: 'reordenar fila',
-  pular: 'pular texto',
-  publicar_agora: 'publicar agora',
-  reiniciar_fila: 'reiniciar fila',
-  testar_conexao: 'testar conexão',
-  testar_alerta: 'testar alerta',
-  definir_token_sobreposicao: 'definir token de sobreposição',
-  remover_token_sobreposicao: 'remover token de sobreposição',
-  alerta: 'alerta',
-};
+/** As acoes registradas; os rotulos vivem no grupo `acoesDaAuditoria`. */
+const ACOES = [
+  'criar',
+  'editar',
+  'excluir',
+  'login',
+  'trocar_senha',
+  'redefinir_senha',
+  'atribuir_pastas',
+  'trocar_organizacao',
+  'importar',
+  'desfazer_importacao',
+  'exportar',
+  'arquivar',
+  'desarquivar',
+  'reordenar',
+  'pular',
+  'publicar_agora',
+  'reiniciar_fila',
+  'testar_conexao',
+  'testar_alerta',
+  'definir_token_sobreposicao',
+  'remover_token_sobreposicao',
+  'alerta',
+];
 
 const CLASSE_DA_ACAO: Record<string, string> = {
   excluir: 'pill err',
@@ -64,10 +66,15 @@ export default async function Auditoria({
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
   if (!podeFazer(sessao.perfil, 'auditoria.ver')) redirect('/inicio');
 
+  const t = await getTranslations('auditoria');
+  const acoes = await getTranslations('acoesDaAuditoria');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+
   const filtros = await searchParams;
   const porPagina = 50;
   const pagina = Math.max(1, Number(filtros.pagina ?? 1) || 1);
-  const acao = filtros.acao && ROTULO_DA_ACAO[filtros.acao] ? filtros.acao : '';
+  const acao = filtros.acao && ACOES.includes(filtros.acao) ? filtros.acao : '';
   const entidade = ENTIDADES.includes(filtros.entidade ?? '') ? (filtros.entidade ?? '') : '';
 
   const onde = {
@@ -98,30 +105,27 @@ export default async function Auditoria({
   };
 
   return (
-    <Casca sessao={sessao} titulo="Log de auditoria" caminho="Configuração" atual="/auditoria">
+    <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('configuracao')} atual="/auditoria">
       <div className="banner info">
         <div>
-          Toda criação, edição, exclusão e publicação fica registrada.{' '}
-          {sessao.perfil === 'superadmin'
-            ? 'Como superadmin, você vê todas as organizações.'
-            : 'Você vê os registros da sua organização.'}{' '}
-          Nenhum valor de segredo é guardado aqui — a auditoria registra que um token ou uma senha
-          mudou, nunca o que eles passaram a ser.
+          {t('explicacao')}{' '}
+          {sessao.perfil === 'superadmin' ? t('comoSuperadmin') : t('comoAdmin')}{' '}
+          {t('semSegredos')}
         </div>
       </div>
 
       <div className="card">
         <form className="toolbar" method="get">
           <select name="acao" defaultValue={acao}>
-            <option value="">Todas as ações</option>
-            {Object.entries(ROTULO_DA_ACAO).map(([valor, rotulo]) => (
+            <option value="">{t('todasAsAcoes')}</option>
+            {ACOES.map((valor) => (
               <option key={valor} value={valor}>
-                {rotulo}
+                {acoes(valor)}
               </option>
             ))}
           </select>
           <select name="entidade" defaultValue={entidade}>
-            <option value="">Todas as entidades</option>
+            <option value="">{t('todasAsEntidades')}</option>
             {ENTIDADES.filter(Boolean).map((e) => (
               <option key={e} value={e}>
                 {e}
@@ -129,23 +133,23 @@ export default async function Auditoria({
             ))}
           </select>
           <button className="btn" type="submit">
-            Filtrar
+            {comum('filtrar')}
           </button>
           <span className="spacer" />
-          <span className="faint">
-            {total} registro(s) · página {pagina} de {paginas}
-          </span>
+          <span className="faint">{t('contagem', { total, pagina, paginas })}</span>
         </form>
 
         <table>
           <thead>
             <tr>
-              <th style={{ width: 160 }}>Quando</th>
-              <th style={{ width: 170 }}>Quem</th>
-              {sessao.perfil === 'superadmin' ? <th style={{ width: 150 }}>Organização</th> : null}
-              <th style={{ width: 180 }}>Ação</th>
-              <th style={{ width: 120 }}>Entidade</th>
-              <th>Detalhes</th>
+              <th style={{ width: 160 }}>{t('quando')}</th>
+              <th style={{ width: 170 }}>{t('quem')}</th>
+              {sessao.perfil === 'superadmin' ? (
+                <th style={{ width: 150 }}>{t('organizacao')}</th>
+              ) : null}
+              <th style={{ width: 180 }}>{t('acao')}</th>
+              <th style={{ width: 120 }}>{t('entidade')}</th>
+              <th>{t('detalhes')}</th>
               <th style={{ width: 120 }}>IP</th>
             </tr>
           </thead>
@@ -153,7 +157,7 @@ export default async function Auditoria({
             {registros.length === 0 ? (
               <tr>
                 <td colSpan={7} className="faint">
-                  Nenhum registro com esses filtros.
+                  {t('nenhum')}
                 </td>
               </tr>
             ) : (
@@ -161,14 +165,16 @@ export default async function Auditoria({
                 <tr key={r.id}>
                   <td>{formatarNoFuso(r.criadoEm, 'America/Sao_Paulo')}</td>
                   <td>
-                    {r.user?.nome ?? <span className="faint">sistema (worker)</span>}
+                    {r.user?.nome ?? <span className="faint">{t('sistema')}</span>}
                   </td>
                   {sessao.perfil === 'superadmin' ? (
-                    <td>{r.organization?.nome ?? <span className="faint">—</span>}</td>
+                    <td>
+                      {r.organization?.nome ?? <span className="faint">{comum('nenhum')}</span>}
+                    </td>
                   ) : null}
                   <td>
                     <span className={CLASSE_DA_ACAO[r.acao] ?? 'pill'}>
-                      {ROTULO_DA_ACAO[r.acao] ?? r.acao}
+                      {ACOES.includes(r.acao) ? acoes(r.acao) : r.acao}
                     </span>
                   </td>
                   <td className="mono">{r.entidade}</td>
@@ -178,10 +184,12 @@ export default async function Auditoria({
                         {JSON.stringify(r.detalhes)}
                       </code>
                     ) : (
-                      '—'
+                      comum('nenhum')
                     )}
                   </td>
-                  <td className="mono">{r.ip ?? <span className="faint">—</span>}</td>
+                  <td className="mono">
+                    {r.ip ?? <span className="faint">{comum('nenhum')}</span>}
+                  </td>
                 </tr>
               ))
             )}
@@ -195,17 +203,15 @@ export default async function Auditoria({
           >
             {pagina > 1 ? (
               <Link className="btn sm" href={parametros(pagina - 1)}>
-                ← Anteriores
+                {t('anteriores')}
               </Link>
             ) : null}
             {pagina < paginas ? (
               <Link className="btn sm" href={parametros(pagina + 1)}>
-                Seguintes →
+                {t('seguintes')}
               </Link>
             ) : null}
-            <span className="faint">
-              página {pagina} de {paginas}
-            </span>
+            <span className="faint">{t('pagina', { pagina, paginas })}</span>
           </div>
         ) : null}
       </div>

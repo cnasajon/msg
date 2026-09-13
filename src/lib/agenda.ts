@@ -191,23 +191,20 @@ export function problemaNaHora(valor: string): string | null {
   return null;
 }
 
-/** Siglas na ordem em que a interface mostra: comeca no domingo. */
-export const DIAS_DA_SEMANA = [
-  { iso: 7, sigla: 'Dom' },
-  { iso: 1, sigla: 'Seg' },
-  { iso: 2, sigla: 'Ter' },
-  { iso: 3, sigla: 'Qua' },
-  { iso: 4, sigla: 'Qui' },
-  { iso: 5, sigla: 'Sex' },
-  { iso: 6, sigla: 'Sab' },
-] as const;
+/** Dias ISO na ordem em que a interface mostra: comeca no domingo. */
+export const DIAS_DA_SEMANA = [7, 1, 2, 3, 4, 5, 6] as const;
 
-export function resumirDias(diasSemana: number[]): string {
-  if (diasSemana.length === 7) return 'todos os dias';
+/**
+ * Resume os dias no idioma de quem esta olhando. As siglas e as tres formas
+ * curtas ("todos os dias", "Seg a Sex", "Sab e Dom") vivem nas mensagens, no
+ * grupo `dias`; aqui fica so a regra de qual delas usar.
+ */
+export function resumirDias(diasSemana: number[], t: (chave: string) => string): string {
+  if (diasSemana.length === 7) return t('todos');
   const ordenados = [...diasSemana].sort((a, b) => a - b);
-  if (ordenados.join(',') === '1,2,3,4,5') return 'Seg a Sex';
-  if (ordenados.join(',') === '6,7') return 'Sab e Dom';
-  return DIAS_DA_SEMANA.filter((d) => diasSemana.includes(d.iso))
-    .map((d) => d.sigla)
+  if (ordenados.join(',') === '1,2,3,4,5') return t('uteis');
+  if (ordenados.join(',') === '6,7') return t('fimDeSemana');
+  return DIAS_DA_SEMANA.filter((iso) => diasSemana.includes(iso))
+    .map((iso) => t(String(iso)))
     .join(', ');
 }

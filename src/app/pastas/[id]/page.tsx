@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -17,7 +18,7 @@ import {
   excluirAgendamento,
 } from '../acoes-agenda';
 import { TabelaDeAgendamentos } from '@/components/tabela-agendamentos';
-import { proximoSlot, resumirDias } from '@/lib/agenda';
+import { proximoSlot } from '@/lib/agenda';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,10 @@ export default async function ConfigurarPasta({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
   if (!podeFazer(sessao.perfil, 'pastas.gerenciar')) redirect('/inicio');
+
+  const t = await getTranslations('pastas');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
 
   const { id } = await params;
   const { erro, ok } = await searchParams;
@@ -59,17 +64,22 @@ export default async function ConfigurarPasta({
   ]);
 
   return (
-    <Casca sessao={sessao} titulo={pasta.nome} caminho="Configuração · Pastas" atual="/pastas">
+    <Casca
+      sessao={sessao}
+      titulo={pasta.nome}
+      caminho={`${menu('configuracao')} · ${menu('pastas')}`}
+      atual="/pastas"
+    >
       <Avisos erro={erro} ok={ok} />
 
       <div className="grid c2">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="card">
             <header>
-              <h2>Identificação e destino</h2>
+              <h2>{t('identificacao')}</h2>
               <span className="spacer" />
               <Link className="btn sm" href={`/textos?pasta=${pasta.id}`}>
-                Ver textos
+                {t('verTextos')}
               </Link>
             </header>
             <div className="body">
@@ -78,36 +88,41 @@ export default async function ConfigurarPasta({
                 <input type="hidden" name="id" value={pasta.id} />
 
                 <label className="field">
-                  <span className="lbl">Nome</span>
+                  <span className="lbl">{t('nome')}</span>
                   <input type="text" name="nome" defaultValue={pasta.nome} required />
                 </label>
                 <label className="field">
-                  <span className="lbl">Descrição</span>
+                  <span className="lbl">{t('descricao')}</span>
                   <input type="text" name="descricao" defaultValue={pasta.descricao ?? ''} />
                 </label>
 
                 <div className="row">
                   <label className="field" style={{ margin: 0 }}>
-                    <span className="lbl">Fuso horário da pasta</span>
+                    <span className="lbl">{t('fusoDaPasta')}</span>
                     <input type="text" name="timezone" defaultValue={pasta.timezone} required />
                     <span className="hint">
-                      Agora são {new Date().toLocaleTimeString('pt-BR', { timeZone: pasta.timezone, hour: '2-digit', minute: '2-digit' })}{' '}
-                      <span className="tz">{siglaDoFuso(pasta.timezone)}</span> nesta pasta. Os serviços
-                      rodam em <code>TZ=UTC</code>.
+                      {t('agoraSao', {
+                        hora: new Date().toLocaleTimeString('pt-BR', {
+                          timeZone: pasta.timezone,
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }),
+                      })}{' '}
+                      <span className="tz">{siglaDoFuso(pasta.timezone)}</span> {t('nestaPasta')}
                     </span>
                   </label>
                   <label className="field" style={{ margin: 0 }}>
-                    <span className="lbl">Situação</span>
+                    <span className="lbl">{t('situacao')}</span>
                     <select name="ativaSelect" defaultValue={pasta.ativa ? 'sim' : 'nao'} disabled>
-                      <option value="sim">Ativa</option>
-                      <option value="nao">Inativa</option>
+                      <option value="sim">{t('ativaOpcao')}</option>
+                      <option value="nao">{t('inativa')}</option>
                     </select>
-                    <span className="hint">Use a caixa abaixo para mudar.</span>
+                    <span className="hint">{t('useACaixa')}</span>
                   </label>
                 </div>
 
                 <label className="field">
-                  <span className="lbl">chat_id do grupo no Telegram</span>
+                  <span className="lbl">{t('chatIdDoGrupo')}</span>
                   <input
                     type="text"
                     name="telegramChatId"
@@ -115,14 +130,11 @@ export default async function ConfigurarPasta({
                     placeholder="-100…"
                   />
                   <span className="hint">
-                    Sempre o número, nunca o link ou o @nome — o nome pode ser trocado por um
-                    administrador do grupo. Promova o grupo a supergroup <b>antes</b> de anotar o
-                    número: ele muda na promoção, e a publicação passa a falhar com{' '}
-                    <code>chat not found</code>.
+                    {t.rich('chatIdExplicacao', { b: (partes) => <b>{partes}</b> })}
                   </span>
                 </label>
 
-                <h3 style={{ fontSize: 13, margin: '18px 0 8px' }}>Ao esgotar a fila</h3>
+                <h3 style={{ fontSize: 13, margin: '18px 0 8px' }}>{t('aoEsgotarFila')}</h3>
                 <div className="check">
                   <input
                     type="radio"
@@ -132,8 +144,7 @@ export default async function ConfigurarPasta({
                     defaultChecked={pasta.aoEsgotar === 'parar_notificar'}
                   />
                   <label htmlFor="esgotar-parar">
-                    <b>Parar e notificar</b> — registra a publicação sem texto, alerta os
-                    administradores e não publica nada.
+                    {t.rich('pararNotificarExplicacao', { b: (partes) => <b>{partes}</b> })}
                   </label>
                 </div>
                 <div className="check">
@@ -145,24 +156,23 @@ export default async function ConfigurarPasta({
                     defaultChecked={pasta.aoEsgotar === 'reiniciar'}
                   />
                   <label htmlFor="esgotar-reiniciar">
-                    <b>Reiniciar a fila</b> — devolve todos os textos a pendente, preservando a
-                    ordem, e publica o primeiro. O evento fica na auditoria.
+                    {t.rich('reiniciarExplicacao', { b: (partes) => <b>{partes}</b> })}
                   </label>
                 </div>
 
                 <div className="check" style={{ marginTop: 12 }}>
                   <input type="checkbox" id="ativa" name="ativa" defaultChecked={pasta.ativa} />
                   <label htmlFor="ativa">
-                    Pasta ativa <span className="faint">— inativa não publica nada</span>
+                    {t('pastaAtiva')} <span className="faint">{t('inativaNaoPublica')}</span>
                   </label>
                 </div>
 
                 <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
                   <button className="btn primary" type="submit">
-                    Salvar pasta
+                    {t('salvarPasta')}
                   </button>
                   <Link className="btn" href="/pastas">
-                    Voltar
+                    {comum('voltar')}
                   </Link>
                 </div>
               </form>
@@ -174,12 +184,10 @@ export default async function ConfigurarPasta({
                   <CampoCsrf token={csrf} />
                   <input type="hidden" name="id" value={pasta.id} />
                   <button className="btn" type="submit" disabled={!pasta.telegramChatId}>
-                    Testar conexão
+                    {t('testarConexao')}
                   </button>
                 </form>
-                <span className="faint">
-                  Envia uma mensagem de teste ao grupo e mostra o erro exato devolvido pela API.
-                </span>
+                <span className="faint">{t('testarExplicacao')}</span>
               </div>
             </div>
           </div>
@@ -187,45 +195,39 @@ export default async function ConfigurarPasta({
           {podeFazer(sessao.perfil, 'pastas.configurarTokenSobreposicao') ? (
             <div className="card">
               <header>
-                <h2>Token de sobreposição</h2>
+                <h2>{t('tokenSobreposicao')}</h2>
                 <span className="spacer" />
-                <span className="pill accent">só superadmin</span>
+                <span className="pill accent">{t('soSuperadmin')}</span>
               </header>
               <div className="body">
                 <div className="banner info" style={{ marginBottom: 14 }}>
-                  <div>
-                    Vazio por padrão. Todas as organizações usam o bot único <b>@OAmsg_bot</b>, com o
-                    token na variável compartilhada <code>TELEGRAM_BOT_TOKEN</code>. Preencha apenas
-                    para isolar uma organização em outro bot.
-                  </div>
+                  <div>{t.rich('tokenExplicacao', { b: (partes) => <b>{partes}</b> })}</div>
                 </div>
                 <form action={salvarTokenDeSobreposicao}>
                   <CampoCsrf token={csrf} />
                   <input type="hidden" name="id" value={pasta.id} />
                   <label className="field">
-                    <span className="lbl">Token do bot desta pasta</span>
+                    <span className="lbl">{t('tokenDaPasta')}</span>
                     <input
                       type="text"
                       name="token"
                       placeholder={
                         pasta.telegramBotTokenCifrado
-                          ? 'sobreposição ativa — cole outro token para trocar, ou salve vazio para remover'
-                          : '(vazio — usando o bot global)'
+                          ? t('tokenAtivoPlaceholder')
+                          : t('tokenVazioPlaceholder')
                       }
                       autoComplete="off"
                     />
-                    <span className="hint">
-                      Cifrado com AES-256-GCM e nunca reexibido. O token é conferido no Telegram
-                      antes de ser gravado. Trocar a <code>ENCRYPTION_KEY</code> invalida o que já
-                      está cifrado.
-                    </span>
+                    <span className="hint">{t('tokenHint')}</span>
                   </label>
                   <button className="btn" type="submit">
-                    {pasta.telegramBotTokenCifrado ? 'Atualizar ou remover' : 'Salvar sobreposição'}
+                    {pasta.telegramBotTokenCifrado
+                      ? t('atualizarOuRemover')
+                      : t('salvarSobreposicao')}
                   </button>
                   {pasta.telegramBotTokenCifrado ? (
                     <span className="pill accent" style={{ marginLeft: 10 }}>
-                      sobreposição ativa
+                      {t('sobreposicaoAtiva')}
                     </span>
                   ) : null}
                 </form>
@@ -237,32 +239,32 @@ export default async function ConfigurarPasta({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="card">
             <header>
-              <h2>Situação da fila</h2>
+              <h2>{t('situacaoDaFila')}</h2>
             </header>
             <div className="body">
               <dl className="kv">
-                <dt>Textos pendentes</dt>
+                <dt>{t('textosPendentes')}</dt>
                 <dd>
                   <span className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill ok'}>
                     {pendentes}
                   </span>{' '}
                   {pendentes < 5 ? (
-                    <span className="faint">o painel avisa abaixo de cinco</span>
+                    <span className="faint">{t('avisaAbaixoDeCinco')}</span>
                   ) : null}
                 </dd>
-                <dt>Já publicados</dt>
+                <dt>{t('jaPublicados')}</dt>
                 <dd>{publicados}</dd>
-                <dt>Agendamentos ativos</dt>
+                <dt>{t('agendamentosAtivos')}</dt>
                 <dd>{agendamentos.filter((a) => a.ativo).length}</dd>
-                <dt>Próxima publicação</dt>
+                <dt>{t('proximaPublicacao')}</dt>
                 <dd>
                   {proximo ? (
                     <>
-                      {proximo.data.split('-').reverse().join('/')} às {proximo.hora}{' '}
+                      {proximo.data.split('-').reverse().join('/')} {t('as')} {proximo.hora}{' '}
                       <span className="tz">{siglaDoFuso(pasta.timezone)}</span>
                     </>
                   ) : (
-                    <span className="faint">nenhum agendamento ativo</span>
+                    <span className="faint">{t('nenhumAgendamentoAtivo')}</span>
                   )}
                 </dd>
               </dl>
@@ -271,49 +273,47 @@ export default async function ConfigurarPasta({
 
           <div className="card">
             <header>
-              <h2>Quem tem acesso</h2>
+              <h2>{t('quemTemAcesso')}</h2>
             </header>
             <div className="body">
               <p className="faint" style={{ marginTop: 0 }}>
-                Admins enxergam todas as pastas da organização. O perfil <b>usuário</b> só enxerga as
-                pastas atribuídas a ele, o que é feito na tela de usuários.
+                {t.rich('acessoExplicacao', { b: (partes) => <b>{partes}</b> })}
               </p>
               {usuarios.length === 0 ? (
-                <p className="faint">Nenhum usuário com perfil “usuário” nesta organização.</p>
+                <p className="faint">{t('semUsuarios')}</p>
               ) : (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
                   {usuarios.map((u) => (
                     <li key={u.id} style={{ marginBottom: 4 }}>
                       {u.nome}{' '}
                       {u.folders.length ? (
-                        <span className="pill ok">com acesso</span>
+                        <span className="pill ok">{t('comAcesso')}</span>
                       ) : (
-                        <span className="pill">sem acesso</span>
+                        <span className="pill">{t('semAcesso')}</span>
                       )}
                     </li>
                   ))}
                 </ul>
               )}
               <Link className="btn sm" href="/usuarios" style={{ marginTop: 12 }}>
-                Gerenciar usuários
+                {t('gerenciarUsuarios')}
               </Link>
             </div>
           </div>
 
           <div className="card">
             <header>
-              <h2>Excluir pasta</h2>
+              <h2>{t('excluirPasta')}</h2>
             </header>
             <div className="body">
               <p className="faint" style={{ marginTop: 0 }}>
-                Excluir apaga a pasta e os textos dela. Pastas com textos já publicados não podem ser
-                excluídas — desative-as, para preservar o histórico.
+                {t('excluirExplicacao')}
               </p>
               <form action={excluirPasta}>
                 <CampoCsrf token={csrf} />
                 <input type="hidden" name="id" value={pasta.id} />
                 <button className="btn danger" type="submit">
-                  Excluir pasta
+                  {t('excluirPasta')}
                 </button>
               </form>
             </div>
@@ -323,9 +323,9 @@ export default async function ConfigurarPasta({
 
           <div className="card">
         <header>
-          <h2>Agendamentos</h2>
+          <h2>{t('agendamentos')}</h2>
           <span className="spacer" />
-          <span className="sub">horários no fuso da pasta</span>
+          <span className="sub">{t('horariosNoFuso')}</span>
         </header>
         <TabelaDeAgendamentos
           folderId={pasta.id}
