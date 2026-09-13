@@ -74,7 +74,7 @@ export default async function Usuarios({
           <thead>
             <tr>
               <th>{t('nome')}</th>
-              <th>{t('contato')}</th>
+              <th>{t('usuario')}</th>
               {sessao.perfil === 'superadmin' ? <th>{t('organizacao')}</th> : null}
               <th>{t('perfil')}</th>
               <th>{t('pastasAtribuidas')}</th>
@@ -99,9 +99,9 @@ export default async function Usuarios({
                   ) : null}
                 </td>
                 <td className="mono">
-                  {u.email}
+                  {u.username}
                   <div className="faint">
-                    {[u.telegramUsername, u.telefone].filter(Boolean).join(' · ') ||
+                    {[u.email, u.telegramUsername, u.telefone].filter(Boolean).join(' · ') ||
                       comum('nenhum')}
                   </div>
                 </td>
@@ -161,8 +161,22 @@ export default async function Usuarios({
                   <input type="text" name="nome" defaultValue={emEdicao.nome} required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('emailLogin')}</span>
-                  <input type="email" defaultValue={emEdicao.email} disabled />
+                  <span className="lbl">{t('usuario')}</span>
+                  <input
+                    type="text"
+                    name="username"
+                    defaultValue={emEdicao.username}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    required
+                  />
+                  <span className="hint">{t('usuarioHint')}</span>
+                </label>
+                <label className="field" style={{ margin: 0 }}>
+                  <span className="lbl">
+                    {t('email')} <span className="faint">{t('opcional')}</span>
+                  </span>
+                  <input type="email" name="email" defaultValue={emEdicao.email ?? ''} />
                   <span className="hint">{t('emailHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
@@ -272,8 +286,21 @@ export default async function Usuarios({
                   <input type="text" name="nome" required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('emailLogin')}</span>
-                  <input type="email" name="email" required />
+                  <span className="lbl">{t('usuario')}</span>
+                  <input
+                    type="text"
+                    name="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    required
+                  />
+                  <span className="hint">{t('usuarioHint')}</span>
+                </label>
+                <label className="field" style={{ margin: 0 }}>
+                  <span className="lbl">
+                    {t('email')} <span className="faint">{t('opcional')}</span>
+                  </span>
+                  <input type="email" name="email" />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">

@@ -1,17 +1,14 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
-import { sessaoAtual } from '@/lib/sessao';
-import { FormularioDeLogin } from './formulario';
 import { SeletorDeIdioma } from '@/components/seletor-idioma';
+import { sessaoAtual } from '@/lib/sessao';
+import { FormularioDeEsquecimento } from './formulario';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Entrar() {
+export default async function Esqueci() {
   if (await sessaoAtual()) redirect('/inicio');
-  const t = await getTranslations('entrada');
 
   return (
     <>
@@ -30,13 +27,7 @@ export default async function Entrar() {
           </div>
           <div className="card">
             <div className="body">
-              <FormularioDeLogin />
-              <p style={{ margin: '14px 0 0', textAlign: 'center' }}>
-                <Link href="/esqueci">{t('esqueceu')}</Link>
-              </p>
-              <p className="faint" style={{ margin: '6px 0 0', textAlign: 'center' }}>
-                {t('semCadastro')}
-              </p>
+              <FormularioDeEsquecimento />
             </div>
           </div>
         </div>

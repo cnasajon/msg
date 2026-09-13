@@ -5,13 +5,15 @@ import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
 import { FilaOrdenavel } from '@/components/fila-ordenavel';
+import { MoverTextos, CaixaDeTexto, CaixaDeTodos } from '@/components/mover-textos';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
+import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDePasta, escopoDeTexto } from '@/lib/escopo';
 import { resumir, tamanhoDoTexto } from '@/lib/textos';
 import { formatarNoFuso } from '@/lib/fuso';
-import { arquivarTexto, desarquivarTexto, reordenarFila } from './acoes';
+import { arquivarTexto, desarquivarTexto, moverTextos, reordenarFila } from './acoes';
 import { publicarAgora, pularTexto, reenviarTexto } from '../pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
@@ -101,6 +103,11 @@ export default async function Textos({
   const semFiltro = !busca && !status && !filtros.imagem;
   const podeReordenar = semFiltro && pendentes.length > 1;
 
+  // Mover é de admin para cima; o destino sai da mesma lista de pastas que a
+  // pessoa já enxerga, menos a que está aberta.
+  const podeMover = podeFazer(sessao.perfil, 'textos.mover');
+  const destinos = pastas.filter((p) => p.id !== pasta.id).map((p) => ({ id: p.id, nome: p.nome }));
+
   return (
     <Casca
       sessao={sessao}
@@ -163,9 +170,21 @@ export default async function Textos({
           </Link>
         </form>
 
+        <MoverTextos
+          ativo={podeMover}
+          folderId={pasta.id}
+          destinos={destinos}
+          acao={moverTextos}
+          csrf={<CampoCsrf token={csrf} />}
+        >
         <table>
           <thead>
             <tr>
+              {podeMover ? (
+                <th style={{ width: 34 }}>
+                  <CaixaDeTodos rotulo={t('escolherTodos')} />
+                </th>
+              ) : null}
               <th style={{ width: 60 }}>{t('ordem')}</th>
               <th>{t('texto')}</th>
               <th style={{ width: 110 }}>{t('situacao')}</th>
@@ -176,13 +195,18 @@ export default async function Textos({
           <tbody>
             {textos.length === 0 ? (
               <tr>
-                <td colSpan={5} className="faint">
+                <td colSpan={podeMover ? 6 : 5} className="faint">
                   {t('nenhumComFiltros')}
                 </td>
               </tr>
             ) : (
               textos.map((texto) => (
                 <tr key={texto.id}>
+                  {podeMover ? (
+                    <td>
+                      <CaixaDeTexto id={texto.id} />
+                    </td>
+                  ) : null}
                   <td className="num">
                     {texto.status === 'pendente' ? (
                       posicaoNaFila.get(texto.id)
@@ -294,6 +318,7 @@ export default async function Textos({
             )}
           </tbody>
         </table>
+        </MoverTextos>
       </div>
 
       {podeReordenar ? (

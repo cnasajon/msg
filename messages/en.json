@@ -47,14 +47,14 @@
     "configuracoesGlobais": "Global settings"
   },
   "entrada": {
-    "email": "Email",
     "senha": "Password",
     "entrando": "Signing in…",
-    "credenciaisInvalidas": "Wrong email or password.",
-    "informeOsDois": "Enter your email and password.",
+    "credenciaisInvalidas": "Wrong username or password.",
+    "informeOsDois": "Enter username and password.",
     "tentativasDemais": "Too many attempts. Wait a few minutes and try again.",
-    "esqueceu": "Forgot your password? An administrator of your organisation resets it for you.",
-    "semCadastro": "There is no public sign-up."
+    "esqueceu": "I forgot my password",
+    "semCadastro": "There is no public sign-up.",
+    "usuario": "Username"
   },
   "primeiroAcesso": {
     "titulo": "First sign-in",
@@ -163,7 +163,12 @@
     "arquivadoEm": "archived on {quando}",
     "arrasteParaReordenar": "Drag to reorder",
     "moverParaCima": "Move up",
-    "moverParaBaixo": "Move down"
+    "moverParaBaixo": "Move down",
+    "moverPara": "Move to",
+    "mover": "Move",
+    "escolhidos": "{quantidade} selected",
+    "escolherTodos": "Select all",
+    "semOutraPasta": "There is no other folder to move to."
   },
   "editor": {
     "conteudo": "Content",
@@ -310,7 +315,8 @@
     "slot_perdido": "Missed slot",
     "fila_esgotada": "Queue exhausted",
     "fila_curta": "Short queue",
-    "autenticacao_bot": "Bot authentication failure"
+    "autenticacao_bot": "Bot authentication failure",
+    "senha_esquecida": "Password reset request"
   },
   "situacoesDaLinha": {
     "importar": "comes in as pending",
@@ -425,11 +431,10 @@
   },
   "usuarios": {
     "titulo": "Users",
-    "explicacao": "There is no public sign-up. Each account is created by someone above in the hierarchy, with a <b>temporary password</b> and a mandatory change on first sign-in. The e-mail is only a login identifier — the system never sends e-mail. <b>Telegram and phone are optional</b> and exist to reach the person.",
+    "explicacao": "There is no public sign-up. Each account is created by someone above in the hierarchy, with a <b>temporary password</b> and a mandatory change on first sign-in. Sign-in is by <b>username</b>, not by e-mail — <b>e-mail, phone and Telegram are optional</b> and exist to reach the person.",
     "semOrganizacao": "No active organisation chosen. You are seeing only the superadmins; pick an organisation in the selector at the top to manage its users.",
     "noTotal": "{quantidade} in total",
     "nome": "Name",
-    "contato": "Contact",
     "organizacao": "Organisation",
     "perfil": "Profile",
     "pastasAtribuidas": "Assigned folders",
@@ -443,8 +448,7 @@
     "editar": "Edit",
     "editarUsuario": "Edit user — {nome}",
     "fechar": "Close",
-    "emailLogin": "E-mail (login)",
-    "emailHint": "It is the sign-in credential and does not change here.",
+    "emailHint": "Directory only: the system sends no e-mail. It is there to reach the person.",
     "telegram": "Telegram",
     "telefone": "Phone",
     "opcional": "(optional)",
@@ -458,7 +462,10 @@
     "salvarPastas": "Save folders",
     "novoUsuario": "New user",
     "criarUsuario": "Create user",
-    "senhaApareceUmaVez": "The temporary password shows once, here on screen, for you to pass on to the person."
+    "senhaApareceUmaVez": "The temporary password shows once, here on screen, for you to pass on to the person.",
+    "usuario": "Username",
+    "usuarioHint": "This is what the person signs in with. Lowercase, no spaces and no accents.",
+    "email": "E-mail"
   },
   "organizacoes": {
     "titulo": "Organisations",
@@ -586,7 +593,8 @@
     "testar_alerta": "test alert",
     "definir_token_sobreposicao": "set override token",
     "remover_token_sobreposicao": "remove override token",
-    "alerta": "alert"
+    "alerta": "alert",
+    "mover": "move to another folder"
   },
   "avisos": {
     "textoDuplicado": "This folder already has a text with exactly this content.",
@@ -715,6 +723,28 @@
     "alertaFilaCurta": "The folder has only {quantidade} pending text(s).",
     "alertaFilaEsgotada": "The queue ran out and the folder is set to stop and notify. Nothing was published.",
     "alertaFalhaDefinitiva": "Definitive failure after {tentativas} attempts: {erro}",
-    "filaEsgotadaPublicacao": "Queue exhausted: there was no pending text to publish."
+    "filaEsgotadaPublicacao": "Queue exhausted: there was no pending text to publish.",
+    "usernameTamanho": "The username must be {minimo} to {maximo} characters long.",
+    "usernameFormato": "The username takes lowercase letters, digits, dot, hyphen and underscore, starting and ending with a letter or digit. No spaces and no accents.",
+    "usernameJaExiste": "An account with this username already exists.",
+    "informeUsuario": "Enter the username.",
+    "alertaSenhaEsquecida": "{nome} ({usuario}), from {organizacao}, asked for a password reset. Reset it under Configuration → Users and pass the temporary one on.",
+    "moverMesmaPasta": "Choose a folder other than the current one.",
+    "moverNenhumEscolhido": "Choose at least one text to move.",
+    "moverTodosRepetidos": "Nothing moved: the destination folder already has the {quantidade} chosen text(s), with the same content.",
+    "moverFeito": "{quantidade} text(s) moved to {pasta}, at the end of the queue.",
+    "moverParcial": "{movidos} text(s) moved to {pasta}. {pulados} skipped: the destination folder already had the same content."
+  },
+  "esqueci": {
+    "titulo": "I forgot my password",
+    "explicacao": "Enter your username. The administrators of your organisation are notified on Telegram and one of them resets your password.",
+    "usuario": "Username",
+    "pedir": "Request a reset",
+    "enviando": "Sending…",
+    "pronto": "Request recorded.",
+    "prontoDetalhe": "If this username exists, the organisation’s administrators have been notified. Ask one of them for the temporary password — the system sends you no e-mail and no message.",
+    "voltar": "Back to sign in",
+    "informeOUsuario": "Enter the username.",
+    "tentativasDemais": "Too many requests. Wait a few minutes and try again."
   }
 }

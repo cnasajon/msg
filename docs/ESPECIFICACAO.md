@@ -166,9 +166,11 @@ Se um serviço vazio for criado por engano no canvas (o Railway sugere um nome a
 `id`, `nome`, `idioma_padrao` (pt | es | en), `timezone_padrao`, `ativa`, `criada_em`
 
 ### users
-`id`, `organization_id` (nulo para superadmin), `nome`, `email` (único), `telefone` (nulo), `telegram_username` (nulo), `senha_hash`, `perfil` (superadmin | admin | usuario), `idioma` (nulo — sobrepõe o idioma da organização), `ativo`, `senha_provisoria` (booleano), `ultimo_login_em`, `criado_em`
+`id`, `organization_id` (nulo para superadmin), `nome`, `username` (único), `email` (único, nulo), `telefone` (nulo), `telegram_username` (nulo), `senha_hash`, `perfil` (superadmin | admin | usuario), `idioma` (nulo — sobrepõe o idioma da organização), `ativo`, `senha_provisoria` (booleano), `ultimo_login_em`, `criado_em`
 
-O e-mail é a credencial de entrada e continua obrigatório. Telefone e usuário do Telegram são opcionais e puramente cadastrais: servem para localizar a pessoa, o que na OA costuma valer mais que o e-mail. Entrar pelo Telegram fica como evolutiva.
+A credencial de entrada é o `username`: minúsculas, de 3 a 32 caracteres, com números, ponto, hífen e sublinhado, começando e terminando por letra ou número. Sem espaço e sem acento, porque `josé` e `jose` seriam duas contas para o banco e a mesma pessoa para quem olha.
+
+E-mail, telefone e usuário do Telegram são opcionais e puramente cadastrais: servem para localizar a pessoa, o que na OA costuma valer mais que o e-mail. O e-mail deixou de ser o login justamente porque o sistema não envia e-mail nenhum — ele não provava nada sobre quem entrava. Continua único quando preenchido; o Postgres não considera dois nulos iguais, então várias contas podem ficar sem ele. Entrar pelo Telegram fica como evolutiva.
 
 ### sessions
 `id`, `user_id`, `token_hash`, `organization_ativa_id` (nulo), `ip`, `user_agent`, `expira_em`, `criada_em`
@@ -238,6 +240,7 @@ Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 | Configurar token de sobreposição da pasta | sim | não | não |
 | Configurar destino dos alertas | sim | não | não |
 | Configurar agendamentos | sim | sim | não |
+| Mover textos entre pastas | sim | sim | não |
 | Criar, editar, excluir textos e imagens | sim | sim | nas pastas atribuídas |
 | Importar CSV/XLSX | sim | sim | nas pastas atribuídas |
 | Reordenar a fila | sim | sim | nas pastas atribuídas |
@@ -356,7 +359,7 @@ A falha de um canal de alerta nunca interrompe a publicação nem gera novo aler
 - Validação do conteúdo real do arquivo de imagem, não apenas da extensão ou do MIME declarado.
 - Nenhum segredo no código ou no repositório; apenas variáveis de ambiente do Railway. Nenhum token em log nem em mensagem de erro exibida na interface.
 - Log de auditoria de toda criação, edição, exclusão e publicação.
-- LGPD: os dados pessoais tratados são apenas nome e e-mail dos usuários administrativos, e o e-mail serve exclusivamente como identificador de login — o sistema não envia e-mail algum. Sem dados de terceiros e sem rastreamento de leitores.
+- LGPD: os dados pessoais tratados são apenas nome e nome de usuário dos usuários administrativos, com e-mail, telefone e Telegram opcionais e puramente cadastrais. O sistema não envia e-mail algum. Sem dados de terceiros e sem rastreamento de leitores.
 - Backup do banco configurado no Railway, com teste de restauração antes de entrar em produção. Com imagens no banco, conferir o tamanho do dump periodicamente.
 
 ---
@@ -467,7 +470,7 @@ Comece lendo docs/ESPECIFICACAO.md e me apresentando a fase 0.
 2. **Bot do Telegram:** um único bot (`@OAmsg_bot`), com campo de sobreposição por pasta mantido como hedge.
 3. **Imagens:** incluídas na v1, com escopo enxuto — uma por texto, 2 MB, só pela edição manual.
 4. **Notificações:** alertas no Telegram, com Google Chat opcional. Sem provedor de e-mail.
-5. **Senha esquecida:** redefinida por um admin, ou pelo superadmin no caso dos admins.
+5. **Senha esquecida:** a pessoa pede pela tela de entrada, informando o usuário; o pedido avisa os administradores pelo grupo de alertas do Telegram e pelo painel, e um deles redefine. A resposta da tela é sempre a mesma, exista a conta ou não, para o formulário não virar um descobridor de contas cadastradas. Sem link por e-mail, porque não há provedor de e-mail.
 6. **Destino dos alertas:** configurável pela interface, com variável de ambiente como garantia.
 7. **Claude Code:** sessões na nuvem, em branch com PR. Mockup em `docs/mockup/` como HTML estático.
 8. **Nomenclatura:** repositório `cnasajon/msg`, projeto Railway `msg`, domínio `msg.oa12.org`, bot `@OAmsg_bot`.
@@ -475,7 +478,7 @@ Comece lendo docs/ESPECIFICACAO.md e me apresentando a fase 0.
 10. **Situações do texto:** quatro — `pendente`, `publicado`, `erro`, `arquivado`. Arquivar é o caminho normal; excluir fica para o admin, em casos excepcionais.
 11. **Exportação:** PDF, XLSX, CSV, JSON e XML, respeitando filtro e escopo.
 12. **Importação de histórico:** coluna opcional de data de publicação, com `origem = importacao` e `hora_prevista` nula na publicação.
-13. **Cadastro de pessoas:** telefone e usuário do Telegram, opcionais; e-mail obrigatório, porque é a credencial de entrada.
+13. **Cadastro de pessoas:** a credencial de entrada é o nome de usuário; e-mail, telefone e usuário do Telegram são opcionais e cadastrais.
 14. **Dias da semana:** ISO-8601 no banco (1 = segunda … 7 = domingo), siglas na interface começando no domingo.
 15. **Fuso padrão das organizações:** `America/Sao_Paulo` como valor inicial, editável por organização e sobreposto por pasta.
 16. **Interface:** tema escuro por padrão; entrada em quatro blocos.

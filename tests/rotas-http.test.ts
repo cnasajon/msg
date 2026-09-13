@@ -72,7 +72,8 @@ describe.skipIf(!temBanco || !BASE)('isolamento nas rotas HTTP', () => {
     expect(resposta.status).toBe(200);
     expect(html).toContain(cenario.a.usuario.nome);
     expect(html).not.toContain(cenario.b.usuario.nome);
-    expect(html).not.toContain(cenario.b.admin.email);
+    expect(html).not.toContain(cenario.b.admin.username);
+    expect(html).not.toContain(cenario.b.admin.email!);
   });
 
   it('admin de A não abre usuário de B trocando o id na URL', async () => {
@@ -82,7 +83,8 @@ describe.skipIf(!temBanco || !BASE)('isolamento nas rotas HTTP', () => {
     // a tela abre, mas sem nenhum dado de B: o identificador simplesmente não
     // resolve para nada dentro do escopo
     expect(html).not.toContain(cenario.b.usuario.nome);
-    expect(html).not.toContain(cenario.b.usuario.email);
+    expect(html).not.toContain(cenario.b.usuario.username);
+    expect(html).not.toContain(cenario.b.usuario.email!);
     expect(html).toContain('Novo usuário');
   });
 

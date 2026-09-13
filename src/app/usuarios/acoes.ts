@@ -8,6 +8,7 @@ import { perfisQuePodeGerenciar, podeFazer, type Perfil } from '@/lib/autorizaca
 import { NaoAutorizado, NaoEncontrado } from '@/lib/erros';
 import { comEscopo, escopoDePasta, organizacaoEmVigor, type Sessao } from '@/lib/escopo';
 import { gerarHashDeSenha, gerarSenhaProvisoria } from '@/lib/senha';
+import { normalizarUsername, problemaNoUsername } from '@/lib/usuario';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
 import { tradutorDeAvisos, type Tradutor } from '@/lib/avisos-servidor';
@@ -48,15 +49,20 @@ export async function criarUsuario(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'usuarios.gerenciar')) throw new NaoAutorizado();
 
-  const { t } = await tradutorDeAvisos();
+  const { t, frase } = await tradutorDeAvisos();
   const nome = String(dados.get('nome') ?? '').trim();
-  const email = String(dados.get('email') ?? '').trim().toLowerCase();
+  const username = normalizarUsername(String(dados.get('username') ?? ''));
+  const email = String(dados.get('email') ?? '').trim().toLowerCase() || null;
   const perfil = String(dados.get('perfil') ?? 'usuario') as Perfil;
   const telefone = normalizarTelefone(String(dados.get('telefone') ?? ''), t);
   const telegram = normalizarTelegram(String(dados.get('telegramUsername') ?? ''), t);
 
   if (nome.length < 2) voltar(t('informeNome'));
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) voltar(t('emailInvalido'));
+  if (!username) voltar(t('informeUsuario'));
+  const problemaDoUsername = problemaNoUsername(username);
+  if (problemaDoUsername) voltar(frase(problemaDoUsername));
+  // o e-mail virou cadastral: só é conferido quando a pessoa preenche
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) voltar(t('emailInvalido'));
   if (!perfisQuePodeGerenciar(sessao.perfil).includes(perfil)) {
     voltar(t('perfilNaoPermitidoCriar'));
   }
@@ -64,13 +70,18 @@ export async function criarUsuario(dados: FormData) {
   // Superadmin não pertence a organização; os demais nascem na organização em vigor.
   const organizationId = perfil === 'superadmin' ? null : organizacaoDeDestino(sessao, t);
 
-  const jaExiste = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (jaExiste) voltar(t('emailJaExiste'));
+  const usernameEmUso = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+  if (usernameEmUso) voltar(t('usernameJaExiste'));
+  if (email) {
+    const emailEmUso = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+    if (emailEmUso) voltar(t('emailJaExiste'));
+  }
 
   const provisoria = gerarSenhaProvisoria();
   const criado = await prisma.user.create({
     data: {
       nome,
+      username,
       email,
       telefone,
       telegramUsername: telegram,
@@ -85,22 +96,24 @@ export async function criarUsuario(dados: FormData) {
     entidade: 'user',
     entidadeId: criado.id,
     organizationId,
-    detalhes: { nome, email, perfil },
+    detalhes: { nome, username, perfil },
   });
 
   // A senha provisória aparece uma única vez, para ser repassada à pessoa.
   // Não é guardada em lugar nenhum além do hash.
-  voltar(t('usuarioCriado', { nome, senha: provisoria }), 'ok');
+  voltar(t('usuarioCriado', { nome: username, senha: provisoria }), 'ok');
 }
 
 export async function editarUsuario(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'usuarios.gerenciar')) throw new NaoAutorizado();
 
-  const { t } = await tradutorDeAvisos();
+  const { t, frase } = await tradutorDeAvisos();
   const alvo = await comEscopo(sessao).usuario(String(dados.get('id') ?? ''));
 
   const nome = String(dados.get('nome') ?? '').trim();
+  const username = normalizarUsername(String(dados.get('username') ?? ''));
+  const email = String(dados.get('email') ?? '').trim().toLowerCase() || null;
   const telefone = normalizarTelefone(String(dados.get('telefone') ?? ''), t);
   const telegram = normalizarTelegram(String(dados.get('telegramUsername') ?? ''), t);
   const idiomaBruto = String(dados.get('idioma') ?? '');
@@ -109,6 +122,19 @@ export async function editarUsuario(dados: FormData) {
   const perfilBruto = String(dados.get('perfil') ?? alvo.perfil) as Perfil;
 
   if (nome.length < 2) voltar(t('informeNome'));
+  if (!username) voltar(t('informeUsuario'));
+  const problemaDoUsername = problemaNoUsername(username);
+  if (problemaDoUsername) voltar(frase(problemaDoUsername));
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) voltar(t('emailInvalido'));
+
+  if (username !== alvo.username) {
+    const emUso = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+    if (emUso) voltar(t('usernameJaExiste'));
+  }
+  if (email && email !== alvo.email) {
+    const emUso = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+    if (emUso) voltar(t('emailJaExiste'));
+  }
   if (perfilBruto !== alvo.perfil && !perfisQuePodeGerenciar(sessao.perfil).includes(perfilBruto)) {
     voltar(t('perfilNaoPermitidoAtribuir'));
   }
@@ -116,7 +142,7 @@ export async function editarUsuario(dados: FormData) {
 
   await prisma.user.update({
     where: { id: alvo.id },
-    data: { nome, telefone, telegramUsername: telegram, idioma, ativo, perfil: perfilBruto },
+    data: { nome, username, email, telefone, telegramUsername: telegram, idioma, ativo, perfil: perfilBruto },
   });
   // Conta desativada não pode continuar navegando com a sessão que já tinha.
   if (!ativo) await encerrarSessoesDoUsuario(alvo.id);
@@ -126,9 +152,9 @@ export async function editarUsuario(dados: FormData) {
     entidade: 'user',
     entidadeId: alvo.id,
     organizationId: alvo.organizationId,
-    detalhes: { nome, perfil: perfilBruto, ativo },
+    detalhes: { nome, username, perfil: perfilBruto, ativo },
   });
-  voltar(t('usuarioSalvo', { nome }), 'ok');
+  voltar(t('usuarioSalvo', { nome: username }), 'ok');
 }
 
 export async function redefinirSenha(dados: FormData) {
@@ -151,7 +177,7 @@ export async function redefinirSenha(dados: FormData) {
     entidadeId: alvo.id,
     organizationId: alvo.organizationId,
   });
-  voltar(t('novaSenhaProvisoria', { nome: alvo.nome, senha: provisoria }), 'ok');
+  voltar(t('novaSenhaProvisoria', { nome: alvo.username, senha: provisoria }), 'ok');
 }
 
 /**

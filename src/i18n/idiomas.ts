@@ -35,6 +35,7 @@ export const GRUPOS_DO_CLIENTE = [
   'dias',
   'editor',
   'entrada',
+  'esqueci',
   'importacao',
   'situacoesDaLinha',
   'textos',

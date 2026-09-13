@@ -47,14 +47,14 @@
     "configuracoesGlobais": "Configurações globais"
   },
   "entrada": {
-    "email": "E-mail",
     "senha": "Senha",
     "entrando": "Entrando…",
-    "credenciaisInvalidas": "E-mail ou senha incorretos.",
-    "informeOsDois": "Informe e-mail e senha.",
+    "credenciaisInvalidas": "Usuário ou senha incorretos.",
+    "informeOsDois": "Informe usuário e senha.",
     "tentativasDemais": "Tentativas demais. Espere alguns minutos e tente de novo.",
-    "esqueceu": "Esqueceu a senha? Um administrador da sua organização redefine para você.",
-    "semCadastro": "Não há cadastro público."
+    "esqueceu": "Esqueci a senha",
+    "semCadastro": "Não há cadastro público.",
+    "usuario": "Usuário"
   },
   "primeiroAcesso": {
     "titulo": "Primeiro acesso",
@@ -163,7 +163,12 @@
     "arquivadoEm": "arquivado em {quando}",
     "arrasteParaReordenar": "Arraste para reordenar",
     "moverParaCima": "Mover para cima",
-    "moverParaBaixo": "Mover para baixo"
+    "moverParaBaixo": "Mover para baixo",
+    "moverPara": "Mover para",
+    "mover": "Mover",
+    "escolhidos": "{quantidade} escolhido(s)",
+    "escolherTodos": "Escolher todos",
+    "semOutraPasta": "Não há outra pasta para onde mover."
   },
   "editor": {
     "conteudo": "Conteúdo",
@@ -310,7 +315,8 @@
     "slot_perdido": "Slot perdido",
     "fila_esgotada": "Fila esgotada",
     "fila_curta": "Fila curta",
-    "autenticacao_bot": "Falha de autenticação do bot"
+    "autenticacao_bot": "Falha de autenticação do bot",
+    "senha_esquecida": "Pedido de redefinição de senha"
   },
   "situacoesDaLinha": {
     "importar": "entra como pendente",
@@ -425,11 +431,10 @@
   },
   "usuarios": {
     "titulo": "Usuários",
-    "explicacao": "Não existe cadastro público. Cada conta é criada por quem está acima na hierarquia, com <b>senha provisória</b> e troca obrigatória no primeiro acesso. O e-mail serve apenas como identificador de login — o sistema não envia e-mail algum. <b>Telegram e telefone são opcionais</b> e existem para localizar a pessoa.",
+    "explicacao": "Não existe cadastro público. Cada conta é criada por quem está acima na hierarquia, com <b>senha provisória</b> e troca obrigatória no primeiro acesso. A entrada é pelo <b>usuário</b>, não pelo e-mail — <b>e-mail, telefone e Telegram são opcionais</b> e existem para localizar a pessoa.",
     "semOrganizacao": "Nenhuma organização ativa escolhida. Você está vendo apenas os superadmins; escolha uma organização no seletor do topo para gerenciar os usuários dela.",
     "noTotal": "{quantidade} no total",
     "nome": "Nome",
-    "contato": "Contato",
     "organizacao": "Organização",
     "perfil": "Perfil",
     "pastasAtribuidas": "Pastas atribuídas",
@@ -443,8 +448,7 @@
     "editar": "Editar",
     "editarUsuario": "Editar usuário — {nome}",
     "fechar": "Fechar",
-    "emailLogin": "E-mail (login)",
-    "emailHint": "É a credencial de entrada e não muda por aqui.",
+    "emailHint": "Cadastral: o sistema não envia e-mail. Serve para localizar a pessoa.",
     "telegram": "Telegram",
     "telefone": "Telefone",
     "opcional": "(opcional)",
@@ -458,7 +462,10 @@
     "salvarPastas": "Salvar pastas",
     "novoUsuario": "Novo usuário",
     "criarUsuario": "Criar usuário",
-    "senhaApareceUmaVez": "A senha provisória aparece uma única vez, aqui na tela, para você repassar à pessoa."
+    "senhaApareceUmaVez": "A senha provisória aparece uma única vez, aqui na tela, para você repassar à pessoa.",
+    "usuario": "Usuário",
+    "usuarioHint": "É com ele que a pessoa entra. Minúsculas, sem espaço e sem acento.",
+    "email": "E-mail"
   },
   "organizacoes": {
     "titulo": "Organizações",
@@ -586,7 +593,8 @@
     "testar_alerta": "testar alerta",
     "definir_token_sobreposicao": "definir token de sobreposição",
     "remover_token_sobreposicao": "remover token de sobreposição",
-    "alerta": "alerta"
+    "alerta": "alerta",
+    "mover": "mover para outra pasta"
   },
   "avisos": {
     "textoDuplicado": "Esta pasta já tem um texto com exatamente este conteúdo.",
@@ -715,6 +723,28 @@
     "alertaFilaCurta": "A pasta tem apenas {quantidade} texto(s) pendente(s).",
     "alertaFilaEsgotada": "A fila esgotou e a pasta está configurada para parar e notificar. Nada foi publicado.",
     "alertaFalhaDefinitiva": "Falha definitiva após {tentativas} tentativas: {erro}",
-    "filaEsgotadaPublicacao": "Fila esgotada: não havia texto pendente para publicar."
+    "filaEsgotadaPublicacao": "Fila esgotada: não havia texto pendente para publicar.",
+    "usernameTamanho": "O usuário precisa ter de {minimo} a {maximo} caracteres.",
+    "usernameFormato": "O usuário aceita letras minúsculas, números, ponto, hífen e sublinhado, começando e terminando por letra ou número. Sem espaço e sem acento.",
+    "usernameJaExiste": "Já existe uma conta com este usuário.",
+    "informeUsuario": "Informe o usuário.",
+    "alertaSenhaEsquecida": "{nome} ({usuario}), de {organizacao}, pediu a redefinição da senha. Redefina em Configuração → Usuários e repasse a provisória à pessoa.",
+    "moverMesmaPasta": "Escolha uma pasta diferente da atual.",
+    "moverNenhumEscolhido": "Escolha ao menos um texto para mover.",
+    "moverTodosRepetidos": "Nada movido: a pasta de destino já tem os {quantidade} texto(s) escolhido(s), com o mesmo conteúdo.",
+    "moverFeito": "{quantidade} texto(s) movido(s) para {pasta}, no fim da fila.",
+    "moverParcial": "{movidos} texto(s) movido(s) para {pasta}. {pulados} pulado(s): a pasta de destino já tinha o mesmo conteúdo."
+  },
+  "esqueci": {
+    "titulo": "Esqueci a senha",
+    "explicacao": "Informe o seu usuário. Os administradores da sua organização são avisados pelo Telegram e um deles redefine a sua senha.",
+    "usuario": "Usuário",
+    "pedir": "Pedir redefinição",
+    "enviando": "Enviando…",
+    "pronto": "Pedido registrado.",
+    "prontoDetalhe": "Se este usuário existir, os administradores da organização foram avisados. Procure um deles para receber a senha provisória — o sistema não envia e-mail nem mensagem para você.",
+    "voltar": "Voltar para a entrada",
+    "informeOUsuario": "Informe o usuário.",
+    "tentativasDemais": "Pedidos demais. Espere alguns minutos e tente de novo."
   }
 }
