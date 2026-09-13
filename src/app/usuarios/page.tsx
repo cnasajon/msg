@@ -10,7 +10,8 @@ import { podeFazer, perfisQuePodeGerenciar } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeUsuario, escopoDePasta, organizacaoEmVigor } from '@/lib/escopo';
 import { IDIOMAS, NOME_DO_IDIOMA } from '@/i18n/idiomas';
-import { criarUsuario, editarUsuario, redefinirSenha, atribuirPastas } from './acoes';
+import { TAMANHO_MINIMO_DA_SENHA } from '@/lib/senha';
+import { criarUsuario, editarUsuario, redefinirSenha, definirSenha, atribuirPastas } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
@@ -239,6 +240,38 @@ export default async function Usuarios({
               </button>
               <span className="faint" style={{ marginLeft: 10 }}>
                 {t('redefinirExplicacao')}
+              </span>
+            </form>
+
+            <h3 style={{ fontSize: 13, margin: '18px 0 8px' }}>{t('definirSenha')}</h3>
+            <form action={definirSenha}>
+              <CampoCsrf token={csrf} />
+              <input type="hidden" name="id" value={emEdicao.id} />
+              <div className="row">
+                <label className="field" style={{ margin: 0 }}>
+                  <span className="lbl">
+                    {t('novaSenha')}
+                    <Ajuda
+                      texto={t('regraDaSenha', { minimo: TAMANHO_MINIMO_DA_SENHA })}
+                      rotulo={comum('ajudaSobre', { campo: t('novaSenha') })}
+                    />
+                  </span>
+                  <input type="password" name="senha" autoComplete="new-password" required />
+                </label>
+                <label className="field" style={{ margin: 0 }}>
+                  <span className="lbl">{t('repetirSenha')}</span>
+                  <input type="password" name="senhaRepetida" autoComplete="new-password" required />
+                </label>
+              </div>
+              <div className="check" style={{ marginTop: 12 }}>
+                <input type="checkbox" id="exigir-troca" name="exigirTroca" defaultChecked />
+                <label htmlFor="exigir-troca">{t('exigirTroca')}</label>
+              </div>
+              <button className="btn" type="submit">
+                {t('definirSenha')}
+              </button>
+              <span className="faint" style={{ marginLeft: 10 }}>
+                {t('definirExplicacao')}
               </span>
             </form>
 

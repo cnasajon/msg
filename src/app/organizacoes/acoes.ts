@@ -29,6 +29,12 @@ export async function trocarOrganizacaoAtiva(organizationId: string | null) {
   const destino = organizationId ? await comEscopo(sessao).organizacao(organizationId) : null;
 
   await definirOrganizacaoAtiva(sessao.sessaoId, destino?.id ?? null);
+  // A sessão guarda o estado de agora; o usuário guarda a preferência, que é o
+  // que sobrevive ao próximo login.
+  await prisma.user.update({
+    where: { id: sessao.usuarioId },
+    data: { ultimaOrganizacaoId: destino?.id ?? null },
+  });
   await registrarAuditoria(sessao, {
     acao: 'trocar_organizacao',
     entidade: 'organization',

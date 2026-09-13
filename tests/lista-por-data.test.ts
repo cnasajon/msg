@@ -9,9 +9,11 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   analisarPadraoDeData,
   formatarPadraoDeData,
+  normalizarPadraoDigitado,
   padraoCasaComAData,
   QUALQUER_DATA,
 } from '@/lib/data-da-publicacao';
+import { slotsVencidos } from '@/lib/agenda';
 import { frase } from './helpers/frase';
 import { prepararBanco, criarCenario, temBanco, cliente, type Cenario } from './helpers/banco';
 import { textoParaAData } from '@/lib/proximo-texto';
@@ -195,5 +197,84 @@ describe.skipIf(!temBanco)('escolha do texto numa lista por data', () => {
       conteudo: 'Centenário',
     });
     await expect(textoParaAData(cliente(), pasta.id, '2028-01-01')).resolves.toBeNull();
+  });
+});
+
+describe('as duas condições valem juntas', () => {
+  /**
+   * O exemplo que motivou estes testes: padrão de setembro com o agendamento
+   * marcando só domingo publica nos domingos de setembro — nem em todo domingo,
+   * nem em todo dia de setembro.
+   */
+  function saidasEm(padraoBruto: string, diasSemana: number[], ano: number, mes: number, ultimoDia: number) {
+    const analise = analisarPadraoDeData(padraoBruto);
+    if ('problema' in analise) throw new Error(`padrão recusado: ${analise.problema.chave}`);
+    const agenda = [{ horaLocal: '09:00', diasSemana, ativo: true }];
+
+    const saidas: string[] = [];
+    for (let dia = 1; dia <= ultimoDia; dia++) {
+      const data = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+      // 12:05 UTC = 09:05 em São Paulo, cinco minutos depois do slot
+      const { dentroDaJanela } = slotsVencidos(agenda, 'America/Sao_Paulo', new Date(`${data}T12:05:00Z`), 30);
+      if (dentroDaJanela.some((s) => s.data === data) && padraoCasaComAData(analise.padrao, data)) {
+        saidas.push(data);
+      }
+    }
+    return saidas;
+  }
+
+  it('*/09/* com apenas DOMINGO sai nos domingos de setembro', () => {
+    expect(saidasEm('*/09/*', [7], 2026, 9, 30)).toEqual([
+      '2026-09-06',
+      '2026-09-13',
+      '2026-09-20',
+      '2026-09-27',
+    ]);
+  });
+
+  it('o mesmo padrão não sai em outubro, mesmo nos domingos', () => {
+    expect(saidasEm('*/09/*', [7], 2026, 10, 31)).toEqual([]);
+  });
+
+  it('sem o dia da semana marcado, a data casar não basta', () => {
+    // 25/12/2026 é uma sexta; com só domingo marcado, não há slot
+    expect(saidasEm('25/12/2026', [7], 2026, 12, 31)).toEqual([]);
+    expect(saidasEm('25/12/2026', [5], 2026, 12, 31)).toEqual(['2026-12-25']);
+  });
+
+  it('todos os dias marcados devolvem o padrão inteiro', () => {
+    expect(saidasEm('*/09/*', [1, 2, 3, 4, 5, 6, 7], 2026, 9, 30)).toHaveLength(30);
+  });
+});
+
+describe('normalização do que se digita', () => {
+  it('dia e mês ganham o zero à esquerda', () => {
+    expect(normalizarPadraoDigitado('1/9/*')).toBe('01/09/*');
+    expect(normalizarPadraoDigitado('5/1/2027')).toBe('05/01/2027');
+    expect(normalizarPadraoDigitado(' 7/3/* ')).toBe('07/03/*');
+  });
+
+  it('o que já está certo não muda, e o curinga sobrevive', () => {
+    expect(normalizarPadraoDigitado('25/12/*')).toBe('25/12/*');
+    expect(normalizarPadraoDigitado('*/09/*')).toBe('*/09/*');
+    expect(normalizarPadraoDigitado('*')).toBe('*');
+    expect(normalizarPadraoDigitado('')).toBe('');
+  });
+
+  it('o ano não vira dia nem mês: quatro casas, não duas', () => {
+    expect(normalizarPadraoDigitado('1/1/2027')).toBe('01/01/2027');
+  });
+
+  it('o que não dá para arrumar volta intocado, para a validação falar', () => {
+    // o campo não conserta erro em silêncio — quem recusa é analisarPadraoDeData
+    expect(normalizarPadraoDigitado('31/02/*')).toBe('31/02/*');
+    expect(normalizarPadraoDigitado('bobagem')).toBe('bobagem');
+    expect(normalizarPadraoDigitado('1/2')).toBe('1/2');
+  });
+
+  it('e o que sai normalizado é aceito com o mesmo sentido do bruto', () => {
+    const bruto = analisarPadraoDeData('1/9/*');
+    const arrumado = analisarPadraoDeData(normalizarPadraoDigitado('1/9/*'));
+    expect(bruto).toEqual(arrumado);
   });
 });

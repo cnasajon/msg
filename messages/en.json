@@ -46,7 +46,8 @@
     "auditoria": "Audit log",
     "sistema": "System",
     "organizacoes": "Organisations",
-    "configuracoesGlobais": "Global settings"
+    "configuracoesGlobais": "Global settings",
+    "perfil": "Profile"
   },
   "entrada": {
     "senha": "Password",
@@ -213,7 +214,8 @@
     "excluir": "Delete",
     "explicacaoTirar": "Archiving keeps the record and is the normal path. Deleting removes the text — the publication history survives, because each publication keeps what went out.",
     "dataDaPublicacao": "Publication date",
-    "dataHint": "Day/month/year, with * for “any”. 25/12/* goes out every Christmas; */09/* goes out on the September days marked in the schedule; 01/01/2027 goes out once."
+    "dataHint": "Day/month/year, with * for “any”. 25/12/* goes out every Christmas; */09/* goes out on the September days marked in the schedule; 01/01/2027 goes out once.",
+    "duasCondicoes": "Two conditions, and both must hold: the date has to match this pattern AND the weekday has to be ticked on the folder’s schedule. With */09/* and only Sun ticked, it goes out on the Sundays of September."
   },
   "historico": {
     "titulo": "Publication history",
@@ -439,10 +441,11 @@
     "textosNaFila": "texts",
     "avisaAbaixoDe": "the panel warns below {quantidade}",
     "ondeVaiADataTitulo": "The date lives on each text",
-    "ondeVaiAData": "In this list, the date each text may go out on belongs to the text itself, written as dd/mm/yyyy with * meaning “any”. The schedule below still says only at which times and weekdays a slot exists.",
+    "ondeVaiAData": "In this list, the date each text may go out on belongs to the text itself, written as dd/mm/yyyy with * meaning “any”. The schedule below still applies alongside it: the text goes out only when the date matches AND the weekday is ticked.",
     "irParaOsTextos": "Go to this folder’s texts",
     "situacaoDaLista": "List status",
-    "alertaDeFilaCurta": "Warn the administrators when the queue runs short"
+    "alertaDeFilaCurta": "Warn the administrators when the queue runs short",
+    "rotuloTextosNaLista": "Texts in the list"
   },
   "agendamentos": {
     "hora": "Time",
@@ -496,7 +499,13 @@
     "senhaApareceUmaVez": "The temporary password shows once, here on screen, for you to pass on to the person.",
     "usuario": "Username",
     "usuarioHint": "This is what the person signs in with. Lowercase, no spaces and no accents.",
-    "email": "E-mail"
+    "email": "E-mail",
+    "definirSenha": "Set the password by hand",
+    "novaSenha": "New password",
+    "repetirSenha": "Repeat the password",
+    "regraDaSenha": "At least {minimo} characters, with an uppercase letter, a digit and a special character.",
+    "exigirTroca": "Require a change on first sign-in",
+    "definirExplicacao": "You choose the password and pass it on. Their sessions are ended."
   },
   "organizacoes": {
     "titulo": "Organisations",
@@ -626,7 +635,8 @@
     "definir_token_sobreposicao": "set override token",
     "remover_token_sobreposicao": "remove override token",
     "alerta": "alert",
-    "mover": "move to another folder"
+    "mover": "move to another folder",
+    "definir_senha": "set password"
   },
   "avisos": {
     "textoDuplicado": "This folder already has a text with exactly this content.",
@@ -774,7 +784,10 @@
     "semTextoParaAData": "No text scheduled for this date.",
     "tipoDeListaInvalido": "Invalid list type.",
     "alertarAbaixoDeInvalido": "The short-queue warning goes from 1 to 999 texts.",
-    "alertaDaPastaSalvo": "Alert for “{pasta}” updated."
+    "alertaDaPastaSalvo": "Alert for “{pasta}” updated.",
+    "cadastroSalvo": "Your details were saved.",
+    "senhaTrocada": "Password changed.",
+    "senhaDefinida": "Password for “{nome}” set. Pass it on — it is not shown again."
   },
   "esqueci": {
     "titulo": "I forgot my password",
@@ -787,5 +800,21 @@
     "voltar": "Back to sign in",
     "informeOUsuario": "Enter the username.",
     "tentativasDemais": "Too many requests. Wait a few minutes and try again."
+  },
+  "perfil": {
+    "titulo": "My profile",
+    "caminho": "My account",
+    "meusDados": "My details",
+    "contato": "Contact",
+    "organizacao": "Organization",
+    "ultimoAcesso": "Last sign-in",
+    "quemMudaOResto": "Name, role and folders are set by whoever administers the system, on the Users screen.",
+    "emailHint": "The system sends no email: this field is for the record only, so an administrator knows how to reach you.",
+    "trocarSenha": "Change password",
+    "senhaAtual": "Current password",
+    "senhaNova": "New password",
+    "repetirSenha": "Repeat the new password",
+    "regraDaSenha": "At least {minimo} characters, with an uppercase letter, a digit and a special character.",
+    "derrubaSessoes": "Changing the password ends sessions open on other devices. This one stays."
   }
 }

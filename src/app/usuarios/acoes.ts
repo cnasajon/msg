@@ -2,12 +2,12 @@
 
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import { exigirSessao, encerrarSessoesDoUsuario } from '@/lib/sessao';
+import { exigirSessao, encerrarSessoesDoUsuario, criarSessao } from '@/lib/sessao';
 import { exigirCsrf } from '@/lib/csrf';
 import { perfisQuePodeGerenciar, podeFazer, type Perfil } from '@/lib/autorizacao';
 import { NaoAutorizado, NaoEncontrado } from '@/lib/erros';
 import { comEscopo, escopoDePasta, organizacaoEmVigor, type Sessao } from '@/lib/escopo';
-import { gerarHashDeSenha, gerarSenhaProvisoria } from '@/lib/senha';
+import { gerarHashDeSenha, gerarSenhaProvisoria, problemaNaSenha } from '@/lib/senha';
 import { normalizarUsername, problemaNoUsername } from '@/lib/usuario';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
@@ -178,6 +178,65 @@ export async function redefinirSenha(dados: FormData) {
     organizationId: alvo.organizationId,
   });
   voltar(t('novaSenhaProvisoria', { nome: alvo.username, senha: provisoria }), 'ok');
+}
+
+/**
+ * Senha definida à mão pelo administrador.
+ *
+ * Existe ao lado de `redefinirSenha` porque resolvem coisas diferentes: aquela
+ * sorteia uma senha que ninguém escolheu, esta deixa quem administra combinar
+ * uma senha e repassá-la. O valor digitado passa pelas mesmas regras de
+ * qualidade da troca normal — não há porta dos fundos para senha fraca.
+ *
+ * `exigirTroca` vem marcado na tela: uma senha que passou pela mão de outra
+ * pessoa não deveria continuar valendo depois do primeiro acesso. Desmarcar é
+ * possível, e é uma decisão consciente de quem administra.
+ *
+ * A senha nunca entra na auditoria — só o fato de ter sido definida, como manda
+ * a seção 11.
+ */
+export async function definirSenha(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'usuarios.redefinirSenha')) throw new NaoAutorizado();
+
+  const { t, frase } = await tradutorDeAvisos();
+  // O escopo é a mesma porta de sempre: admin não alcança usuário de outra
+  // organização, nem superadmin, por mais que o id venha do formulário.
+  const alvo = await comEscopo(sessao).usuario(String(dados.get('id') ?? ''));
+
+  const nova = String(dados.get('senha') ?? '');
+  const repetida = String(dados.get('senhaRepetida') ?? '');
+  const exigirTroca = dados.get('exigirTroca') === 'on';
+
+  if (nova !== repetida) voltar(t('confirmacaoNaoBate'));
+  const problema = problemaNaSenha(nova);
+  if (problema) voltar(frase(problema));
+
+  await prisma.user.update({
+    where: { id: alvo.id },
+    data: { senhaHash: await gerarHashDeSenha(nova), senhaProvisoria: exigirTroca },
+  });
+  // Quem já estava dentro com a senha antiga sai. Quando o alvo é quem está
+  // definindo, uma sessão nova nasce no lugar: ser expulso no meio do trabalho
+  // por ter trocado a própria senha — que você acabou de escolher e conhece —
+  // não protege de nada, e faria a mensagem de confirmação se perder no
+  // caminho para a tela de entrada.
+  await encerrarSessoesDoUsuario(alvo.id);
+  if (alvo.id === sessao.usuarioId) {
+    await criarSessao(
+      alvo.id,
+      alvo.perfil === 'superadmin' ? alvo.ultimaOrganizacaoId : alvo.organizationId,
+    );
+  }
+
+  await registrarAuditoria(sessao, {
+    acao: 'definir_senha',
+    entidade: 'user',
+    entidadeId: alvo.id,
+    organizationId: alvo.organizationId,
+    detalhes: { exigirTroca },
+  });
+  voltar(t('senhaDefinida', { nome: alvo.username }), 'ok');
 }
 
 /**

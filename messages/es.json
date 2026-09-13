@@ -46,7 +46,8 @@
     "auditoria": "Auditoría",
     "sistema": "Sistema",
     "organizacoes": "Organizaciones",
-    "configuracoesGlobais": "Configuración global"
+    "configuracoesGlobais": "Configuración global",
+    "perfil": "Perfil"
   },
   "entrada": {
     "senha": "Contraseña",
@@ -213,7 +214,8 @@
     "excluir": "Eliminar",
     "explicacaoTirar": "Archivar conserva el registro y es el camino normal. Eliminar borra el texto — el historial de publicaciones sobrevive, porque la publicación guarda lo que salió al aire.",
     "dataDaPublicacao": "Fecha de publicación",
-    "dataHint": "Día/mes/año, con * para “todos”. 25/12/* sale cada Navidad; */09/* sale en los días de septiembre marcados en la programación; 01/01/2027 sale una sola vez."
+    "dataHint": "Día/mes/año, con * para “todos”. 25/12/* sale cada Navidad; */09/* sale en los días de septiembre marcados en la programación; 01/01/2027 sale una sola vez.",
+    "duasCondicoes": "Son dos condiciones, y valen juntas: la fecha tiene que coincidir con este patrón Y el día de la semana tiene que estar marcado en la programación de la carpeta. Con */09/* y solo Dom marcado, sale los domingos de septiembre."
   },
   "historico": {
     "titulo": "Historial de publicaciones",
@@ -439,10 +441,11 @@
     "textosNaFila": "textos",
     "avisaAbaixoDe": "el panel avisa por debajo de {quantidade}",
     "ondeVaiADataTitulo": "La fecha va en cada texto",
-    "ondeVaiAData": "En esta lista, la fecha en que cada texto puede salir es del propio texto, escrita como dd/mm/aaaa con * valiendo para «todos». La programación de abajo sigue diciendo solo en qué horarios y días de la semana hay slot.",
+    "ondeVaiAData": "En esta lista, la fecha en que cada texto puede salir es del propio texto, escrita como dd/mm/aaaa con * valiendo para «todos». La programación de abajo sigue valiendo junto: el texto solo sale cuando la fecha coincide Y el día de la semana está marcado.",
     "irParaOsTextos": "Ir a los textos de esta carpeta",
     "situacaoDaLista": "Situación de la lista",
-    "alertaDeFilaCurta": "Avisar a los administradores cuando la cola quede corta"
+    "alertaDeFilaCurta": "Avisar a los administradores cuando la cola quede corta",
+    "rotuloTextosNaLista": "Textos en la lista"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -496,7 +499,13 @@
     "senhaApareceUmaVez": "La contraseña provisional aparece una sola vez, aquí en la pantalla, para que la pase a la persona.",
     "usuario": "Usuario",
     "usuarioHint": "Es con él que la persona entra. Minúsculas, sin espacios y sin acentos.",
-    "email": "Correo"
+    "email": "Correo",
+    "definirSenha": "Definir la contraseña manualmente",
+    "novaSenha": "Nueva contraseña",
+    "repetirSenha": "Repetir la contraseña",
+    "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
+    "exigirTroca": "Exigir cambio en el primer acceso",
+    "definirExplicacao": "Usted elige la contraseña y se la pasa a la persona. Sus sesiones se cierran."
   },
   "organizacoes": {
     "titulo": "Organizaciones",
@@ -626,7 +635,8 @@
     "definir_token_sobreposicao": "definir token de sobrescritura",
     "remover_token_sobreposicao": "quitar token de sobrescritura",
     "alerta": "alerta",
-    "mover": "mover a otra carpeta"
+    "mover": "mover a otra carpeta",
+    "definir_senha": "definir contraseña"
   },
   "avisos": {
     "textoDuplicado": "Esta carpeta ya tiene un texto con exactamente este contenido.",
@@ -774,7 +784,10 @@
     "semTextoParaAData": "Ningún texto agendado para esta fecha.",
     "tipoDeListaInvalido": "Tipo de lista inválido.",
     "alertarAbaixoDeInvalido": "El aviso de cola corta va de 1 a 999 textos.",
-    "alertaDaPastaSalvo": "Alerta de «{pasta}» actualizada."
+    "alertaDaPastaSalvo": "Alerta de «{pasta}» actualizada.",
+    "cadastroSalvo": "Sus datos fueron guardados.",
+    "senhaTrocada": "Contraseña cambiada.",
+    "senhaDefinida": "Contraseña de «{nome}» definida. Pásela a la persona — no se muestra de nuevo."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",
@@ -787,5 +800,21 @@
     "voltar": "Volver a la entrada",
     "informeOUsuario": "Indique el usuario.",
     "tentativasDemais": "Demasiados pedidos. Espere unos minutos e inténtelo de nuevo."
+  },
+  "perfil": {
+    "titulo": "Mi perfil",
+    "caminho": "Mi cuenta",
+    "meusDados": "Mis datos",
+    "contato": "Contacto",
+    "organizacao": "Organización",
+    "ultimoAcesso": "Último acceso",
+    "quemMudaOResto": "Nombre, perfil y carpetas los define quien administra, en la pantalla de Usuarios.",
+    "emailHint": "El sistema no envía correo: este campo es solo de registro, para que quien administra sepa cómo hablar contigo.",
+    "trocarSenha": "Cambiar contraseña",
+    "senhaAtual": "Contraseña actual",
+    "senhaNova": "Nueva contraseña",
+    "repetirSenha": "Repetir la nueva contraseña",
+    "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
+    "derrubaSessoes": "Cambiar la contraseña cierra las sesiones abiertas en otros dispositivos. Esta sigue."
   }
 }
