@@ -23,7 +23,8 @@
     "reiniciarFila": "restart the queue",
     "pararNotificar": "stop and notify",
     "descricaoDoApp": "Scheduled publishing of texts and images to Telegram groups.",
-    "ajudaSobre": "Help about {campo}"
+    "ajudaSobre": "Help about {campo}",
+    "fechar": "Close"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -426,7 +427,11 @@
     "alertarAbaixoDe": "Warn below",
     "alertarAbaixoDeHint": "How many pending texts are left when the short-queue alert goes to the administrators. Zero turns the warning off. Only applies to queue-based lists.",
     "textosNaFila": "texts",
-    "avisaAbaixoDe": "the panel warns below {quantidade}"
+    "avisaAbaixoDe": "the panel warns below {quantidade}",
+    "ondeVaiADataTitulo": "The date lives on each text",
+    "ondeVaiAData": "In this list, the date each text may go out on belongs to the text itself, written as dd/mm/yyyy with * meaning “any”. The schedule below still says only at which times and weekdays a slot exists.",
+    "irParaOsTextos": "Go to this folder’s texts",
+    "situacaoDaLista": "List status"
   },
   "agendamentos": {
     "hora": "Time",
@@ -584,7 +589,8 @@
     "sistema": "system (worker)",
     "anteriores": "← Previous",
     "seguintes": "Next →",
-    "pagina": "page {pagina} of {paginas}"
+    "pagina": "page {pagina} of {paginas}",
+    "verDetalhes": "View details"
   },
   "acoesDaAuditoria": {
     "criar": "create",

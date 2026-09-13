@@ -32,6 +32,11 @@
     --info-soft: #1a2237;
     --info: #8fb0f5;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    /* Medidas, não cores: valem para os dois temas. Estavam só no bloco do tema
+       claro, e no escuro — que é o padrão — a sidebar ficava com largura
+       automática e os cartões sem canto arredondado. */
+    --radius: 10px;
+    --sidebar: 236px;
   }
 
   /* tema claro: entra só quando o usuário escolhe */
@@ -57,8 +62,6 @@
     --info-soft: #e8eefc;
     --info: #29488f;
     --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
-    --radius: 10px;
-    --sidebar: 236px;
   }
 
 
@@ -273,13 +276,37 @@
     position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
     z-index: 40; width: max-content; max-width: 264px; padding: 8px 10px;
     border: 1px solid var(--border); border-radius: 8px;
-    background: var(--bg-elev); color: var(--text); box-shadow: 0 6px 20px rgba(0, 0, 0, .28);
+    background: var(--surface-2); color: var(--text); box-shadow: 0 6px 20px rgba(0, 0, 0, .28);
     font-size: 12px; font-weight: 400; line-height: 1.45; white-space: normal; text-align: left;
   }
   /* junto à borda esquerda da tela o balão centralizado sairia do campo de visão */
   @media (max-width: 560px) {
     .ajuda-balao { left: auto; right: -8px; transform: none; max-width: min(264px, 78vw); }
   }
+  /* Diálogo dos detalhes da auditoria. O JSON de uma importação não cabe numa
+     coluna de tabela sem esticar a linha inteira. */
+  .dlg {
+    width: min(680px, calc(100vw - 32px)); max-height: min(78vh, 720px);
+    /* o `margin: auto` que centraliza o dialog modal vem da folha do navegador,
+       e o reset da página o anula — daí ele voltar explicitamente aqui */
+    margin: auto;
+    padding: 0; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); color: var(--text);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .42);
+  }
+  .dlg::backdrop { background: rgba(0, 0, 0, .55); }
+  .dlg-cabeca {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+  }
+  .dlg-corpo { padding: 14px; overflow: auto; max-height: calc(min(78vh, 720px) - 56px); }
+  .dlg-json {
+    margin: 0; padding: 12px; border-radius: 8px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    font-size: 12.5px; line-height: 1.5;
+    white-space: pre-wrap; word-break: break-word;
+  }
+
   input[type=text], input[type=email], input[type=password], input[type=number], input[type=time], select, textarea {
     width: 100%; font: inherit; color: var(--text);
     background: var(--surface); border: 1px solid var(--border-strong);

@@ -23,7 +23,8 @@
     "reiniciarFila": "reiniciar la cola",
     "pararNotificar": "parar y notificar",
     "descricaoDoApp": "Publicación programada de textos e imágenes en grupos de Telegram.",
-    "ajudaSobre": "Ayuda sobre {campo}"
+    "ajudaSobre": "Ayuda sobre {campo}",
+    "fechar": "Cerrar"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -426,7 +427,11 @@
     "alertarAbaixoDe": "Avisar con menos de",
     "alertarAbaixoDeHint": "Cuántos textos pendientes quedan cuando se envía la alerta de cola corta a los administradores. Cero desactiva el aviso. Solo vale para lista basada en cola.",
     "textosNaFila": "textos",
-    "avisaAbaixoDe": "el panel avisa por debajo de {quantidade}"
+    "avisaAbaixoDe": "el panel avisa por debajo de {quantidade}",
+    "ondeVaiADataTitulo": "La fecha va en cada texto",
+    "ondeVaiAData": "En esta lista, la fecha en que cada texto puede salir es del propio texto, escrita como dd/mm/aaaa con * valiendo para «todos». La programación de abajo sigue diciendo solo en qué horarios y días de la semana hay slot.",
+    "irParaOsTextos": "Ir a los textos de esta carpeta",
+    "situacaoDaLista": "Situación de la lista"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -584,7 +589,8 @@
     "sistema": "sistema (worker)",
     "anteriores": "← Anteriores",
     "seguintes": "Siguientes →",
-    "pagina": "página {pagina} de {paginas}"
+    "pagina": "página {pagina} de {paginas}",
+    "verDetalhes": "Ver detalles"
   },
   "acoesDaAuditoria": {
     "criar": "crear",

@@ -23,7 +23,8 @@
     "reiniciarFila": "reiniciar a fila",
     "pararNotificar": "parar e notificar",
     "descricaoDoApp": "Publicação programada de textos e imagens em grupos de Telegram.",
-    "ajudaSobre": "Ajuda sobre {campo}"
+    "ajudaSobre": "Ajuda sobre {campo}",
+    "fechar": "Fechar"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -426,7 +427,11 @@
     "alertarAbaixoDe": "Avisar com menos de",
     "alertarAbaixoDeHint": "Quantos textos pendentes ainda restam quando o alerta de fila curta é enviado aos administradores. Zero desliga o aviso. Só vale para lista baseada em fila.",
     "textosNaFila": "textos",
-    "avisaAbaixoDe": "o painel avisa abaixo de {quantidade}"
+    "avisaAbaixoDe": "o painel avisa abaixo de {quantidade}",
+    "ondeVaiADataTitulo": "A data fica em cada texto",
+    "ondeVaiAData": "Nesta lista, a data em que cada texto pode sair é do próprio texto, escrita como dd/mm/aaaa com * valendo para “todos”. O agendamento abaixo continua dizendo apenas em que horários e dias da semana existe slot.",
+    "irParaOsTextos": "Ir para os textos desta pasta",
+    "situacaoDaLista": "Situação da lista"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -584,7 +589,8 @@
     "sistema": "sistema (worker)",
     "anteriores": "← Anteriores",
     "seguintes": "Seguintes →",
-    "pagina": "página {pagina} de {paginas}"
+    "pagina": "página {pagina} de {paginas}",
+    "verDetalhes": "Ver detalhes"
   },
   "acoesDaAuditoria": {
     "criar": "criar",
