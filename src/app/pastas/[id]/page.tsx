@@ -234,7 +234,7 @@ export default async function ConfigurarPasta({
                   <>
                     {/* Numa lista por data nada fica "pendente" esperando a vez:
                         o que informa é quanto texto a pasta tem. */}
-                    <dt>{t('textosNaLista')}</dt>
+                    <dt>{t('rotuloTextosNaLista')}</dt>
                     <dd>{textosDaLista}</dd>
                   </>
                 ) : (

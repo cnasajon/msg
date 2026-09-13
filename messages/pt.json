@@ -214,7 +214,8 @@
     "excluir": "Excluir",
     "explicacaoTirar": "Arquivar preserva o registro e é o caminho normal. Excluir apaga o texto — o histórico das publicações sobrevive, porque a publicação guarda o que foi ao ar.",
     "dataDaPublicacao": "Data da publicação",
-    "dataHint": "Dia/mês/ano, com * para “todos”. 25/12/* sai todo Natal; */09/* sai nos dias de setembro que estiverem marcados no agendamento; 01/01/2027 sai uma vez só."
+    "dataHint": "Dia/mês/ano, com * para “todos”. 25/12/* sai todo Natal; */09/* sai nos dias de setembro que estiverem marcados no agendamento; 01/01/2027 sai uma vez só.",
+    "duasCondicoes": "São duas condições, e valem juntas: a data precisa casar com este padrão E o dia da semana precisa estar marcado no agendamento da pasta. Com */09/* e apenas Dom marcado, sai nos domingos de setembro."
   },
   "historico": {
     "titulo": "Histórico de publicações",
@@ -440,10 +441,11 @@
     "textosNaFila": "textos",
     "avisaAbaixoDe": "o painel avisa abaixo de {quantidade}",
     "ondeVaiADataTitulo": "A data fica em cada texto",
-    "ondeVaiAData": "Nesta lista, a data em que cada texto pode sair é do próprio texto, escrita como dd/mm/aaaa com * valendo para “todos”. O agendamento abaixo continua dizendo apenas em que horários e dias da semana existe slot.",
+    "ondeVaiAData": "Nesta lista, a data em que cada texto pode sair é do próprio texto, escrita como dd/mm/aaaa com * valendo para “todos”. O agendamento abaixo continua valendo junto: o texto só sai quando a data casa E o dia da semana está marcado.",
     "irParaOsTextos": "Ir para os textos desta pasta",
     "situacaoDaLista": "Situação da lista",
-    "alertaDeFilaCurta": "Avisar os administradores quando a fila ficar curta"
+    "alertaDeFilaCurta": "Avisar os administradores quando a fila ficar curta",
+    "rotuloTextosNaLista": "Textos na lista"
   },
   "agendamentos": {
     "hora": "Hora",

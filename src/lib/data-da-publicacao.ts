@@ -57,6 +57,34 @@ export function analisarPadraoDeData(
   return { padrao: { dia, mes, ano } };
 }
 
+/**
+ * Arruma o que foi digitado sem julgar o conteúdo: `1/9/*` vira `01/09/*`.
+ *
+ * Separada de `analisarPadraoDeData` porque serve a outro momento — o campo na
+ * tela, enquanto a pessoa escreve. O que não der para arrumar volta intocado,
+ * para a validação de verdade dar a mensagem certa em vez de o campo "consertar"
+ * um erro em silêncio.
+ */
+export function normalizarPadraoDigitado(bruto: string): string {
+  const limpo = bruto.trim();
+  if (!limpo || limpo === CURINGA) return limpo;
+
+  const partes = limpo.split('/');
+  if (partes.length !== 3) return bruto;
+
+  const casas = [2, 2, 4];
+  const arrumadas = partes.map((parte, indice) => {
+    const valor = parte.trim();
+    if (valor === CURINGA) return CURINGA;
+    if (!/^\d+$/.test(valor)) return valor;
+    // Um ano de quatro dígitos não vira 0000-alguma-coisa; dia e mês ganham o
+    // zero à esquerda que evita ler "1/9" como setembro ou janeiro conforme o
+    // costume de quem olha.
+    return valor.length >= casas[indice]! ? valor : valor.padStart(casas[indice]!, '0');
+  });
+  return arrumadas.join('/');
+}
+
 /** De volta para a tela, no mesmo formato que se digita. */
 export function formatarPadraoDeData(padrao: PadraoDeData): string {
   const parte = (valor: number | null, casas: number) =>

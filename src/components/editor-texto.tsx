@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CampoDeData } from './campo-de-data';
 import { LIMITE_COM_IMAGEM, LIMITE_SEM_IMAGEM } from '@/lib/textos';
 
 /**
@@ -72,21 +73,7 @@ export function EditorDeTexto({
         </div>
       ) : null}
 
-      {dataInicial !== undefined ? (
-        <label className="field" style={{ marginTop: 14 }}>
-          <span className="lbl">{t('dataDaPublicacao')}</span>
-          <input
-            type="text"
-            name="dataDaPublicacao"
-            defaultValue={dataInicial}
-            placeholder="*/*/*"
-            autoCapitalize="none"
-            spellCheck={false}
-            style={{ maxWidth: 200 }}
-          />
-          <span className="hint">{t('dataHint')}</span>
-        </label>
-      ) : null}
+      {dataInicial !== undefined ? <CampoDeData valorInicial={dataInicial} /> : null}
 
       <hr style={{ border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' }} />
 

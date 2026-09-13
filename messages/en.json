@@ -214,7 +214,8 @@
     "excluir": "Delete",
     "explicacaoTirar": "Archiving keeps the record and is the normal path. Deleting removes the text — the publication history survives, because each publication keeps what went out.",
     "dataDaPublicacao": "Publication date",
-    "dataHint": "Day/month/year, with * for “any”. 25/12/* goes out every Christmas; */09/* goes out on the September days marked in the schedule; 01/01/2027 goes out once."
+    "dataHint": "Day/month/year, with * for “any”. 25/12/* goes out every Christmas; */09/* goes out on the September days marked in the schedule; 01/01/2027 goes out once.",
+    "duasCondicoes": "Two conditions, and both must hold: the date has to match this pattern AND the weekday has to be ticked on the folder’s schedule. With */09/* and only Sun ticked, it goes out on the Sundays of September."
   },
   "historico": {
     "titulo": "Publication history",
@@ -440,10 +441,11 @@
     "textosNaFila": "texts",
     "avisaAbaixoDe": "the panel warns below {quantidade}",
     "ondeVaiADataTitulo": "The date lives on each text",
-    "ondeVaiAData": "In this list, the date each text may go out on belongs to the text itself, written as dd/mm/yyyy with * meaning “any”. The schedule below still says only at which times and weekdays a slot exists.",
+    "ondeVaiAData": "In this list, the date each text may go out on belongs to the text itself, written as dd/mm/yyyy with * meaning “any”. The schedule below still applies alongside it: the text goes out only when the date matches AND the weekday is ticked.",
     "irParaOsTextos": "Go to this folder’s texts",
     "situacaoDaLista": "List status",
-    "alertaDeFilaCurta": "Warn the administrators when the queue runs short"
+    "alertaDeFilaCurta": "Warn the administrators when the queue runs short",
+    "rotuloTextosNaLista": "Texts in the list"
   },
   "agendamentos": {
     "hora": "Time",
