@@ -1,5 +1,6 @@
 import { problema } from './avisos';
 import { fraseNoIdioma } from './mensagens';
+import { proximoDaFila, textoParaAData, type TextoParaPublicar } from './proximo-texto';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { env } from './env';
 import { slotsVencidos } from './agenda';
@@ -27,6 +28,8 @@ export type ResultadoDoCiclo = {
   perdidos: number;
   filasEsgotadas: number;
   filasCurtas: number;
+  /** Slots de lista por data em que nenhum texto casava com o dia. */
+  semTextoParaAData: number;
 };
 
 const MAXIMO_DE_TENTATIVAS = 3;
@@ -49,6 +52,7 @@ export async function rodarCiclo(
     perdidos: 0,
     filasEsgotadas: 0,
     filasCurtas: 0,
+    semTextoParaAData: 0,
   };
 
   const pastas = await prisma.folder.findMany({
@@ -96,14 +100,17 @@ export async function rodarCiclo(
       if (!publicacao) continue; // outro processo pegou, ou ja foi publicado
       resultado.slotsReivindicados += 1;
 
-      const desfecho = await publicarSlot(prisma, pasta, publicacao.id, registrar);
+      const desfecho = await publicarSlot(prisma, pasta, publicacao.id, slot.data, registrar);
       if (desfecho === 'enviado') resultado.enviados += 1;
       if (desfecho === 'erro') resultado.erros += 1;
       if (desfecho === 'fila_esgotada') resultado.filasEsgotadas += 1;
+      if (desfecho === 'sem_texto') resultado.semTextoParaAData += 1;
     }
 
     // Aviso de fila curta, uma vez por ciclo e so quando ha agendamento ativo.
-    if (pasta.schedules.some((s) => s.ativo)) {
+    // Nao vale para lista por data: ali nao ha fila que acabe — o texto sai
+    // quando a data dele chega, e "pouco texto pendente" nao diz nada.
+    if (pasta.tipoDeLista === 'fila' && pasta.schedules.some((s) => s.ativo)) {
       const pendentes = await prisma.text.count({ where: { folderId: pasta.id, status: 'pendente' } });
       if (pendentes > 0 && pendentes < 5) {
         resultado.filasCurtas += 1;
@@ -161,8 +168,24 @@ async function publicarSlot(
   prisma: PrismaClient,
   pasta: PastaComOrganizacao,
   publicacaoId: string,
+  dataDoSlot: string,
   registrar: (mensagem: string, extra?: Record<string, unknown>) => void,
-): Promise<'enviado' | 'erro' | 'fila_esgotada'> {
+): Promise<'enviado' | 'erro' | 'fila_esgotada' | 'sem_texto'> {
+  // Lista por data: o texto vem da data do slot, e não haver texto para o dia é
+  // situacao normal — o slot existe porque o dia da semana esta marcado.
+  if (pasta.tipoDeLista === 'data') {
+    const doDia = await textoParaAData(prisma, pasta.id, dataDoSlot);
+    if (!doDia) {
+      await prisma.publication.update({
+        where: { id: publicacaoId },
+        data: { status: 'sem_texto' },
+      });
+      registrar('sem texto para a data', { pasta: pasta.nome, data: dataDoSlot });
+      return 'sem_texto';
+    }
+    return enviarERegistrar(prisma, pasta, publicacaoId, doDia, registrar);
+  }
+
   let texto = await proximoDaFila(prisma, pasta.id);
 
   if (!texto && pasta.aoEsgotar === 'reiniciar') {
@@ -196,6 +219,23 @@ async function publicarSlot(
     return 'fila_esgotada';
   }
 
+  return enviarERegistrar(prisma, pasta, publicacaoId, texto, registrar);
+}
+
+/**
+ * Envio propriamente dito, com as tentativas e o registro dos dois lados.
+ *
+ * Separado da escolha do texto porque as duas listas chegam aqui pelo mesmo
+ * caminho: o que muda entre `fila` e `data` e QUAL texto sai, nao o que
+ * acontece depois que ele sai.
+ */
+async function enviarERegistrar(
+  prisma: PrismaClient,
+  pasta: PastaComOrganizacao,
+  publicacaoId: string,
+  texto: TextoParaPublicar,
+  registrar: (mensagem: string, extra?: Record<string, unknown>) => void,
+): Promise<'enviado' | 'erro'> {
   const token = tokenDaPasta(pasta);
   const chatId = pasta.telegramChatId!;
   let ultimoErro = '';
@@ -263,13 +303,6 @@ async function publicarSlot(
   return 'erro';
 }
 
-function proximoDaFila(prisma: PrismaClient, folderId: string) {
-  return prisma.text.findFirst({
-    where: { folderId, status: 'pendente' },
-    orderBy: { ordem: 'asc' },
-    select: { id: true, conteudo: true, imagem: true, imagemMime: true },
-  });
-}
 
 /**
  * Devolve todos os textos ja publicados da pasta ao estado pendente,

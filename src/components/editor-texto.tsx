@@ -16,11 +16,14 @@ export function EditorDeTexto({
   valorInicial = '',
   temImagemInicial = false,
   urlDaImagem,
+  dataInicial,
 }: {
   nome?: string;
   valorInicial?: string;
   temImagemInicial?: boolean;
   urlDaImagem?: string | null;
+  /** Só em pasta de lista por data; ausente esconde o campo. */
+  dataInicial?: string;
 }) {
   const t = useTranslations('editor');
   const [conteudo, setConteudo] = useState(valorInicial);
@@ -67,6 +70,22 @@ export function EditorDeTexto({
             {t('acimaDoLimiteTexto')}
           </div>
         </div>
+      ) : null}
+
+      {dataInicial !== undefined ? (
+        <label className="field" style={{ marginTop: 14 }}>
+          <span className="lbl">{t('dataDaPublicacao')}</span>
+          <input
+            type="text"
+            name="dataDaPublicacao"
+            defaultValue={dataInicial}
+            placeholder="*/*/*"
+            autoCapitalize="none"
+            spellCheck={false}
+            style={{ maxWidth: 200 }}
+          />
+          <span className="hint">{t('dataHint')}</span>
+        </label>
       ) : null}
 
       <hr style={{ border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' }} />

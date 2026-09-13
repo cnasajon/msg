@@ -22,7 +22,8 @@
     "carregando": "Loading…",
     "reiniciarFila": "restart the queue",
     "pararNotificar": "stop and notify",
-    "descricaoDoApp": "Scheduled publishing of texts and images to Telegram groups."
+    "descricaoDoApp": "Scheduled publishing of texts and images to Telegram groups.",
+    "ajudaSobre": "Help about {campo}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -168,7 +169,9 @@
     "mover": "Move",
     "escolhidos": "{quantidade} selected",
     "escolherTodos": "Select all",
-    "semOutraPasta": "There is no other folder to move to."
+    "semOutraPasta": "There is no other folder to move to.",
+    "dataDaPublicacao": "Publication date",
+    "qualquerData": "any date"
   },
   "editor": {
     "conteudo": "Content",
@@ -206,7 +209,9 @@
     "semChatId": "Set the folder chat_id before publishing.",
     "tirarDaLista": "Take off the list",
     "excluir": "Delete",
-    "explicacaoTirar": "Archiving keeps the record and is the normal path. Deleting removes the text — the publication history survives, because each publication keeps what went out."
+    "explicacaoTirar": "Archiving keeps the record and is the normal path. Deleting removes the text — the publication history survives, because each publication keeps what went out.",
+    "dataDaPublicacao": "Publication date",
+    "dataHint": "Day/month/year, with * for “any”. 25/12/* goes out every Christmas; */09/* goes out on the September days marked in the schedule; 01/01/2027 goes out once."
   },
   "historico": {
     "titulo": "Publication history",
@@ -227,7 +232,8 @@
     "verTexto": "See text",
     "tentativas": "{quantidade} attempts",
     "vazio": "No publications yet. They show up here as soon as the dispatcher runs the first slot.",
-    "explicacao": "Each row is a slot (folder, scheduled date, scheduled time) — the same unique key that guarantees idempotency: a slot never appears twice. Imported history has no scheduled time and is never re-sent by the dispatcher."
+    "explicacao": "Each row is a slot (folder, scheduled date, scheduled time) — the same unique key that guarantees idempotency: a slot never appears twice. Imported history has no scheduled time and is never re-sent by the dispatcher.",
+    "sem_texto": "no text for the date"
   },
   "alertas": {
     "titulo": "Alerts panel",
@@ -411,7 +417,12 @@
     "excluirPasta": "Delete folder",
     "excluirExplicacao": "Deleting removes the folder and its texts. Folders with published texts cannot be deleted — deactivate them instead, to keep the history.",
     "horariosNoFuso": "times in the folder time zone",
-    "situacao": "Status"
+    "situacao": "Status",
+    "tipoDeLista": "List type",
+    "tipoFila": "Queue-based",
+    "tipoData": "Date-based",
+    "tipoDeListaHint": "In a queue, the next unpublished text goes out, in order. By date, the text whose date matches the slot’s day goes out — with * meaning “any”. Either way, publishing only happens on the weekdays marked in the schedule.",
+    "textosNaLista": "{quantidade, plural, one {# text} other {# texts}}"
   },
   "agendamentos": {
     "hora": "Time",
@@ -733,7 +744,14 @@
     "moverNenhumEscolhido": "Choose at least one text to move.",
     "moverTodosRepetidos": "Nothing moved: the destination folder already has the {quantidade} chosen text(s), with the same content.",
     "moverFeito": "{quantidade} text(s) moved to {pasta}, at the end of the queue.",
-    "moverParcial": "{movidos} text(s) moved to {pasta}. {pulados} skipped: the destination folder already had the same content."
+    "moverParcial": "{movidos} text(s) moved to {pasta}. {pulados} skipped: the destination folder already had the same content.",
+    "dataFormato": "Write the date as day/month/year, using * for “any”. For example: 25/12/*, */09/* or 01/01/2027.",
+    "dataMesInvalido": "The month goes from 1 to 12.",
+    "dataDiaInvalido": "The day goes from 1 to 31.",
+    "dataAnoInvalido": "The year goes from 2000 to 2100.",
+    "dataDiaNaoExisteNoMes": "Day {dia} does not exist in month {mes} — the text would never go out.",
+    "semTextoParaAData": "No text scheduled for this date.",
+    "tipoDeListaInvalido": "Invalid list type."
   },
   "esqueci": {
     "titulo": "I forgot my password",

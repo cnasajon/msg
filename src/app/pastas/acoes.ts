@@ -28,14 +28,18 @@ function organizacaoDeDestino(sessao: Sessao, t: Tradutor): string {
 const AO_ESGOTAR = ['parar_notificar', 'reiniciar'] as const;
 type AoEsgotar = (typeof AO_ESGOTAR)[number];
 
+const TIPOS_DE_LISTA = ['fila', 'data'] as const;
+type TipoDeLista = (typeof TIPOS_DE_LISTA)[number];
+
 function lerCampos(dados: FormData) {
   const nome = String(dados.get('nome') ?? '').trim();
   const descricao = String(dados.get('descricao') ?? '').trim() || null;
   const timezone = String(dados.get('timezone') ?? '').trim();
   const chatIdBruto = String(dados.get('telegramChatId') ?? '').trim();
   const aoEsgotar = String(dados.get('aoEsgotar') ?? 'parar_notificar') as AoEsgotar;
+  const tipoDeLista = String(dados.get('tipoDeLista') ?? 'fila') as TipoDeLista;
   const ativa = dados.get('ativa') === 'on';
-  return { nome, descricao, timezone, chatIdBruto, aoEsgotar, ativa };
+  return { nome, descricao, timezone, chatIdBruto, aoEsgotar, tipoDeLista, ativa };
 }
 
 function validar(
@@ -47,6 +51,7 @@ function validar(
   if (campos.nome.length < 2) voltar(destino, t('informeNomePasta'));
   if (!fusoValido(campos.timezone)) voltar(destino, t('fusoDesconhecido', { fuso: campos.timezone }));
   if (!AO_ESGOTAR.includes(campos.aoEsgotar)) voltar(destino, t('aoEsgotarInvalido'));
+  if (!TIPOS_DE_LISTA.includes(campos.tipoDeLista)) voltar(destino, t('tipoDeListaInvalido'));
   if (campos.chatIdBruto) {
     const problema = problemaNoChatId(campos.chatIdBruto);
     if (problema) voltar(destino, frase(problema));
@@ -76,6 +81,7 @@ export async function criarPasta(dados: FormData) {
       timezone: campos.timezone,
       telegramChatId: campos.chatIdBruto || null,
       aoEsgotar: campos.aoEsgotar,
+      tipoDeLista: campos.tipoDeLista,
       ativa: true,
     },
   });
@@ -83,7 +89,12 @@ export async function criarPasta(dados: FormData) {
     acao: 'criar',
     entidade: 'folder',
     entidadeId: criada.id,
-    detalhes: { nome: campos.nome, timezone: campos.timezone, aoEsgotar: campos.aoEsgotar },
+    detalhes: {
+      nome: campos.nome,
+      timezone: campos.timezone,
+      aoEsgotar: campos.aoEsgotar,
+      tipoDeLista: campos.tipoDeLista,
+    },
   });
   voltar(`/pastas/${criada.id}`, t('pastaCriada', { nome: campos.nome }), 'ok');
 }
@@ -106,6 +117,7 @@ export async function editarPasta(dados: FormData) {
       timezone: campos.timezone,
       telegramChatId: campos.chatIdBruto || null,
       aoEsgotar: campos.aoEsgotar,
+      tipoDeLista: campos.tipoDeLista,
       ativa: campos.ativa,
     },
   });
@@ -117,6 +129,7 @@ export async function editarPasta(dados: FormData) {
       nome: campos.nome,
       timezone: campos.timezone,
       aoEsgotar: campos.aoEsgotar,
+      tipoDeLista: campos.tipoDeLista,
       ativa: campos.ativa,
       chatIdAlterado: campos.chatIdBruto !== (pasta.telegramChatId ?? ''),
     },

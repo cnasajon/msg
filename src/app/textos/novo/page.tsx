@@ -48,7 +48,7 @@ export default async function NovoTexto({
           <form action={criarTexto}>
             <CampoCsrf token={csrf} />
             <input type="hidden" name="folderId" value={pasta.id} />
-            <EditorDeTexto />
+            <EditorDeTexto dataInicial={pasta.tipoDeLista === 'data' ? '*/*/*' : undefined} />
             <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
               <button className="btn primary" type="submit">
                 {t('criarTexto')}

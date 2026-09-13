@@ -258,6 +258,28 @@
   label.field { display: block; margin-bottom: 14px; }
   label.field > span.lbl { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; }
   label.field > span.hint { display: block; font-size: 12px; color: var(--text-faint); margin-top: 5px; }
+
+  /* Ajuda ao lado do rótulo: tira a explicação de baixo da caixa, para que os
+     campos da mesma linha terminem todos na mesma altura. */
+  .ajuda { position: relative; display: inline-flex; vertical-align: middle; margin-left: 5px; }
+  .ajuda-marca {
+    width: 15px; height: 15px; padding: 0; border-radius: 50%;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-faint); font-size: 10.5px; font-weight: 700; line-height: 1;
+    cursor: help; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ajuda-marca:hover, .ajuda-marca:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .ajuda-balao {
+    position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+    z-index: 40; width: max-content; max-width: 264px; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-elev); color: var(--text); box-shadow: 0 6px 20px rgba(0, 0, 0, .28);
+    font-size: 12px; font-weight: 400; line-height: 1.45; white-space: normal; text-align: left;
+  }
+  /* junto à borda esquerda da tela o balão centralizado sairia do campo de visão */
+  @media (max-width: 560px) {
+    .ajuda-balao { left: auto; right: -8px; transform: none; max-width: min(264px, 78vw); }
+  }
   input[type=text], input[type=email], input[type=password], input[type=number], input[type=time], select, textarea {
     width: 100%; font: inherit; color: var(--text);
     background: var(--surface); border: 1px solid var(--border-strong);

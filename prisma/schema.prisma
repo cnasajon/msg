@@ -55,6 +55,21 @@ enum StatusPublicacao {
   enviada
   erro
   perdida
+  // Lista por data sem texto para aquele dia. Não é erro: o slot existe porque
+  // o dia da semana está marcado, e simplesmente não havia nada agendado.
+  sem_texto
+}
+
+// Como a pasta escolhe o que publicar em cada slot.
+//
+//  - `fila`: o próximo texto pendente, na ordem da fila. É o padrão.
+//  - `data`: o texto cujo dia/mês/ano casa com a data do slot, com o curinga
+//    valendo para qualquer valor. O mesmo texto volta a sair sempre que a data
+//    casar, então um curinga de dia e de ano com mês 9 sai em todos os dias de
+//    setembro que estiverem marcados no agendamento.
+enum TipoDeLista {
+  fila
+  data
 }
 
 model Organization {
@@ -150,6 +165,7 @@ model Folder {
   // global de TELEGRAM_BOT_TOKEN. Cifrado com AES-256-GCM, editável só pelo
   // superadmin, nunca reexibido por inteiro.
   telegramBotTokenCifrado String? @map("telegram_bot_token_cifrado")
+  tipoDeLista            TipoDeLista @default(fila) @map("tipo_de_lista")
   aoEsgotar      AoEsgotar @default(parar_notificar) @map("ao_esgotar")
   ativa          Boolean   @default(true)
   criadaEm       DateTime  @default(now()) @map("criada_em") @db.Timestamptz(3)
@@ -182,6 +198,11 @@ model Text {
   publicadoEm        DateTime?   @map("publicado_em") @db.Timestamptz(3)
   arquivadoEm        DateTime?   @map("arquivado_em") @db.Timestamptz(3)
   erroMensagem       String?     @map("erro_mensagem")
+  // Padrão de data das listas `data`; nulo em cada parte significa "todos".
+  // Só é lido quando a pasta é do tipo `data`.
+  diaDaPublicacao    Int?        @map("dia_da_publicacao")
+  mesDaPublicacao    Int?        @map("mes_da_publicacao")
+  anoDaPublicacao    Int?        @map("ano_da_publicacao")
   importId           String?     @map("import_id") @db.Uuid
   // hash do conteúdo textual apenas — a imagem não entra no cálculo
   hashConteudo       String      @map("hash_conteudo")
@@ -197,6 +218,8 @@ model Text {
   @@unique([folderId, hashConteudo])
   // seleção do próximo texto da fila: menor `ordem` entre os pendentes
   @@index([folderId, status, ordem])
+  // seleção nas listas por data: o filtro parte sempre da pasta e do mês/dia
+  @@index([folderId, mesDaPublicacao, diaDaPublicacao])
   @@index([importId])
   @@map("texts")
 }

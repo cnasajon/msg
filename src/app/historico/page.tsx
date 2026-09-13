@@ -14,13 +14,14 @@ import { reenviarTexto } from '../pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
 
-const SITUACOES = ['', 'enviada', 'erro', 'perdida', 'reivindicada'] as const;
+const SITUACOES = ['', 'enviada', 'erro', 'perdida', 'reivindicada', 'sem_texto'] as const;
 
 const CLASSE = {
   enviada: 'pill ok',
   erro: 'pill err',
   perdida: 'pill warn',
   reivindicada: 'pill',
+  sem_texto: 'pill',
 } as const;
 
 /** "1970-01-01T07:00:00Z" guardado como time vira "07:00". */

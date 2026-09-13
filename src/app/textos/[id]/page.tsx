@@ -11,6 +11,7 @@ import { comEscopo } from '@/lib/escopo';
 import { prisma } from '@/lib/db';
 import { formatarNoFuso } from '@/lib/fuso';
 import { tamanhoDoTexto } from '@/lib/textos';
+import { formatarPadraoDeData } from '@/lib/data-da-publicacao';
 import { arquivarTexto, desarquivarTexto, editarTexto, excluirTexto } from '../acoes';
 import { publicarAgora, pularTexto, reenviarTexto } from '@/app/pastas/acoes-agenda';
 
@@ -40,7 +41,7 @@ export default async function EditarTexto({
   const texto = await comEscopo(sessao).texto(id);
   const pasta = await prisma.folder.findUniqueOrThrow({
     where: { id: texto.folderId },
-    select: { id: true, nome: true, timezone: true, telegramChatId: true },
+    select: { id: true, nome: true, timezone: true, telegramChatId: true, tipoDeLista: true },
   });
   const temImagem = texto.imagem !== null;
 
@@ -86,6 +87,15 @@ export default async function EditarTexto({
                 valorInicial={texto.conteudo}
                 temImagemInicial={temImagem}
                 urlDaImagem={temImagem ? `/api/textos/${texto.id}/imagem` : null}
+                dataInicial={
+                  pasta.tipoDeLista === 'data'
+                    ? formatarPadraoDeData({
+                        dia: texto.diaDaPublicacao,
+                        mes: texto.mesDaPublicacao,
+                        ano: texto.anoDaPublicacao,
+                      })
+                    : undefined
+                }
               />
               <div style={{ display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' }}>
                 <button className="btn primary" type="submit">
