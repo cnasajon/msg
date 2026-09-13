@@ -142,6 +142,7 @@ export default async function ConfigurarPasta({
                 <CamposDoTipoDeLista
                   tipoInicial={pasta.tipoDeLista}
                   aoEsgotarInicial={pasta.aoEsgotar}
+                  alertaAtivoInicial={pasta.alertaDeFilaCurtaAtivo}
                   alertarAbaixoDeInicial={pasta.alertarAbaixoDe}
                   folderId={pasta.id}
                 />
@@ -244,14 +245,14 @@ export default async function ConfigurarPasta({
                         className={
                           pendentes === 0
                             ? 'pill err'
-                            : pasta.alertarAbaixoDe > 0 && pendentes < pasta.alertarAbaixoDe
+                            : pasta.alertaDeFilaCurtaAtivo && pendentes < pasta.alertarAbaixoDe
                               ? 'pill warn'
                               : 'pill ok'
                         }
                       >
                         {pendentes}
                       </span>{' '}
-                      {pasta.alertarAbaixoDe > 0 && pendentes < pasta.alertarAbaixoDe ? (
+                      {pasta.alertaDeFilaCurtaAtivo && pendentes < pasta.alertarAbaixoDe ? (
                         <span className="faint">
                           {t('avisaAbaixoDe', { quantidade: pasta.alertarAbaixoDe })}
                         </span>

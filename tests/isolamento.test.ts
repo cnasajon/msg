@@ -39,6 +39,16 @@ describe.skipIf(!temBanco)('isolamento entre organizações', () => {
     });
   });
 
+  it('2b. o alerta de fila curta de B não é silenciado pelo admin de A', async () => {
+    // A tela de Alertas recebe o id da pasta do navegador; quem resolve é o
+    // mesmo escopo da configuração da pasta, e não há segunda porta.
+    const sessao = sessaoDe(cenario.a.admin);
+    await expect(comEscopo(sessao).pasta(cenario.b.pasta.id)).rejects.toThrow(NaoEncontrado);
+
+    const antes = await cliente().folder.findUniqueOrThrow({ where: { id: cenario.b.pasta.id } });
+    expect(antes.alertaDeFilaCurtaAtivo).toBe(true);
+  });
+
   it('3. admin de A não lê nem altera texto de B', async () => {
     const sessao = sessaoDe(cenario.a.admin);
     await expect(comEscopo(sessao).texto(cenario.b.texto.id)).rejects.toThrow(NaoEncontrado);

@@ -8,6 +8,11 @@ import { escopoDeAuditoria, escopoDePasta, escopoDePublicacao } from '@/lib/esco
 import { destinoDosAlertas, TITULO_DO_ALERTA } from '@/lib/alertas';
 import { formatarNoFuso, siglaDoFuso } from '@/lib/fuso';
 import { podeFazer } from '@/lib/autorizacao';
+import { tokenCsrfPara } from '@/lib/csrf';
+import { CampoCsrf } from '@/components/csrf';
+import { Avisos } from '@/components/avisos';
+import { AlertaDaPasta } from '@/components/alerta-da-pasta';
+import { salvarAlertaDeFilaCurta } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +26,11 @@ const CLASSE_DO_TIPO: Record<string, string> = {
 
 type DetalhesDoAlerta = { tipo?: string; titulo?: string; pasta?: string; mensagem?: string; destino?: string };
 
-export default async function Alertas() {
+export default async function Alertas({
+  searchParams,
+}: {
+  searchParams: Promise<{ erro?: string; ok?: string }>;
+}) {
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
@@ -53,6 +62,10 @@ export default async function Alertas() {
     prisma.publication.count({ where: { AND: [escopoDePublicacao(sessao), { status: 'perdida' }] } }),
     prisma.folder.findMany({
       where: { AND: [escopoDePasta(sessao), { ativa: true }] },
+      // Sem ordem explícita o Postgres devolve na ordem física, que muda a cada
+      // UPDATE: salvar uma linha reordenava a tabela embaixo de quem clicou, e
+      // o clique seguinte acertava outra pasta.
+      orderBy: { nome: 'asc' },
       select: {
         id: true,
         nome: true,
@@ -60,21 +73,28 @@ export default async function Alertas() {
         aoEsgotar: true,
         tipoDeLista: true,
         alertarAbaixoDe: true,
+        alertaDeFilaCurtaAtivo: true,
         textos: { where: { status: 'pendente' }, select: { id: true } },
         schedules: { where: { ativo: true }, select: { id: true } },
       },
     }),
   ]);
 
-  // O limite é de cada pasta, e zero desliga o aviso. Lista por data não tem
-  // fila que acabe, então também fica de fora.
+  // Quem manda é a chave de cada pasta, e o limite é o número dela. Lista por
+  // data não entra: ali não há fila que acabe.
   const filasCurtas = pastas.filter(
     (p) =>
       p.tipoDeLista === 'fila' &&
-      p.alertarAbaixoDe > 0 &&
+      p.alertaDeFilaCurtaAtivo &&
       p.schedules.length > 0 &&
       p.textos.length < p.alertarAbaixoDe,
   );
+  // A tabela de configuração mostra todas as pastas por fila, silenciadas ou
+  // não — é ali que se liga de volta o que foi desligado.
+  const porFila = pastas.filter((p) => p.tipoDeLista === 'fila');
+  const podeEditar = podeFazer(sessao.perfil, 'pastas.gerenciar');
+  const csrf = tokenCsrfPara(sessao.sessaoId);
+  const { erro, ok } = await searchParams;
 
   return (
     <Casca
@@ -83,6 +103,8 @@ export default async function Alertas() {
       caminho={menu('painelDeControle')}
       atual="/alertas"
     >
+      <Avisos erro={erro} ok={ok} />
+
       <div className={destino.chatId ? 'banner info' : 'banner warn'}>
         <div>
           <div className="ttl">{t('destinoAtual')}</div>
@@ -199,6 +221,64 @@ export default async function Alertas() {
               ))}
             </tbody>
           </table>
+        </div>
+      ) : null}
+
+      {porFila.length > 0 ? (
+        <div className="card">
+          <header>
+            <h2>{t('alertaPorPasta')}</h2>
+            <span className="spacer" />
+            <span className="sub">{t('alertaPorPastaSub')}</span>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>{t('pasta')}</th>
+                <th style={{ width: 150 }}>{t('alerta')}</th>
+                <th style={{ width: 110 }}>{t('minimo')}</th>
+                <th style={{ width: 120 }}>{t('pendentes')}</th>
+                <th style={{ width: 150 }} />
+              </tr>
+            </thead>
+            <tbody>
+              {porFila.map((p) => {
+                const pendentes = p.textos.length;
+                const abaixo = p.alertaDeFilaCurtaAtivo && pendentes < p.alertarAbaixoDe;
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <b>{p.nome}</b>
+                      {p.schedules.length === 0 ? (
+                        <div className="faint">{t('semAgendamentoAtivo')}</div>
+                      ) : null}
+                    </td>
+                    <AlertaDaPasta
+                      id={p.id}
+                      ativo={p.alertaDeFilaCurtaAtivo}
+                      minimo={p.alertarAbaixoDe}
+                      editavel={podeEditar}
+                      csrf={<CampoCsrf token={csrf} />}
+                      acao={salvarAlertaDeFilaCurta}
+                    />
+                    <td>
+                      <span className={pendentes === 0 ? 'pill err' : abaixo ? 'pill warn' : 'pill ok'}>
+                        {pendentes}
+                      </span>
+                    </td>
+                    <td>
+                      <Link className="btn sm" href={`/textos?pasta=${p.id}`}>
+                        {t('abrirTextos')}
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <div className="body" style={{ borderTop: '1px solid var(--border)' }}>
+            <span className="faint">{t('alertaPorPastaExplicacao')}</span>
+          </div>
         </div>
       ) : null}
 

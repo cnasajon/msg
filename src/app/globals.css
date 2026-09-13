@@ -283,6 +283,26 @@
   @media (max-width: 560px) {
     .ajuda-balao { left: auto; right: -8px; transform: none; max-width: min(264px, 78vw); }
   }
+  /* Chave liga/desliga. A caixa de seleção real fica escondida atrás do
+     trilho — escondida do olho, não do teclado nem do leitor de tela, que é
+     por que ela continua sendo um <input type=checkbox> de verdade. */
+  .chave { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; }
+  .chave input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .chave-trilho {
+    width: 34px; height: 19px; border-radius: 99px; flex: none;
+    background: var(--surface-2); border: 1px solid var(--border-strong);
+    position: relative; transition: background .15s ease, border-color .15s ease;
+  }
+  .chave-bolinha {
+    position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 99px;
+    background: var(--text-faint); transition: transform .15s ease, background .15s ease;
+  }
+  .chave input:checked + .chave-trilho { background: var(--accent-soft); border-color: var(--accent); }
+  .chave input:checked + .chave-trilho .chave-bolinha { transform: translateX(15px); background: var(--accent); }
+  .chave input:focus-visible + .chave-trilho { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chave-texto { color: var(--text-muted); }
+  .chave input:checked ~ .chave-texto { color: var(--accent); font-weight: 600; }
+
   /* Diálogo dos detalhes da auditoria. O JSON de uma importação não cabe numa
      coluna de tabela sem esticar a linha inteira. */
   .dlg {

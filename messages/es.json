@@ -267,7 +267,17 @@
     "pendentes": "Pendientes",
     "importar": "Importar",
     "pasta": "Carpeta",
-    "abaixoDoLimiteDaPasta": "por debajo del límite configurado en cada carpeta"
+    "abaixoDoLimiteDaPasta": "por debajo del límite configurado en cada carpeta",
+    "alertaPorPasta": "Alerta de cola corta por carpeta",
+    "alertaPorPastaSub": "solo listas basadas en cola",
+    "alertaPorPastaExplicacao": "Apagado, la carpeta no genera alerta de cola corta — ni en Telegram, ni aquí. Sus otras alertas siguen valiendo: fallo de publicación, slot perdido y cola agotada.",
+    "alerta": "Alerta",
+    "minimo": "Mínimo",
+    "ligado": "encendido",
+    "desligado": "apagado",
+    "ligarAlerta": "Encender la alerta de cola corta de esta carpeta",
+    "desligarAlerta": "Apagar la alerta de cola corta de esta carpeta",
+    "semAgendamentoAtivo": "sin programación activa — no se publica nada"
   },
   "importacao": {
     "titulo": "Importar CSV o XLSX",
@@ -425,13 +435,14 @@
     "tipoDeListaHint": "En cola, sale el próximo texto todavía no publicado, en orden. En fecha, sale el texto cuya fecha coincide con el día del slot — con * valiendo para “todos”. En ambos casos, solo hay publicación en los días de la semana marcados en la programación.",
     "textosNaLista": "{quantidade, plural, one {# texto} other {# textos}}",
     "alertarAbaixoDe": "Avisar con menos de",
-    "alertarAbaixoDeHint": "Cuántos textos pendientes quedan cuando se envía la alerta de cola corta a los administradores. Cero desactiva el aviso. Solo vale para lista basada en cola.",
+    "alertarAbaixoDeHint": "Cuántos textos pendientes quedan cuando se envía la alerta de cola corta a los administradores. Vale solo para lista basada en cola, y solo cuando la alerta está encendida.",
     "textosNaFila": "textos",
     "avisaAbaixoDe": "el panel avisa por debajo de {quantidade}",
     "ondeVaiADataTitulo": "La fecha va en cada texto",
     "ondeVaiAData": "En esta lista, la fecha en que cada texto puede salir es del propio texto, escrita como dd/mm/aaaa con * valiendo para «todos». La programación de abajo sigue diciendo solo en qué horarios y días de la semana hay slot.",
     "irParaOsTextos": "Ir a los textos de esta carpeta",
-    "situacaoDaLista": "Situación de la lista"
+    "situacaoDaLista": "Situación de la lista",
+    "alertaDeFilaCurta": "Avisar a los administradores cuando la cola quede corta"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -762,7 +773,8 @@
     "dataDiaNaoExisteNoMes": "El día {dia} no existe en el mes {mes} — el texto nunca saldría.",
     "semTextoParaAData": "Ningún texto agendado para esta fecha.",
     "tipoDeListaInvalido": "Tipo de lista inválido.",
-    "alertarAbaixoDeInvalido": "El aviso de cola corta va de 0 a 999 textos."
+    "alertarAbaixoDeInvalido": "El aviso de cola corta va de 1 a 999 textos.",
+    "alertaDaPastaSalvo": "Alerta de «{pasta}» actualizada."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",

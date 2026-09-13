@@ -315,10 +315,16 @@ Ao esgotar a fila, vale o que estiver configurado na pasta: *parar e notificar*
 registra a publicação sem texto e alerta; *reiniciar* devolve todos os textos a
 pendente, preservando a ordem, e publica o primeiro, com o evento na auditoria.
 
-O **aviso de fila curta** também é de cada pasta: o campo *Avisar com menos de*
-diz com quantos textos pendentes o alerta sai para os administradores. **Zero
-desliga o aviso.** Só vale para lista baseada em fila — em lista por data não há
-fila que acabe.
+O **aviso de fila curta** também é de cada pasta, e tem duas partes: uma chave
+que liga e desliga, e o número — *Avisar com menos de* — que diz com quantos
+textos pendentes o alerta sai para os administradores. Só a chave desliga, para
+que o número sobreviva a um período de silêncio e volte como estava. Os dois
+ficam na configuração da pasta e também na tela **Alertas**, onde cada pasta tem
+sua chave e seu mínimo editáveis na própria linha. Só vale para lista baseada em
+fila — em lista por data não há fila que acabe.
+
+Desligar silencia **apenas o aviso de fila curta** daquela pasta. Falha de
+publicação, slot perdido e fila esgotada continuam alertando.
 
 ## Tipo de lista: por fila ou por data
 

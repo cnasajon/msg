@@ -51,7 +51,7 @@ export function CamposDoTipoDeListaEmLinha() {
                 rotulo={comum('ajudaSobre', { campo: t('alertarAbaixoDe') })}
               />
             </span>
-            <input type="number" name="alertarAbaixoDe" min={0} max={999} defaultValue={5} style={{ maxWidth: 120 }} />
+            <input type="number" name="alertarAbaixoDe" min={1} max={999} defaultValue={5} style={{ maxWidth: 120 }} />
           </label>
         </>
       ) : (
@@ -74,11 +74,13 @@ export function CamposDoTipoDeListaEmLinha() {
  */
 export function CamposDoTipoDeLista({
   tipoInicial,
+  alertaAtivoInicial,
   alertarAbaixoDeInicial,
   aoEsgotarInicial,
   folderId,
 }: {
   tipoInicial: 'fila' | 'data';
+  alertaAtivoInicial: boolean;
   alertarAbaixoDeInicial: number;
   aoEsgotarInicial: 'parar_notificar' | 'reiniciar';
   /** Ausente na criação, quando a pasta ainda não tem textos para apontar. */
@@ -113,6 +115,9 @@ export function CamposDoTipoDeLista({
               campo ausente no envio faria a ação gravar o valor padrão. */}
           <input type="hidden" name="aoEsgotar" value={aoEsgotarInicial} />
           <input type="hidden" name="alertarAbaixoDe" value={alertarAbaixoDeInicial} />
+          {alertaAtivoInicial ? (
+            <input type="hidden" name="alertaDeFilaCurtaAtivo" value="on" />
+          ) : null}
           <div className="banner info" style={{ marginTop: 12 }}>
             <div>
               <div className="ttl">{t('ondeVaiADataTitulo')}</div>
@@ -149,7 +154,16 @@ export function CamposDoTipoDeLista({
             </label>
           </div>
 
-          <label className="field" style={{ marginTop: 14 }}>
+          <div className="check" style={{ marginTop: 14 }}>
+            <input
+              type="checkbox"
+              id="alerta-fila-curta"
+              name="alertaDeFilaCurtaAtivo"
+              defaultChecked={alertaAtivoInicial}
+            />
+            <label htmlFor="alerta-fila-curta">{t('alertaDeFilaCurta')}</label>
+          </div>
+          <label className="field">
             <span className="lbl">
               {t('alertarAbaixoDe')}
               <Ajuda
@@ -160,7 +174,7 @@ export function CamposDoTipoDeLista({
             <input
               type="number"
               name="alertarAbaixoDe"
-              min={0}
+              min={1}
               max={999}
               defaultValue={alertarAbaixoDeInicial}
               style={{ maxWidth: 120 }}

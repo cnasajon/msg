@@ -267,7 +267,17 @@
     "pendentes": "Pending",
     "importar": "Import",
     "pasta": "Folder",
-    "abaixoDoLimiteDaPasta": "below the limit set on each folder"
+    "abaixoDoLimiteDaPasta": "below the limit set on each folder",
+    "alertaPorPasta": "Short-queue alert per folder",
+    "alertaPorPastaSub": "queue-based lists only",
+    "alertaPorPastaExplicacao": "Turned off, the folder raises no short-queue alert — neither on Telegram nor here. Its other alerts still apply: publication failure, missed slot and exhausted queue.",
+    "alerta": "Alert",
+    "minimo": "Minimum",
+    "ligado": "on",
+    "desligado": "off",
+    "ligarAlerta": "Turn this folder’s short-queue alert on",
+    "desligarAlerta": "Turn this folder’s short-queue alert off",
+    "semAgendamentoAtivo": "no active schedule — nothing is published"
   },
   "importacao": {
     "titulo": "Import CSV or XLSX",
@@ -425,13 +435,14 @@
     "tipoDeListaHint": "In a queue, the next unpublished text goes out, in order. By date, the text whose date matches the slot’s day goes out — with * meaning “any”. Either way, publishing only happens on the weekdays marked in the schedule.",
     "textosNaLista": "{quantidade, plural, one {# text} other {# texts}}",
     "alertarAbaixoDe": "Warn below",
-    "alertarAbaixoDeHint": "How many pending texts are left when the short-queue alert goes to the administrators. Zero turns the warning off. Only applies to queue-based lists.",
+    "alertarAbaixoDeHint": "How many pending texts are left when the short-queue alert goes to the administrators. Applies to queue-based lists only, and only while the alert is on.",
     "textosNaFila": "texts",
     "avisaAbaixoDe": "the panel warns below {quantidade}",
     "ondeVaiADataTitulo": "The date lives on each text",
     "ondeVaiAData": "In this list, the date each text may go out on belongs to the text itself, written as dd/mm/yyyy with * meaning “any”. The schedule below still says only at which times and weekdays a slot exists.",
     "irParaOsTextos": "Go to this folder’s texts",
-    "situacaoDaLista": "List status"
+    "situacaoDaLista": "List status",
+    "alertaDeFilaCurta": "Warn the administrators when the queue runs short"
   },
   "agendamentos": {
     "hora": "Time",
@@ -762,7 +773,8 @@
     "dataDiaNaoExisteNoMes": "Day {dia} does not exist in month {mes} — the text would never go out.",
     "semTextoParaAData": "No text scheduled for this date.",
     "tipoDeListaInvalido": "Invalid list type.",
-    "alertarAbaixoDeInvalido": "The short-queue warning goes from 0 to 999 texts."
+    "alertarAbaixoDeInvalido": "The short-queue warning goes from 1 to 999 texts.",
+    "alertaDaPastaSalvo": "Alert for “{pasta}” updated."
   },
   "esqueci": {
     "titulo": "I forgot my password",

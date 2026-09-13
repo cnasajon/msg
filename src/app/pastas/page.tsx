@@ -119,7 +119,13 @@ export default async function Pastas({
                         </span>
                       ) : (
                         <span
-                          className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill'}
+                          className={
+                            pendentes === 0
+                              ? 'pill err'
+                              : p.alertaDeFilaCurtaAtivo && pendentes < p.alertarAbaixoDe
+                                ? 'pill warn'
+                                : 'pill'
+                          }
                         >
                           {t('pendentes', { quantidade: pendentes })}
                         </span>

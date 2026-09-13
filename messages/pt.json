@@ -267,7 +267,17 @@
     "pendentes": "Pendentes",
     "importar": "Importar",
     "pasta": "Pasta",
-    "abaixoDoLimiteDaPasta": "abaixo do limite configurado em cada pasta"
+    "abaixoDoLimiteDaPasta": "abaixo do limite configurado em cada pasta",
+    "alertaPorPasta": "Alerta de fila curta por pasta",
+    "alertaPorPastaSub": "só listas baseadas em fila",
+    "alertaPorPastaExplicacao": "Desligado, a pasta não gera alerta de fila curta — nem no Telegram, nem aqui. Os outros alertas dela continuam valendo: falha de publicação, slot perdido e fila esgotada.",
+    "alerta": "Alerta",
+    "minimo": "Mínimo",
+    "ligado": "ligado",
+    "desligado": "desligado",
+    "ligarAlerta": "Ligar o alerta de fila curta desta pasta",
+    "desligarAlerta": "Desligar o alerta de fila curta desta pasta",
+    "semAgendamentoAtivo": "sem agendamento ativo — nada é publicado"
   },
   "importacao": {
     "titulo": "Importar CSV ou XLSX",
@@ -425,13 +435,14 @@
     "tipoDeListaHint": "Em fila, sai o próximo texto ainda não publicado, na ordem. Em data, sai o texto cuja data casa com o dia do slot — com * valendo para “todos”. Nos dois casos, só há publicação nos dias da semana marcados no agendamento.",
     "textosNaLista": "{quantidade, plural, one {# texto} other {# textos}}",
     "alertarAbaixoDe": "Avisar com menos de",
-    "alertarAbaixoDeHint": "Quantos textos pendentes ainda restam quando o alerta de fila curta é enviado aos administradores. Zero desliga o aviso. Só vale para lista baseada em fila.",
+    "alertarAbaixoDeHint": "Quantos textos pendentes ainda restam quando o alerta de fila curta é enviado aos administradores. Vale só para lista baseada em fila, e só quando o alerta está ligado.",
     "textosNaFila": "textos",
     "avisaAbaixoDe": "o painel avisa abaixo de {quantidade}",
     "ondeVaiADataTitulo": "A data fica em cada texto",
     "ondeVaiAData": "Nesta lista, a data em que cada texto pode sair é do próprio texto, escrita como dd/mm/aaaa com * valendo para “todos”. O agendamento abaixo continua dizendo apenas em que horários e dias da semana existe slot.",
     "irParaOsTextos": "Ir para os textos desta pasta",
-    "situacaoDaLista": "Situação da lista"
+    "situacaoDaLista": "Situação da lista",
+    "alertaDeFilaCurta": "Avisar os administradores quando a fila ficar curta"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -762,7 +773,8 @@
     "dataDiaNaoExisteNoMes": "O dia {dia} não existe no mês {mes} — o texto nunca sairia.",
     "semTextoParaAData": "Nenhum texto agendado para esta data.",
     "tipoDeListaInvalido": "Tipo de lista inválido.",
-    "alertarAbaixoDeInvalido": "O aviso de fila curta vai de 0 a 999 textos."
+    "alertarAbaixoDeInvalido": "O aviso de fila curta vai de 1 a 999 textos.",
+    "alertaDaPastaSalvo": "Alerta de “{pasta}” atualizado."
   },
   "esqueci": {
     "titulo": "Esqueci a senha",

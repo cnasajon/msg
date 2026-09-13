@@ -45,6 +45,7 @@ async function montarPasta(opcoes: {
   textos: number;
   aoEsgotar?: 'parar_notificar' | 'reiniciar';
   alertarAbaixoDe?: number;
+  alertaDeFilaCurtaAtivo?: boolean;
 }) {
   const db = cliente();
   const organizacao = await db.organization.create({
@@ -60,6 +61,9 @@ async function montarPasta(opcoes: {
       ...(opcoes.alertarAbaixoDe === undefined
         ? {}
         : { alertarAbaixoDe: opcoes.alertarAbaixoDe }),
+      ...(opcoes.alertaDeFilaCurtaAtivo === undefined
+        ? {}
+        : { alertaDeFilaCurtaAtivo: opcoes.alertaDeFilaCurtaAtivo }),
     },
   });
   await db.schedule.create({
@@ -439,12 +443,50 @@ describe.skipIf(!temBanco)('limite do alerta de fila curta, por pasta', () => {
     expect(await alertasDeFilaCurta(pasta.id)).toBe(1);
   });
 
-  it('ZERO desliga o aviso, mesmo com um texto só na fila', async () => {
-    const { pasta } = await montarPasta({ textos: 1, alertarAbaixoDe: 0 });
+  it('a CHAVE DESLIGADA cala o aviso, mesmo com um texto só na fila', async () => {
+    const { pasta } = await montarPasta({
+      textos: 1,
+      alertarAbaixoDe: 10,
+      alertaDeFilaCurtaAtivo: false,
+    });
 
     const resultado = await rodarCiclo(cliente(), AGORA);
 
     expect(resultado.filasCurtas).toBe(0);
     expect(await alertasDeFilaCurta(pasta.id)).toBe(0);
+  });
+
+  it('desligar o alerta não impede a publicação nem os outros alertas', async () => {
+    // fila esgotada numa pasta com o aviso de fila curta desligado: o alerta de
+    // fila esgotada é outro, e continua saindo
+    const { pasta } = await montarPasta({ textos: 0, alertaDeFilaCurtaAtivo: false });
+
+    const resultado = await rodarCiclo(cliente(), AGORA);
+
+    expect(resultado.filasEsgotadas).toBe(1);
+    const esgotada = await cliente().auditLog.count({
+      where: { acao: 'alerta', entidadeId: 'fila_esgotada', detalhes: { path: ['pasta'], equals: pasta.nome } },
+    });
+    expect(esgotada).toBe(1);
+  });
+
+  it('religar volta a alertar, com o número que estava guardado', async () => {
+    const { pasta } = await montarPasta({
+      textos: 3,
+      alertarAbaixoDe: 10,
+      alertaDeFilaCurtaAtivo: false,
+    });
+    expect((await rodarCiclo(cliente(), AGORA)).filasCurtas).toBe(0);
+
+    await cliente().folder.update({
+      where: { id: pasta.id },
+      data: { alertaDeFilaCurtaAtivo: true },
+    });
+    // o número nunca foi mexido: continua 10
+    const depois = await cliente().folder.findUniqueOrThrow({ where: { id: pasta.id } });
+    expect(depois.alertarAbaixoDe).toBe(10);
+
+    const segundo = await rodarCiclo(cliente(), new Date('2026-09-15T10:05:00Z'));
+    expect(segundo.filasCurtas).toBe(1);
   });
 });
