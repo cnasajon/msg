@@ -81,6 +81,7 @@ model Organization {
   criadaEm      DateTime @default(now()) @map("criada_em") @db.Timestamptz(3)
 
   users     User[]
+  usuariosQueOperaram User[] @relation("UltimaOrganizacaoDoUsuario")
   folders   Folder[]
   auditLogs AuditLog[]
 
@@ -106,9 +107,15 @@ model User {
   ativo           Boolean   @default(true)
   senhaProvisoria Boolean   @default(true) @map("senha_provisoria")
   ultimoLoginEm   DateTime? @map("ultimo_login_em") @db.Timestamptz(3)
+  // Última organização que o superadmin escolheu operar. Existe para que entrar
+  // de novo não recomece na tela de escolha: a sessão morre a cada login (e a
+  // cada troca de domínio, porque o cookie é por domínio), mas a preferência é
+  // da pessoa e sobrevive. Nula para os demais perfis, que têm organização fixa.
+  ultimaOrganizacaoId String? @map("ultima_organizacao_id") @db.Uuid
   criadoEm        DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  ultimaOrganizacao Organization? @relation("UltimaOrganizacaoDoUsuario", fields: [ultimaOrganizacaoId], references: [id], onDelete: SetNull)
   folders      UserFolder[]
   sessions     Session[]
   textos       Text[]        @relation("TextoCriadoPor")

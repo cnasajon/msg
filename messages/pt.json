@@ -46,7 +46,8 @@
     "auditoria": "Auditoria",
     "sistema": "Sistema",
     "organizacoes": "Organizações",
-    "configuracoesGlobais": "Configurações globais"
+    "configuracoesGlobais": "Configurações globais",
+    "perfil": "Perfil"
   },
   "entrada": {
     "senha": "Senha",
@@ -496,7 +497,13 @@
     "senhaApareceUmaVez": "A senha provisória aparece uma única vez, aqui na tela, para você repassar à pessoa.",
     "usuario": "Usuário",
     "usuarioHint": "É com ele que a pessoa entra. Minúsculas, sem espaço e sem acento.",
-    "email": "E-mail"
+    "email": "E-mail",
+    "definirSenha": "Definir a senha manualmente",
+    "novaSenha": "Nova senha",
+    "repetirSenha": "Repetir a senha",
+    "regraDaSenha": "Pelo menos {minimo} caracteres, com uma maiúscula, um número e um caractere especial.",
+    "exigirTroca": "Exigir troca no primeiro acesso",
+    "definirExplicacao": "Você escolhe a senha e a repassa à pessoa. As sessões dela são encerradas."
   },
   "organizacoes": {
     "titulo": "Organizações",
@@ -626,7 +633,8 @@
     "definir_token_sobreposicao": "definir token de sobreposição",
     "remover_token_sobreposicao": "remover token de sobreposição",
     "alerta": "alerta",
-    "mover": "mover para outra pasta"
+    "mover": "mover para outra pasta",
+    "definir_senha": "definir senha"
   },
   "avisos": {
     "textoDuplicado": "Esta pasta já tem um texto com exatamente este conteúdo.",
@@ -774,7 +782,10 @@
     "semTextoParaAData": "Nenhum texto agendado para esta data.",
     "tipoDeListaInvalido": "Tipo de lista inválido.",
     "alertarAbaixoDeInvalido": "O aviso de fila curta vai de 1 a 999 textos.",
-    "alertaDaPastaSalvo": "Alerta de “{pasta}” atualizado."
+    "alertaDaPastaSalvo": "Alerta de “{pasta}” atualizado.",
+    "cadastroSalvo": "Seus dados foram salvos.",
+    "senhaTrocada": "Senha trocada.",
+    "senhaDefinida": "Senha de “{nome}” definida. Repasse-a à pessoa — ela não é exibida de novo."
   },
   "esqueci": {
     "titulo": "Esqueci a senha",
@@ -787,5 +798,21 @@
     "voltar": "Voltar para a entrada",
     "informeOUsuario": "Informe o usuário.",
     "tentativasDemais": "Pedidos demais. Espere alguns minutos e tente de novo."
+  },
+  "perfil": {
+    "titulo": "Meu perfil",
+    "caminho": "Minha conta",
+    "meusDados": "Meus dados",
+    "contato": "Contato",
+    "organizacao": "Organização",
+    "ultimoAcesso": "Último acesso",
+    "quemMudaOResto": "Nome, perfil e pastas são definidos por quem administra, na tela de Usuários.",
+    "emailHint": "O sistema não envia e-mail: este campo é apenas cadastral, para quem administra saber como falar com você.",
+    "trocarSenha": "Trocar senha",
+    "senhaAtual": "Senha atual",
+    "senhaNova": "Nova senha",
+    "repetirSenha": "Repetir a nova senha",
+    "regraDaSenha": "Pelo menos {minimo} caracteres, com uma maiúscula, um número e um caractere especial.",
+    "derrubaSessoes": "Trocar a senha encerra as sessões abertas em outros dispositivos. Esta continua."
   }
 }

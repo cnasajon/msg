@@ -93,6 +93,29 @@ npm run dev               # interface em http://localhost:3000
 npm run dev:worker        # serviço worker, em outro terminal
 ```
 
+### Perfil e senhas
+
+Cada pessoa mantém os próprios dados de contato em **Perfil**, no rodapé da
+barra lateral: e-mail, telefone, usuário do Telegram e a própria senha. Nome,
+perfil e pastas ficam de fora — quem define o que alguém *é* no sistema é quem
+administra.
+
+Do lado de quem administra há dois caminhos para a senha de outra pessoa, na
+tela de Usuários:
+
+- **Redefinir senha** sorteia uma provisória, exibida uma única vez.
+- **Definir a senha manualmente** deixa o administrador escolher a senha e
+  repassá-la. Passa pelas mesmas regras de qualidade, e a caixa *exigir troca no
+  primeiro acesso* vem marcada: uma senha que passou pela mão de outra pessoa
+  não deveria continuar valendo depois.
+
+Nos dois casos as sessões abertas daquela pessoa são encerradas, e a auditoria
+registra que a senha mudou — nunca o valor.
+
+A **organização ativa** do superadmin é lembrada entre acessos: a escolha vive no
+usuário, não na sessão, então entrar de novo não recomeça na tela de escolha.
+Uma organização desativada desde o último acesso não é retomada.
+
 ### Primeiro superadmin
 
 Não há cadastro público, e o primeiro superadmin é o único usuário que não é

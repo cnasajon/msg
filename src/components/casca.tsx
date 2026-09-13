@@ -127,7 +127,10 @@ export async function Casca({
           <div className="role">
             {perfis(sessao.perfil)} · {sessao.username}
           </div>
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link href="/perfil" style={{ fontSize: '12.5px' }}>
+              {menu('perfil')}
+            </Link>
             <BotaoSair token={tokenCsrfPara(sessao.sessaoId)} />
           </div>
         </div>

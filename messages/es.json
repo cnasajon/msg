@@ -46,7 +46,8 @@
     "auditoria": "Auditoría",
     "sistema": "Sistema",
     "organizacoes": "Organizaciones",
-    "configuracoesGlobais": "Configuración global"
+    "configuracoesGlobais": "Configuración global",
+    "perfil": "Perfil"
   },
   "entrada": {
     "senha": "Contraseña",
@@ -496,7 +497,13 @@
     "senhaApareceUmaVez": "La contraseña provisional aparece una sola vez, aquí en la pantalla, para que la pase a la persona.",
     "usuario": "Usuario",
     "usuarioHint": "Es con él que la persona entra. Minúsculas, sin espacios y sin acentos.",
-    "email": "Correo"
+    "email": "Correo",
+    "definirSenha": "Definir la contraseña manualmente",
+    "novaSenha": "Nueva contraseña",
+    "repetirSenha": "Repetir la contraseña",
+    "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
+    "exigirTroca": "Exigir cambio en el primer acceso",
+    "definirExplicacao": "Usted elige la contraseña y se la pasa a la persona. Sus sesiones se cierran."
   },
   "organizacoes": {
     "titulo": "Organizaciones",
@@ -626,7 +633,8 @@
     "definir_token_sobreposicao": "definir token de sobrescritura",
     "remover_token_sobreposicao": "quitar token de sobrescritura",
     "alerta": "alerta",
-    "mover": "mover a otra carpeta"
+    "mover": "mover a otra carpeta",
+    "definir_senha": "definir contraseña"
   },
   "avisos": {
     "textoDuplicado": "Esta carpeta ya tiene un texto con exactamente este contenido.",
@@ -774,7 +782,10 @@
     "semTextoParaAData": "Ningún texto agendado para esta fecha.",
     "tipoDeListaInvalido": "Tipo de lista inválido.",
     "alertarAbaixoDeInvalido": "El aviso de cola corta va de 1 a 999 textos.",
-    "alertaDaPastaSalvo": "Alerta de «{pasta}» actualizada."
+    "alertaDaPastaSalvo": "Alerta de «{pasta}» actualizada.",
+    "cadastroSalvo": "Sus datos fueron guardados.",
+    "senhaTrocada": "Contraseña cambiada.",
+    "senhaDefinida": "Contraseña de «{nome}» definida. Pásela a la persona — no se muestra de nuevo."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",
@@ -787,5 +798,21 @@
     "voltar": "Volver a la entrada",
     "informeOUsuario": "Indique el usuario.",
     "tentativasDemais": "Demasiados pedidos. Espere unos minutos e inténtelo de nuevo."
+  },
+  "perfil": {
+    "titulo": "Mi perfil",
+    "caminho": "Mi cuenta",
+    "meusDados": "Mis datos",
+    "contato": "Contacto",
+    "organizacao": "Organización",
+    "ultimoAcesso": "Último acceso",
+    "quemMudaOResto": "Nombre, perfil y carpetas los define quien administra, en la pantalla de Usuarios.",
+    "emailHint": "El sistema no envía correo: este campo es solo de registro, para que quien administra sepa cómo hablar contigo.",
+    "trocarSenha": "Cambiar contraseña",
+    "senhaAtual": "Contraseña actual",
+    "senhaNova": "Nueva contraseña",
+    "repetirSenha": "Repetir la nueva contraseña",
+    "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
+    "derrubaSessoes": "Cambiar la contraseña cierra las sesiones abiertas en otros dispositivos. Esta sigue."
   }
 }

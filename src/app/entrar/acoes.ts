@@ -8,6 +8,7 @@ import { criarSessao, ipDaRequisicao } from '@/lib/sessao';
 import { permiteTentativaDeLogin, limparTentativas } from '@/lib/rate-limit';
 import { normalizarUsername } from '@/lib/usuario';
 import { bancoDesatualizado } from '@/lib/migracoes';
+import { ultimaOrganizacaoValida } from '@/lib/organizacao-lembrada';
 import { registrarAuditoria } from '@/lib/auditoria';
 
 /**
@@ -56,9 +57,13 @@ export async function entrar(_estado: EstadoDoLogin, dados: FormData): Promise<E
 
   limparTentativas(ip, username);
 
-  // O superadmin entra sem organização ativa e escolhe uma; os demais já vêm
-  // presos à sua.
-  const organizacaoAtiva = usuario.perfil === 'superadmin' ? null : usuario.organizationId;
+  // O superadmin retoma a última organização que operou; os demais já vêm
+  // presos à sua. A preferência vive no usuário justamente porque a sessão não
+  // sobrevive nem ao logout nem à troca de domínio — o cookie é por domínio.
+  const organizacaoAtiva =
+    usuario.perfil === 'superadmin'
+      ? await ultimaOrganizacaoValida(usuario.ultimaOrganizacaoId)
+      : usuario.organizationId;
 
   await criarSessao(usuario.id, organizacaoAtiva);
   await prisma.user.update({ where: { id: usuario.id }, data: { ultimoLoginEm: new Date() } });

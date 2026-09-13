@@ -137,6 +137,21 @@ describe.skipIf(!temBanco)('isolamento entre organizações', () => {
     expect(organizacoes).toHaveLength(2);
   });
 
+  it('9b. admin de A não define a senha de ninguém de B', async () => {
+    // `definirSenha` recebe o id pelo formulário e resolve pelo mesmo escopo de
+    // `redefinirSenha` — não há segunda porta para a senha alheia.
+    const sessao = sessaoDe(cenario.a.admin);
+    await expect(comEscopo(sessao).usuario(cenario.b.usuario.id)).rejects.toThrow(NaoEncontrado);
+    await expect(comEscopo(sessao).usuario(cenario.b.admin.id)).rejects.toThrow(NaoEncontrado);
+  });
+
+  it('9c. admin não define a senha do superadmin', async () => {
+    // o superadmin não pertence a organização nenhuma, então não entra no
+    // escopo de nenhum admin — nem para redefinir, nem para definir à mão
+    const sessao = sessaoDe(cenario.a.admin);
+    await expect(comEscopo(sessao).usuario(cenario.superadmin.id)).rejects.toThrow(NaoEncontrado);
+  });
+
   it('10. admin não alcança superadmin pela lista de usuários', async () => {
     const sessao = sessaoDe(cenario.a.admin);
     const usuarios = await cliente().user.findMany({ where: escopoDeUsuario(sessao) });
