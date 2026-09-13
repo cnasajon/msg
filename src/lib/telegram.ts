@@ -166,10 +166,24 @@ export async function conferirBot(token: string): Promise<{ ok: boolean; usernam
   return { ok: true, username: resposta.result?.username };
 }
 
-/** Formato aceito de chat_id: número, com o `-100` dos supergrupos. */
+/**
+ * Formato aceito de chat_id: número, com o `-100` dos supergrupos.
+ *
+ * O engano mais comum — e caro, porque só aparece como `chat not found` na hora
+ * de publicar — é copiar o número sem o sinal de menos. Grupo e supergrupo
+ * sempre têm id negativo; positivo é conversa privada. Então um `1001492357816`
+ * é recusado aqui, com a correção escrita na mensagem, em vez de virar uma
+ * falha de publicação três dias depois.
+ */
 export function problemaNoChatId(valor: string): string | null {
   if (!/^-?\d{5,20}$/.test(valor)) {
     return 'O chat_id é numérico — supergrupos começam com -100. Não use link nem @nome, que podem ser alterados por um administrador.';
+  }
+  if (/^100\d{9,}$/.test(valor)) {
+    return `Parece faltar o sinal de menos: o id de supergrupo é negativo. Você quis dizer -${valor}?`;
+  }
+  if (!valor.startsWith('-')) {
+    return 'Este id é positivo, o que no Telegram significa conversa privada. Grupos e supergrupos têm id negativo — confira se não faltou o sinal de menos.';
   }
   return null;
 }

@@ -56,6 +56,43 @@ export async function criarAgendamento(dados: FormData) {
   voltar(destino, `Agendamento das ${horaLocal} criado.`, 'ok');
 }
 
+export async function editarAgendamento(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'agendamentos.gerenciar')) throw new NaoAutorizado();
+
+  const agendamento = await exigirAgendamento(sessao, String(dados.get('id') ?? ''));
+  const destino = `/pastas/${agendamento.folderId}`;
+
+  const horaLocal = String(dados.get('horaLocal') ?? '').trim();
+  const problema = problemaNaHora(horaLocal);
+  if (problema) voltar(destino, problema);
+
+  const diasSemana = dados
+    .getAll('diasSemana')
+    .map((d) => Number(d))
+    .filter((d) => Number.isInteger(d) && d >= 1 && d <= 7);
+  if (diasSemana.length === 0) voltar(destino, 'Escolha pelo menos um dia da semana.');
+
+  try {
+    await prisma.schedule.update({
+      where: { id: agendamento.id },
+      data: { horaLocal, diasSemana },
+    });
+  } catch (erro) {
+    if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002') {
+      voltar(destino, `Esta pasta já tem outro agendamento às ${horaLocal}.`);
+    }
+    throw erro;
+  }
+  await registrarAuditoria(sessao, {
+    acao: 'editar',
+    entidade: 'schedule',
+    entidadeId: agendamento.id,
+    detalhes: { horaLocal, diasSemana },
+  });
+  voltar(destino, `Agendamento salvo para ${horaLocal}.`, 'ok');
+}
+
 export async function alternarAgendamento(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'agendamentos.gerenciar')) throw new NaoAutorizado();
