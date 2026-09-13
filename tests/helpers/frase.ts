@@ -6,20 +6,9 @@
  * mensagem visível passam por aqui, o que de quebra prova que a chave existe no
  * arquivo de mensagens.
  */
-import { textoDoProblema, type Problema } from '@/lib/avisos';
-import pt from '../../messages/pt.json';
-
-const AVISOS = pt.avisos as Record<string, string>;
-
-/** Interpolação de `{nome}` — o suficiente para este grupo de mensagens. */
-function traduzir(chave: string, valores?: Record<string, string | number>): string {
-  const modelo = AVISOS[chave];
-  if (modelo === undefined) throw new Error(`Mensagem sem tradução em pt: avisos.${chave}`);
-  return modelo.replace(/\{(\w+)\}/g, (inteiro, nome: string) =>
-    valores && nome in valores ? String(valores[nome]) : inteiro,
-  );
-}
+import { fraseNoIdioma } from '@/lib/mensagens';
+import type { Problema } from '@/lib/avisos';
 
 export function frase(problema: Problema | null): string | null {
-  return problema ? textoDoProblema(problema, traduzir, 'pt') : null;
+  return problema ? fraseNoIdioma(problema, 'pt') : null;
 }

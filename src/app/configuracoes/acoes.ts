@@ -73,7 +73,7 @@ export async function testarCanalDeAlerta(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'alertas.configurarDestino')) throw new NaoAutorizado();
 
-  const { t } = await tradutorDeAvisos();
+  const { t, frase } = await tradutorDeAvisos();
   const canal = String(dados.get('canal') ?? 'telegram');
   const destino = await destinoDosAlertas(prisma);
   const origemDoChat = t(CHAVE_DA_ORIGEM[destino.origemDoChat]);
@@ -93,7 +93,7 @@ export async function testarCanalDeAlerta(dados: FormData) {
       entidade: 'settings',
       detalhes: { canal: 'telegram', sucesso: resposta.ok, origem: destino.origemDoChat },
     });
-    if (!resposta.ok) voltar(t('publicacaoFalhou', { erro: resposta.erro ?? t('erroDesconhecido') }));
+    if (!resposta.ok) voltar(t('publicacaoFalhou', { erro: frase(resposta.problema) }));
     voltar(t('testeTelegramEnviado', { origem: origemDoChat }), 'ok');
   }
 

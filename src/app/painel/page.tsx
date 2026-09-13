@@ -37,6 +37,7 @@ export default async function Painel() {
   const comum = await getTranslations('comum');
   const historico = await getTranslations('historico');
   const dias = await getTranslations('dias');
+  const agenda = await getTranslations('pastas');
 
   const agora = new Date();
   const orgEmVigor = organizacaoEmVigor(sessao);
@@ -224,7 +225,7 @@ export default async function Painel() {
                   <td>
                     {proximo ? (
                       <>
-                        {proximo.data.split('-').reverse().join('/')} às {proximo.hora}{' '}
+                        {proximo.data.split('-').reverse().join('/')} {agenda('as')} {proximo.hora}{' '}
                         <span className="tz">{siglaDoFuso(pasta.timezone)}</span>
                         <div className="faint">
                           {quando(proximo.instante, agora, t)} ·{' '}

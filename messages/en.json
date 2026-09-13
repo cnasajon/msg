@@ -21,7 +21,8 @@
     "fusoDaPasta": "times in each folder's time zone",
     "carregando": "Loading…",
     "reiniciarFila": "restart the queue",
-    "pararNotificar": "stop and notify"
+    "pararNotificar": "stop and notify",
+    "descricaoDoApp": "Scheduled publishing of texts and images to Telegram groups."
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -698,6 +699,22 @@
     "usuarioSalvo": "User “{nome}” saved.",
     "novaSenhaProvisoria": "New temporary password for {nome}: {senha} — write it down now, it will not be shown again.",
     "pastaForaDaOrganizacao": "One of the chosen folders does not belong to this user’s organisation.",
-    "pastasAtualizadas": "Folders for {nome} updated."
+    "pastasAtualizadas": "Folders for {nome} updated.",
+    "erroChatNaoEncontrado": "Group not found. Check the chat_id — it changes when a plain group becomes a supergroup.",
+    "erroBotRemovido": "The bot was removed from the group. Add it again and try once more.",
+    "erroSemPermissao": "The bot is in the group but has no permission to send messages. In channels it must be an administrator.",
+    "erroTokenInvalido": "Bot token invalid or revoked.",
+    "erroBotNaoEhMembro": "The bot is not a member of this group.",
+    "erroLegendaLonga": "The caption went past 1024 characters, Telegram’s limit for text with an image.",
+    "erroTextoLongo": "The text went past 4096 characters, Telegram’s limit.",
+    "erroLimiteDeEnvios": "API sending limit reached. The system tries again shortly.",
+    "erroDaApi": "{descricao}",
+    "apiNaoRespondeu": "The Telegram API did not answer in time.",
+    "apiInalcancavel": "Could not reach the Telegram API ({causa}).",
+    "alertaSlotPerdido": "The {data} {hora} ({fuso}) slot expired more than {tolerancia} minutes ago and was not published.",
+    "alertaFilaCurta": "The folder has only {quantidade} pending text(s).",
+    "alertaFilaEsgotada": "The queue ran out and the folder is set to stop and notify. Nothing was published.",
+    "alertaFalhaDefinitiva": "Definitive failure after {tentativas} attempts: {erro}",
+    "filaEsgotadaPublicacao": "Queue exhausted: there was no pending text to publish."
   }
 }

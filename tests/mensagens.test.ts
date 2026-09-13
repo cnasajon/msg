@@ -85,8 +85,14 @@ describe('mensagens', () => {
         const [, tradutor, grupo] = achado;
         if (tradutor && grupo) grupoDoTradutor.set(tradutor, grupo);
       }
-      // as ações de servidor pegam o tradutor das faixas de aviso por aqui
-      if (/tradutorDeAvisos\(\)/.test(codigo)) grupoDoTradutor.set('t', 'avisos');
+      // `const { t, frase } = await tradutorDeAvisos()` nas ações de servidor;
+      // um `t` já vindo de getTranslations continua valendo para o seu grupo
+      for (const achado of codigo.matchAll(
+        /const\s*\{([^}]*)\}\s*=\s*await\s+tradutorDeAvisos\(\)/g,
+      )) {
+        const nomes = (achado[1] ?? '').split(',').map((n) => n.trim());
+        if (nomes.includes('t') && !grupoDoTradutor.has('t')) grupoDoTradutor.set('t', 'avisos');
+      }
 
       // `problema('chave', …)` nas validações de lib/ também aponta para avisos
       for (const achado of codigo.matchAll(/\bproblema\('([\w.]+)'/g)) {

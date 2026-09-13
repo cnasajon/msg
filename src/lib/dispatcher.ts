@@ -1,3 +1,5 @@
+import { problema } from './avisos';
+import { fraseNoIdioma } from './mensagens';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { env } from './env';
 import { slotsVencidos } from './agenda';
@@ -51,7 +53,7 @@ export async function rodarCiclo(
 
   const pastas = await prisma.folder.findMany({
     where: { ativa: true, organization: { ativa: true }, telegramChatId: { not: null } },
-    include: { schedules: true, organization: { select: { nome: true } } },
+    include: { schedules: true, organization: { select: { nome: true, idiomaPadrao: true } } },
   });
 
   for (const pasta of pastas) {
@@ -77,9 +79,15 @@ export async function rodarCiclo(
         tipo: 'slot_perdido',
         organizationId: pasta.organizationId,
         pasta: pasta.nome,
-        mensagem:
-          `Slot de ${slot.data} ${slot.hora} (${pasta.timezone}) venceu ha mais de ` +
-          `${env.dispatchGraceMinutes} minutos e nao foi publicado.`,
+        mensagem: fraseNoIdioma(
+          problema('alertaSlotPerdido', {
+            data: slot.data,
+            hora: slot.hora,
+            fuso: pasta.timezone,
+            tolerancia: env.dispatchGraceMinutes,
+          }),
+          pasta.organization.idiomaPadrao,
+        ),
       });
     }
 
@@ -103,7 +111,10 @@ export async function rodarCiclo(
           tipo: 'fila_curta',
           organizationId: pasta.organizationId,
           pasta: pasta.nome,
-          mensagem: `A pasta tem apenas ${pendentes} texto(s) pendente(s).`,
+          mensagem: fraseNoIdioma(
+            problema('alertaFilaCurta', { quantidade: pendentes }),
+            pasta.organization.idiomaPadrao,
+          ),
           // uma vez por dia basta: o worker acorda a cada cinco minutos
           repetirAposHoras: 24,
         });
@@ -142,7 +153,9 @@ async function reivindicar(
   }
 }
 
-type PastaComOrganizacao = Prisma.FolderGetPayload<{ include: { organization: { select: { nome: true } } } }>;
+type PastaComOrganizacao = Prisma.FolderGetPayload<{
+  include: { organization: { select: { nome: true; idiomaPadrao: true } } };
+}>;
 
 async function publicarSlot(
   prisma: PrismaClient,
@@ -165,14 +178,20 @@ async function publicarSlot(
     // ser tentado de novo, e os administradores sao avisados.
     await prisma.publication.update({
       where: { id: publicacaoId },
-      data: { status: 'erro', erroMensagem: 'Fila esgotada: nao havia texto pendente para publicar.' },
+      data: {
+        status: 'erro',
+        erroMensagem: fraseNoIdioma(
+          problema('filaEsgotadaPublicacao'),
+          pasta.organization.idiomaPadrao,
+        ),
+      },
     });
     registrar('fila esgotada', { pasta: pasta.nome });
     await alertar(prisma, {
       tipo: 'fila_esgotada',
       organizationId: pasta.organizationId,
       pasta: pasta.nome,
-      mensagem: 'A fila esgotou e a pasta esta configurada para parar e notificar. Nada foi publicado.',
+      mensagem: fraseNoIdioma(problema('alertaFilaEsgotada'), pasta.organization.idiomaPadrao),
     });
     return 'fila_esgotada';
   }
@@ -210,7 +229,7 @@ async function publicarSlot(
       return 'enviado';
     }
 
-    ultimoErro = resposta.erro;
+    ultimoErro = fraseNoIdioma(resposta.problema, pasta.organization.idiomaPadrao);
     await prisma.publication.update({
       where: { id: publicacaoId },
       data: { tentativas: tentativa, erroMensagem: ultimoErro },
@@ -236,7 +255,10 @@ async function publicarSlot(
     tipo: 'falha_publicacao',
     organizationId: pasta.organizationId,
     pasta: pasta.nome,
-    mensagem: `Falha definitiva apos ${MAXIMO_DE_TENTATIVAS} tentativas: ${ultimoErro}`,
+    mensagem: fraseNoIdioma(
+      problema('alertaFalhaDefinitiva', { tentativas: MAXIMO_DE_TENTATIVAS, erro: ultimoErro ?? '' }),
+      pasta.organization.idiomaPadrao,
+    ),
   });
   return 'erro';
 }

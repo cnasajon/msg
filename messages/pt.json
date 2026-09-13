@@ -21,7 +21,8 @@
     "fusoDaPasta": "horários no fuso de cada pasta",
     "carregando": "Carregando…",
     "reiniciarFila": "reiniciar a fila",
-    "pararNotificar": "parar e notificar"
+    "pararNotificar": "parar e notificar",
+    "descricaoDoApp": "Publicação programada de textos e imagens em grupos de Telegram."
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -698,6 +699,22 @@
     "usuarioSalvo": "Usuário “{nome}” salvo.",
     "novaSenhaProvisoria": "Nova senha provisória de {nome}: {senha} — anote agora, ela não será mostrada de novo.",
     "pastaForaDaOrganizacao": "Uma das pastas escolhidas não pertence à organização deste usuário.",
-    "pastasAtualizadas": "Pastas de {nome} atualizadas."
+    "pastasAtualizadas": "Pastas de {nome} atualizadas.",
+    "erroChatNaoEncontrado": "Grupo não encontrado. Confira o chat_id — ele muda quando um grupo comum vira supergroup.",
+    "erroBotRemovido": "O bot foi removido do grupo. Adicione-o de novo e tente outra vez.",
+    "erroSemPermissao": "O bot está no grupo, mas sem permissão para enviar mensagens. Em canais ele precisa ser administrador.",
+    "erroTokenInvalido": "Token do bot inválido ou revogado.",
+    "erroBotNaoEhMembro": "O bot não é membro deste grupo.",
+    "erroLegendaLonga": "A legenda passou de 1024 caracteres, o limite do Telegram para texto com imagem.",
+    "erroTextoLongo": "O texto passou de 4096 caracteres, o limite do Telegram.",
+    "erroLimiteDeEnvios": "Limite de envios da API atingido. O sistema tenta de novo em instantes.",
+    "erroDaApi": "{descricao}",
+    "apiNaoRespondeu": "A API do Telegram não respondeu a tempo.",
+    "apiInalcancavel": "Não foi possível falar com a API do Telegram ({causa}).",
+    "alertaSlotPerdido": "Slot de {data} {hora} ({fuso}) venceu há mais de {tolerancia} minutos e não foi publicado.",
+    "alertaFilaCurta": "A pasta tem apenas {quantidade} texto(s) pendente(s).",
+    "alertaFilaEsgotada": "A fila esgotou e a pasta está configurada para parar e notificar. Nada foi publicado.",
+    "alertaFalhaDefinitiva": "Falha definitiva após {tentativas} tentativas: {erro}",
+    "filaEsgotadaPublicacao": "Fila esgotada: não havia texto pendente para publicar."
   }
 }

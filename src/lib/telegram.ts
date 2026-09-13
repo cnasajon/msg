@@ -16,7 +16,7 @@ import { decifrar } from './cifra';
 
 export type ResultadoDoEnvio =
   | { ok: true; messageId: string }
-  | { ok: false; erro: string; descricao: string };
+  | { ok: false; problema: Problema; descricao: string };
 
 /** Token efetivo de uma pasta: a sobreposição, se houver, senão o bot global. */
 export function tokenDaPasta(pasta: { telegramBotTokenCifrado: string | null }): string {
@@ -28,33 +28,17 @@ export function tokenDaPasta(pasta: { telegramBotTokenCifrado: string | null }):
  * Traduz o erro da API para algo que o administrador consiga agir. A descrição
  * original vai junto, porque é ela que ajuda quando o caso é incomum.
  */
-export function explicarErro(descricao: string): string {
+export function explicarErro(descricao: string): Problema {
   const d = descricao.toLowerCase();
-  if (d.includes('chat not found')) {
-    return 'Grupo não encontrado. Confira o chat_id — ele muda quando um grupo comum vira supergroup.';
-  }
-  if (d.includes('bot was kicked')) {
-    return 'O bot foi removido do grupo. Adicione-o de novo e tente outra vez.';
-  }
-  if (d.includes('not enough rights')) {
-    return 'O bot está no grupo, mas sem permissão para enviar mensagens. Em canais ele precisa ser administrador.';
-  }
-  if (d.includes('unauthorized')) {
-    return 'Token do bot inválido ou revogado.';
-  }
-  if (d.includes('bot is not a member')) {
-    return 'O bot não é membro deste grupo.';
-  }
-  if (d.includes('message caption is too long')) {
-    return 'A legenda passou de 1024 caracteres, o limite do Telegram para texto com imagem.';
-  }
-  if (d.includes('message is too long')) {
-    return 'O texto passou de 4096 caracteres, o limite do Telegram.';
-  }
-  if (d.includes('too many requests')) {
-    return 'Limite de envios da API atingido. O sistema tenta de novo em instantes.';
-  }
-  return descricao;
+  if (d.includes('chat not found')) return problema('erroChatNaoEncontrado');
+  if (d.includes('bot was kicked')) return problema('erroBotRemovido');
+  if (d.includes('not enough rights')) return problema('erroSemPermissao');
+  if (d.includes('unauthorized')) return problema('erroTokenInvalido');
+  if (d.includes('bot is not a member')) return problema('erroBotNaoEhMembro');
+  if (d.includes('message caption is too long')) return problema('erroLegendaLonga');
+  if (d.includes('message is too long')) return problema('erroTextoLongo');
+  if (d.includes('too many requests')) return problema('erroLimiteDeEnvios');
+  return problema('erroDaApi', { descricao });
 }
 
 /**
@@ -78,7 +62,12 @@ async function chamar(
   token: string,
   metodo: string,
   corpo: FormData | Record<string, unknown>,
-): Promise<{ ok: boolean; result?: { message_id?: number; username?: string }; description?: string }> {
+): Promise<{
+  ok: boolean;
+  result?: { message_id?: number; username?: string };
+  description?: string;
+  problema?: Problema;
+}> {
   const requisicao: RequestInit =
     corpo instanceof FormData
       ? { method: 'POST', body: corpo }
@@ -93,7 +82,7 @@ async function chamar(
       ...requisicao,
       signal: AbortSignal.timeout(30_000),
     });
-    return (await resposta.json()) as { ok: boolean; description?: string };
+    return (await resposta.json()) as { ok: boolean; description?: string; problema?: Problema };
   } catch (erro) {
     // Falha de rede não é resposta da API; devolve no mesmo formato. A causa vai
     // para o log — sem a URL, que carrega o token —, porque "não foi possível
@@ -110,10 +99,10 @@ async function chamar(
     );
     return {
       ok: false,
-      description:
+      problema:
         erro instanceof Error && erro.name === 'TimeoutError'
-          ? 'A API do Telegram não respondeu a tempo.'
-          : `Não foi possível falar com a API do Telegram (${causa}).`,
+          ? problema('apiNaoRespondeu')
+          : problema('apiInalcancavel', { causa }),
     };
   }
 }
@@ -129,7 +118,7 @@ export function enviarTexto(token: string, chatId: string, texto: string): Promi
       ? ({ ok: true, messageId: String(resposta.result?.message_id ?? '') } as const)
       : ({
           ok: false,
-          erro: explicarErro(resposta.description ?? ''),
+          problema: resposta.problema ?? explicarErro(resposta.description ?? ''),
           descricao: resposta.description ?? '',
         } as const);
   });
@@ -154,16 +143,20 @@ export function enviarFoto(
       ? ({ ok: true, messageId: String(resposta.result?.message_id ?? '') } as const)
       : ({
           ok: false,
-          erro: explicarErro(resposta.description ?? ''),
+          problema: resposta.problema ?? explicarErro(resposta.description ?? ''),
           descricao: resposta.description ?? '',
         } as const);
   });
 }
 
 /** Confere o token, sem tocar em nenhum grupo. */
-export async function conferirBot(token: string): Promise<{ ok: boolean; username?: string; erro?: string }> {
+export async function conferirBot(
+  token: string,
+): Promise<{ ok: boolean; username?: string; problema?: Problema }> {
   const resposta = await chamar(token, 'getMe', {});
-  if (!resposta.ok) return { ok: false, erro: explicarErro(resposta.description ?? '') };
+  if (!resposta.ok) {
+    return { ok: false, problema: resposta.problema ?? explicarErro(resposta.description ?? '') };
+  }
   return { ok: true, username: resposta.result?.username };
 }
 

@@ -156,7 +156,7 @@ export async function salvarTokenDeSobreposicao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.configurarTokenSobreposicao')) throw new NaoAutorizado();
 
-  const { t } = await tradutorDeAvisos();
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('id') ?? ''));
   const destino = `/pastas/${pasta.id}`;
   const token = String(dados.get('token') ?? '').trim();
@@ -176,7 +176,12 @@ export async function salvarTokenDeSobreposicao(dados: FormData) {
   }
   const conferencia = await conferirBot(token);
   if (!conferencia.ok) {
-    voltar(destino, t('tokenRecusado', { erro: conferencia.erro ?? t('erroDesconhecido') }));
+    voltar(
+      destino,
+      t('tokenRecusado', {
+        erro: conferencia.problema ? frase(conferencia.problema) : t('erroDesconhecido'),
+      }),
+    );
   }
 
   await prisma.folder.update({
@@ -198,7 +203,7 @@ export async function testarConexao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.configurarChatId')) throw new NaoAutorizado();
 
-  const { t } = await tradutorDeAvisos();
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('id') ?? ''));
   const destino = `/pastas/${pasta.id}`;
   if (!pasta.telegramChatId) voltar(destino, t('cadastreChatIdAntesDeTestar'));
@@ -221,10 +226,7 @@ export async function testarConexao(dados: FormData) {
   if (!resultado.ok) {
     voltar(
       destino,
-      t('testeFalhou', {
-        chatId: pasta.telegramChatId,
-        erro: resultado.erro ?? t('erroDesconhecido'),
-      }),
+      t('testeFalhou', { chatId: pasta.telegramChatId, erro: frase(resultado.problema) }),
     );
   }
   voltar(destino, t('testeEnviado', { chatId: pasta.telegramChatId }), 'ok');

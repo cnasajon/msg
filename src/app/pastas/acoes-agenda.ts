@@ -153,7 +153,7 @@ export async function publicarAgora(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.publicarAgora')) throw new NaoAutorizado();
 
-  const { t } = await tradutorDeAvisos();
+  const { t, frase } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = String(dados.get('destino') ?? `/textos/${texto.id}`);
   const pasta = await prisma.folder.findUniqueOrThrow({ where: { id: texto.folderId } });
@@ -189,15 +189,15 @@ export async function publicarAgora(dados: FormData) {
   if (!resposta.ok) {
     await prisma.publication.update({
       where: { id: publicacaoId },
-      data: { status: 'erro', erroMensagem: resposta.erro, tentativas: 1 },
+      data: { status: 'erro', erroMensagem: frase(resposta.problema), tentativas: 1 },
     });
     await registrarAuditoria(sessao, {
       acao: 'publicar_agora',
       entidade: 'text',
       entidadeId: texto.id,
-      detalhes: { sucesso: false, erro: resposta.erro },
+      detalhes: { sucesso: false, erro: resposta.problema.chave },
     });
-    voltar(destino, t('publicacaoFalhou', { erro: resposta.erro ?? t('erroDesconhecido') }));
+    voltar(destino, t('publicacaoFalhou', { erro: frase(resposta.problema) }));
   }
 
   const enviadaEm = new Date();

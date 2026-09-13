@@ -11,6 +11,7 @@ import { destinoDosAlertas } from '@/lib/alertas';
 import { conferirBot } from '@/lib/telegram';
 import { env } from '@/lib/env';
 import { formatarNoFuso } from '@/lib/fuso';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { salvarDestinoDosAlertas, testarCanalDeAlerta } from './acoes';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,7 @@ export default async function Configuracoes({
 
   const t = await getTranslations('configuracoes');
   const menu = await getTranslations('menu');
+  const { frase } = await tradutorDeAvisos();
 
   const { erro, ok } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -224,7 +226,7 @@ export default async function Configuracoes({
                 ) : (
                   <>
                     <span className="pill err">{t('falhaDeAutenticacao')}</span>
-                    <div className="faint">{bot.erro}</div>
+                    <div className="faint">{bot.problema ? frase(bot.problema) : null}</div>
                   </>
                 )}
               </dd>

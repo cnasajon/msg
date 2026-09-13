@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { GRUPOS_DO_CLIENTE } from '@/i18n/idiomas';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'msg',
-  description: 'Publicação programada de textos e imagens em grupos de Telegram.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const comum = await getTranslations('comum');
+  return { title: comum('app'), description: comum('descricaoDoApp') };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // O idioma vem de quem está olhando — preferência do usuário, senão padrão da

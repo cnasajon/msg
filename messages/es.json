@@ -21,7 +21,8 @@
     "fusoDaPasta": "horarios en la zona horaria de cada carpeta",
     "carregando": "Cargando…",
     "reiniciarFila": "reiniciar la cola",
-    "pararNotificar": "parar y notificar"
+    "pararNotificar": "parar y notificar",
+    "descricaoDoApp": "Publicación programada de textos e imágenes en grupos de Telegram."
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -698,6 +699,22 @@
     "usuarioSalvo": "Usuario “{nome}” guardado.",
     "novaSenhaProvisoria": "Nueva contraseña provisional de {nome}: {senha} — anótela ahora, no se mostrará de nuevo.",
     "pastaForaDaOrganizacao": "Una de las carpetas elegidas no pertenece a la organización de este usuario.",
-    "pastasAtualizadas": "Carpetas de {nome} actualizadas."
+    "pastasAtualizadas": "Carpetas de {nome} actualizadas.",
+    "erroChatNaoEncontrado": "Grupo no encontrado. Revise el chat_id — cambia cuando un grupo común pasa a supergroup.",
+    "erroBotRemovido": "El bot fue removido del grupo. Agréguelo de nuevo e inténtelo otra vez.",
+    "erroSemPermissao": "El bot está en el grupo, pero sin permiso para enviar mensajes. En canales tiene que ser administrador.",
+    "erroTokenInvalido": "Token del bot inválido o revocado.",
+    "erroBotNaoEhMembro": "El bot no es miembro de este grupo.",
+    "erroLegendaLonga": "La leyenda pasó de 1024 caracteres, el límite de Telegram para texto con imagen.",
+    "erroTextoLongo": "El texto pasó de 4096 caracteres, el límite de Telegram.",
+    "erroLimiteDeEnvios": "Límite de envíos de la API alcanzado. El sistema lo intenta de nuevo en instantes.",
+    "erroDaApi": "{descricao}",
+    "apiNaoRespondeu": "La API de Telegram no respondió a tiempo.",
+    "apiInalcancavel": "No fue posible hablar con la API de Telegram ({causa}).",
+    "alertaSlotPerdido": "El slot de {data} {hora} ({fuso}) venció hace más de {tolerancia} minutos y no se publicó.",
+    "alertaFilaCurta": "La carpeta tiene solo {quantidade} texto(s) pendiente(s).",
+    "alertaFilaEsgotada": "La cola se agotó y la carpeta está configurada para parar y notificar. No se publicó nada.",
+    "alertaFalhaDefinitiva": "Fallo definitivo tras {tentativas} intentos: {erro}",
+    "filaEsgotadaPublicacao": "Cola agotada: no había texto pendiente para publicar."
   }
 }
