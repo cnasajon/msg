@@ -104,6 +104,8 @@ Migrações rodam no build/release, nunca no start.
 - Idempotência do dispatcher (dois processos concorrendo pelo mesmo slot).
 - Limites de 4096/1024 caracteres com e sem imagem.
 - Precedência do destino dos alertas (settings → env → log/painel).
+- Integridade das traduções: mesmas chaves em pt/es/en, nenhuma chave usada no
+  código sem tradução e nenhum grupo de cliente fora do que vai ao navegador.
 
 ## Fases
 
@@ -113,4 +115,4 @@ Migrações rodam no build/release, nunca no start.
 | 1 | Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado | entregue |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, exportação, reordenação | entregue |
 | 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | entregue |
-| 4 | Painel, i18n, auditoria, polimento visual | a fazer |
+| 4 | Painel, i18n, auditoria, polimento visual | entregue |

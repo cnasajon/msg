@@ -10,11 +10,12 @@ o username de um bot não se troca sem criar outro no BotFather.
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.5).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
-> **Situação: fase 3 entregue.** O sistema publica: agendamentos por pasta,
-> dispatcher no serviço `worker` com a reivindicação do slot antes do envio,
-> integração com o Telegram, fila esgotada, slots perdidos e os alertas com a
-> precedência da seção 7.4. Falta a fase 4 — painel, i18n, tela de auditoria e
-> polimento.
+> **Situação: fase 4 entregue — o sistema está completo.** Painel inicial com a
+> próxima publicação e as últimas que saíram, interface em português, espanhol e
+> inglês, tela de auditoria com filtros e paginação. As fases anteriores
+> continuam valendo: isolamento entre organizações, textos com imagem,
+> importação e exportação, agendamentos e o dispatcher idempotente no serviço
+> `worker`.
 
 ## O que já existe
 
@@ -33,8 +34,12 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | `src/lib/agenda.ts` | Cálculo dos slots no fuso da pasta, com as viradas de horário de verão |
 | `src/lib/dispatcher.ts` | **Reivindicação do slot antes do envio** — o que garante a idempotência |
 | `src/lib/alertas.ts` | Alertas com a precedência `settings` → ambiente → log e painel |
-| `src/worker/` | Serviço `worker`; o dispatcher entra na fase 3 |
-| `tests/` | Isolamento, permissões, autenticação e rotas HTTP |
+| `src/lib/avisos.ts` | As validações devolvem **chave e valores**, não frase pronta |
+| `src/lib/mensagens.ts` | Tradução fora do next-intl, para o `worker`, que não tem sessão |
+| `src/i18n/` | Resolução do idioma da interface e as constantes de idioma |
+| `messages/` | `pt.json`, `es.json`, `en.json` — todos os textos da interface |
+| `src/worker/` | Serviço `worker`, onde o dispatcher roda |
+| `tests/` | Isolamento, permissões, autenticação, rotas HTTP e integridade das traduções |
 | `docs/mockup/` | Mockup navegável em HTML estático, sem build |
 | `docs/mockup/assets/logo.svg` | Logomarca (símbolo + wordmark) e `mark.svg`, só o símbolo |
 | `CLAUDE.md` | Regras de trabalho e pontos não negociáveis |
@@ -254,6 +259,10 @@ O cálculo dos slots é testado nas duas viradas de horário de verão: a hora q
 não existe resolve para depois da virada, e a que acontece duas vezes resolve
 para a primeira ocorrência, sempre igual.
 
+As traduções também têm teste: paridade de chaves entre os três idiomas, nenhuma
+chave usada no código sem tradução correspondente e nenhum grupo de mensagens
+usado no navegador fora da lista que vai para o cliente.
+
 ## Fases
 
 | Fase | Conteúdo | Situação |
@@ -262,7 +271,7 @@ para a primeira ocorrência, sempre igual.
 | 1 | Railway, autenticação, organizações, usuários, permissões, isolamento testado | **entregue** |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, exportação, reordenação | **entregue** |
 | 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | **entregue** |
-| 4 | Painel, i18n, auditoria, polimento visual | — |
+| 4 | Painel, i18n, auditoria, polimento visual | **entregue** |
 
 ## Como a publicação acontece
 
@@ -287,6 +296,41 @@ para a primeira ocorrência, sempre igual.
 Ao esgotar a fila, vale o que estiver configurado na pasta: *parar e notificar*
 registra a publicação sem texto e alerta; *reiniciar* devolve todos os textos a
 pendente, preservando a ordem, e publica o primeiro, com o evento na auditoria.
+
+## Idiomas
+
+A interface fala **português, espanhol e inglês**, e o idioma vem de quem está
+olhando, não do endereço: não há `/pt/` nem `/en/` na URL. A ordem é
+
+1. a preferência gravada no usuário (**Configuração → Usuários**);
+2. senão o idioma padrão da organização (**Sistema → Organizações**);
+3. senão o cookie escolhido no seletor do cabeçalho — é ele que faz a tela de
+   entrada aparecer no idioma certo antes de existir sessão;
+4. senão português.
+
+Assim um link enviado por um admin brasileiro abre em espanhol para quem é da OA
+España, sem ninguém trocar nada.
+
+Os textos ficam em `messages/pt.json`, `es.json` e `en.json`, um grupo por tela.
+Três testes cuidam da integridade: as três línguas têm exatamente as mesmas
+chaves, nenhuma chave usada no código está sem tradução, e nenhum grupo usado por
+componente de navegador ficou de fora da lista que o layout entrega ao cliente —
+o provedor do next-intl serializa na página tudo que recebe, então a tela inicial
+de um usuário comum não carrega os rótulos das telas de sistema.
+
+As mensagens de erro e de confirmação seguem o mesmo caminho: as funções de
+validação devolvem chave e valores, e quem monta a frase é a ação de servidor,
+que sabe o idioma de quem pediu. O `worker` não tem sessão nem requisição —
+quando ele grava o erro de uma publicação ou o texto de um alerta, usa o idioma
+padrão da organização daquela pasta, que é quem vai ler no histórico e no painel.
+
+Datas e horas saem na ordem do idioma (14/09 em português e espanhol, 9/14 em
+inglês), sempre no fuso da pasta e com a sigla do fuso ao lado.
+
+**O que continua em português:** o conteúdo dos arquivos de exportação (os
+cabeçalhos das colunas em PDF, XLSX, CSV, JSON e XML) e o texto dos comentários
+do código. Os textos publicados são de quem os escreveu — o sistema não traduz
+conteúdo.
 
 ## Alertas
 
