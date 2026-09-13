@@ -35,8 +35,8 @@ export async function prepararBanco() {
 export async function limpar() {
   const db = cliente();
   await db.$executeRawUnsafe(`
-    TRUNCATE TABLE audit_log, sessions, user_folders, publications, texts, imports,
-                   schedules, folders, users, organizations, settings RESTART IDENTITY CASCADE
+    TRUNCATE TABLE audit_log, sessions, user_folders, user_organizations, publications, texts,
+                   imports, schedules, folders, users, organizations, settings RESTART IDENTITY CASCADE
   `);
 }
 
@@ -73,7 +73,7 @@ export async function criarCenario() {
         email: `admin-${randomUUID()}@exemplo.org`,
         senhaHash: 'x',
         perfil: 'admin',
-        organizationId: organizacao.id,
+        organizacoes: { create: { organizationId: organizacao.id } },
         senhaProvisoria: false,
       },
     });
@@ -84,7 +84,7 @@ export async function criarCenario() {
         email: `usuario-${randomUUID()}@exemplo.org`,
         senhaHash: 'x',
         perfil: 'usuario',
-        organizationId: organizacao.id,
+        organizacoes: { create: { organizationId: organizacao.id } },
         senhaProvisoria: false,
       },
     });
@@ -119,7 +119,15 @@ export async function criarCenario() {
       },
     });
 
-    return { organizacao, admin, usuario, pasta, pastaSemAtribuicao, texto, publicacao };
+    return {
+      organizacao,
+      admin: { ...admin, organizacoes: [organizacao.id] },
+      usuario: { ...usuario, organizacoes: [organizacao.id] },
+      pasta,
+      pastaSemAtribuicao,
+      texto,
+      publicacao,
+    };
   }
 
   const a = await montarOrganizacao('Organização A', 'America/Sao_Paulo');
@@ -132,7 +140,6 @@ export async function criarCenario() {
       email: `super-${randomUUID()}@exemplo.org`,
       senhaHash: 'x',
       perfil: 'superadmin',
-      organizationId: null,
       senhaProvisoria: false,
     },
   });
@@ -142,14 +149,16 @@ export async function criarCenario() {
 
 /** Monta a sessão como a aplicação montaria, a partir do usuário. */
 export function sessaoDe(
-  usuario: { id: string; perfil: string; organizationId: string | null },
+  usuario: { id: string; perfil: string; organizacoes?: string[] },
   extras: { organizationAtivaId?: string | null; pastasAtribuidas?: string[] } = {},
 ): Sessao {
+  const organizacoes = usuario.organizacoes ?? [];
   return {
     usuarioId: usuario.id,
     perfil: usuario.perfil as Sessao['perfil'],
-    organizationId: usuario.organizationId,
-    organizationAtivaId: extras.organizationAtivaId ?? null,
+    organizacoes,
+    // Sem escolha explícita, opera a primeira — é o que a aplicação faz.
+    organizationAtivaId: extras.organizationAtivaId ?? organizacoes[0] ?? null,
     pastasAtribuidas: extras.pastasAtribuidas ?? [],
   };
 }

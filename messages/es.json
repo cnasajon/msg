@@ -508,7 +508,11 @@
     "repetirSenha": "Repetir la contraseña",
     "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
     "exigirTroca": "Exigir cambio en el primer acceso",
-    "definirExplicacao": "Usted elige la contraseña y se la pasa a la persona. Sus sesiones se cierran."
+    "definirExplicacao": "Usted elige la contraseña y se la pasa a la persona. Sus sesiones se cierran.",
+    "organizacoesDoUsuario": "Organizaciones",
+    "organizacoesExplicacao": "De qué organizaciones participa esta persona. Con más de una, elige en el encabezado cuál está operando. Solo el superadmin cambia esto.",
+    "salvarOrganizacoes": "Guardar organizaciones",
+    "tirarOrganizacaoAviso": "Quitar una organización también elimina las carpetas de ella que estaban asignadas a esta persona."
   },
   "organizacoes": {
     "titulo": "Organizaciones",
@@ -639,7 +643,8 @@
     "remover_token_sobreposicao": "quitar token de sobrescritura",
     "alerta": "alerta",
     "mover": "mover a otra carpeta",
-    "definir_senha": "definir contraseña"
+    "definir_senha": "definir contraseña",
+    "definir_organizacoes": "definir organizaciones"
   },
   "avisos": {
     "textoDuplicado": "Esta carpeta ya tiene un texto con exactamente este contenido.",
@@ -790,7 +795,11 @@
     "alertaDaPastaSalvo": "Alerta de «{pasta}» actualizada.",
     "cadastroSalvo": "Sus datos fueron guardados.",
     "senhaTrocada": "Contraseña cambiada.",
-    "senhaDefinida": "Contraseña de «{nome}» definida. Pásela a la persona — no se muestra de nuevo."
+    "senhaDefinida": "Contraseña de «{nome}» definida. Pásela a la persona — no se muestra de nuevo.",
+    "organizacoesAtualizadas": "Organizaciones de «{nome}» actualizadas.",
+    "peloMenosUmaOrganizacao": "La persona necesita participar de al menos una organización.",
+    "organizacaoInexistente": "Organización no encontrada.",
+    "superadminSemOrganizacao": "El superadmin no participa de organización: alcanza todas por su perfil."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",
@@ -818,6 +827,7 @@
     "senhaNova": "Nueva contraseña",
     "repetirSenha": "Repetir la nueva contraseña",
     "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
-    "derrubaSessoes": "Cambiar la contraseña cierra las sesiones abiertas en otros dispositivos. Esta sigue."
+    "derrubaSessoes": "Cambiar la contraseña cierra las sesiones abiertas en otros dispositivos. Esta sigue.",
+    "organizacoes": "Organizaciones"
   }
 }

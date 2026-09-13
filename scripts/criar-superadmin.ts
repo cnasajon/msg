@@ -52,7 +52,6 @@ async function principal() {
       username,
       email: email ? email.toLowerCase() : null,
       perfil: 'superadmin',
-      organizationId: null,
       senhaHash: await gerarHashDeSenha(senha),
       senhaProvisoria: true,
     },

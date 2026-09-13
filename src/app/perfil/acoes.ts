@@ -7,6 +7,7 @@ import { exigirCsrf } from '@/lib/csrf';
 import { gerarHashDeSenha, problemaNaSenha, senhaConfere } from '@/lib/senha';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { organizacaoEmVigor } from '@/lib/escopo';
 import { tradutorDeAvisos, type Tradutor } from '@/lib/avisos-servidor';
 
 function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
@@ -100,14 +101,12 @@ export async function trocarMinhaSenha(dados: FormData) {
     acao: 'trocar_senha',
     entidade: 'user',
     entidadeId: usuario.id,
-    organizationId: usuario.organizationId,
+    organizationId: organizacaoEmVigor(sessao),
   });
 
   await encerrarSessoesDoUsuario(usuario.id);
-  await criarSessao(
-    usuario.id,
-    usuario.perfil === 'superadmin' ? usuario.ultimaOrganizacaoId : usuario.organizationId,
-  );
+  // A nova sessão nasce operando a mesma organização de antes.
+  await criarSessao(usuario.id, sessao.organizationAtivaId);
 
   voltar(t('senhaTrocada'), 'ok');
 }

@@ -8,10 +8,17 @@ import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer, perfisQuePodeGerenciar } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
-import { escopoDeUsuario, escopoDePasta, organizacaoEmVigor } from '@/lib/escopo';
+import { escopoDeUsuario, escopoDePasta, escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
 import { IDIOMAS, NOME_DO_IDIOMA } from '@/i18n/idiomas';
 import { TAMANHO_MINIMO_DA_SENHA } from '@/lib/senha';
-import { criarUsuario, editarUsuario, redefinirSenha, definirSenha, atribuirPastas } from './acoes';
+import {
+  criarUsuario,
+  editarUsuario,
+  redefinirSenha,
+  definirSenha,
+  atribuirPastas,
+  definirOrganizacoes,
+} from './acoes';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +47,7 @@ export default async function Usuarios({
     where: escopoDeUsuario(sessao),
     orderBy: [{ perfil: 'asc' }, { nome: 'asc' }],
     include: {
-      organization: { select: { nome: true } },
+      organizacoes: { include: { organization: { select: { id: true, nome: true } } } },
       folders: { include: { folder: { select: { id: true, nome: true } } } },
     },
   });
@@ -49,6 +56,15 @@ export default async function Usuarios({
     orderBy: { nome: 'asc' },
     select: { id: true, nome: true },
   });
+  // A lista para o formulário de participação. Só o superadmin a vê, e para ele
+  // `escopoDeOrganizacao` devolve todas.
+  const organizacoes = podeFazer(sessao.perfil, 'organizacoes.gerenciar')
+    ? await prisma.organization.findMany({
+        where: escopoDeOrganizacao(sessao),
+        orderBy: { nome: 'asc' },
+        select: { id: true, nome: true, ativa: true },
+      })
+    : [];
   const emEdicao = editar ? usuarios.find((u) => u.id === editar) : undefined;
   const perfisDisponiveis = perfisQuePodeGerenciar(sessao.perfil);
 
@@ -108,7 +124,13 @@ export default async function Usuarios({
                   </div>
                 </td>
                 {sessao.perfil === 'superadmin' ? (
-                  <td>{u.organization?.nome ?? <span className="faint">{t('global')}</span>}</td>
+                  <td>
+                    {u.organizacoes.length > 0 ? (
+                      u.organizacoes.map((o) => o.organization.nome).join(' · ')
+                    ) : (
+                      <span className="faint">{t('global')}</span>
+                    )}
+                  </td>
                 ) : null}
                 <td>
                   <span className={u.perfil === 'superadmin' ? 'pill accent' : u.perfil === 'admin' ? 'pill info' : 'pill'}>
@@ -274,6 +296,47 @@ export default async function Usuarios({
                 {t('definirExplicacao')}
               </span>
             </form>
+
+            {/* De quais organizações a pessoa participa — só o superadmin. Um
+                admin enxerga uma organização só; para escolher outra teria de
+                enxergar todas, e poderia incluir a si mesmo onde quisesse. */}
+            {podeFazer(sessao.perfil, 'organizacoes.gerenciar') && emEdicao.perfil !== 'superadmin' ? (
+              <>
+                <hr style={{ border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' }} />
+                <form action={definirOrganizacoes}>
+                  <CampoCsrf token={csrf} />
+                  <input type="hidden" name="id" value={emEdicao.id} />
+                  <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>
+                    {t('organizacoesDoUsuario')}
+                    <Ajuda
+                      texto={t('organizacoesExplicacao')}
+                      rotulo={comum('ajudaSobre', { campo: t('organizacoesDoUsuario') })}
+                    />
+                  </h3>
+                  {organizacoes.map((o) => (
+                    <div className="check" key={o.id}>
+                      <input
+                        type="checkbox"
+                        id={`org-${o.id}`}
+                        name="organizacoes"
+                        value={o.id}
+                        defaultChecked={emEdicao.organizacoes.some((x) => x.organizationId === o.id)}
+                      />
+                      <label htmlFor={`org-${o.id}`}>
+                        {o.nome}
+                        {o.ativa ? '' : ` (${comum('inativa')})`}
+                      </label>
+                    </div>
+                  ))}
+                  <button className="btn" type="submit" style={{ marginTop: 8 }}>
+                    {t('salvarOrganizacoes')}
+                  </button>
+                  <span className="faint" style={{ marginLeft: 10 }}>
+                    {t('tirarOrganizacaoAviso')}
+                  </span>
+                </form>
+              </>
+            ) : null}
 
             {emEdicao.perfil === 'usuario' ? (
               <>

@@ -80,7 +80,7 @@ model Organization {
   ativa         Boolean  @default(true)
   criadaEm      DateTime @default(now()) @map("criada_em") @db.Timestamptz(3)
 
-  users     User[]
+  usuarios  UserOrganization[]
   usuariosQueOperaram User[] @relation("UltimaOrganizacaoDoUsuario")
   folders   Folder[]
   auditLogs AuditLog[]
@@ -91,8 +91,6 @@ model Organization {
 
 model User {
   id              String    @id @default(uuid()) @db.Uuid
-  // nulo apenas para superadmin — superadmin não pertence a organização
-  organizationId  String?   @map("organization_id") @db.Uuid
   nome            String
   // Credencial de entrada. Minúsculas, sem espaço — ver problemaNoUsername.
   username        String    @unique
@@ -114,7 +112,10 @@ model User {
   ultimaOrganizacaoId String? @map("ultima_organizacao_id") @db.Uuid
   criadoEm        DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
 
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  // De quais organizações a pessoa participa. Substitui o antigo campo único:
+  // a mesma pessoa pode atuar em mais de uma, escolhendo no cabeçalho qual
+  // está operando. Superadmin não tem nenhuma — ele alcança todas por perfil.
+  organizacoes UserOrganization[]
   ultimaOrganizacao Organization? @relation("UltimaOrganizacaoDoUsuario", fields: [ultimaOrganizacaoId], references: [id], onDelete: SetNull)
   folders      UserFolder[]
   sessions     Session[]
@@ -123,8 +124,23 @@ model User {
   auditLogs    AuditLog[]
   settings     Settings[]    @relation("SettingsAtualizadoPor")
 
-  @@index([organizationId, perfil])
+  @@index([perfil])
   @@map("users")
+}
+
+// Participação de uma pessoa numa organização. Quem tem mais de uma linha aqui
+// vê o seletor no cabeçalho e transita entre elas; o isolamento dos dados
+// continua valendo um de cada vez, pela organização em vigor na sessão.
+model UserOrganization {
+  userId         String @map("user_id") @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, organizationId])
+  @@index([organizationId])
+  @@map("user_organizations")
 }
 
 // Sessão persistida para permitir revogação imediata (desativar usuário,

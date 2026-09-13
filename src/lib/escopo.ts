@@ -19,9 +19,12 @@ import type { Perfil } from './autorizacao';
 export type Sessao = {
   usuarioId: string;
   perfil: Perfil;
-  /** Organização do usuário. Nula para superadmin, que não pertence a nenhuma. */
-  organizationId: string | null;
-  /** Organização que o superadmin escolheu operar. Nula para os demais perfis. */
+  /**
+   * Organizações de que a pessoa participa. Vazia para o superadmin, que
+   * alcança todas por perfil e não participa de nenhuma.
+   */
+  organizacoes: string[];
+  /** Qual delas está sendo operada agora. */
   organizationAtivaId: string | null;
   /** Pastas atribuídas — só tem efeito para o perfil `usuario`. */
   pastasAtribuidas: string[];
@@ -35,7 +38,19 @@ export type Sessao = {
  * alguma. Isso é deliberado: é melhor não ver nada do que ver tudo misturado.
  */
 export function organizacaoEmVigor(sessao: Sessao): string | null {
-  return sessao.perfil === 'superadmin' ? sessao.organizationAtivaId : sessao.organizationId;
+  // O superadmin escolhe livremente entre todas; enquanto não escolher, não
+  // alcança dado de organização nenhuma — melhor não ver nada do que ver tudo
+  // misturado.
+  if (sessao.perfil === 'superadmin') return sessao.organizationAtivaId;
+
+  // Para os demais, a escolha só vale se for de uma organização de que a pessoa
+  // participa: o identificador vem da sessão, e sessão é coisa que se tenta
+  // forjar. Sem escolha válida, cai na primeira — quem participa de uma só
+  // nunca vê seletor nem precisa escolher nada.
+  if (sessao.organizationAtivaId && sessao.organizacoes.includes(sessao.organizationAtivaId)) {
+    return sessao.organizationAtivaId;
+  }
+  return sessao.organizacoes[0] ?? null;
 }
 
 /**
@@ -47,8 +62,9 @@ const NADA = { id: '00000000-0000-0000-0000-000000000000' } as const;
 export function escopoDeOrganizacao(sessao: Sessao): Prisma.OrganizationWhereInput {
   // O superadmin enxerga todas as organizações — é ele quem as administra.
   if (sessao.perfil === 'superadmin') return {};
-  const org = organizacaoEmVigor(sessao);
-  return org ? { id: org } : NADA;
+  // Os demais enxergam aquelas de que participam: é a lista do seletor do
+  // cabeçalho, e o que limita para onde podem transitar.
+  return sessao.organizacoes.length > 0 ? { id: { in: sessao.organizacoes } } : NADA;
 }
 
 export function escopoDeUsuario(sessao: Sessao): Prisma.UserWhereInput {
@@ -56,11 +72,15 @@ export function escopoDeUsuario(sessao: Sessao): Prisma.UserWhereInput {
   if (sessao.perfil === 'superadmin') {
     // Sem organização ativa, o superadmin ainda precisa alcançar os outros
     // superadmins (que não pertencem a organização nenhuma).
-    return org ? { OR: [{ organizationId: org }, { perfil: 'superadmin' }] } : { perfil: 'superadmin' };
+    return org
+      ? { OR: [{ organizacoes: { some: { organizationId: org } } }, { perfil: 'superadmin' }] }
+      : { perfil: 'superadmin' };
   }
   if (!org) return NADA;
-  // Admin gerencia a própria organização; ninguém alcança superadmin.
-  return { organizationId: org, perfil: { not: 'superadmin' } };
+  // Admin gerencia quem participa da organização em vigor; ninguém alcança
+  // superadmin. Quem participa de várias é alcançado por qualquer admin de
+  // qualquer uma delas — é o que significa participar.
+  return { organizacoes: { some: { organizationId: org } }, perfil: { not: 'superadmin' } };
 }
 
 export function escopoDePasta(sessao: Sessao): Prisma.FolderWhereInput {

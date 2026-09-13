@@ -73,8 +73,10 @@ export async function Casca({
   const comum = await getTranslations('comum');
   const perfis = await getTranslations('perfis');
 
+  // O seletor vale para quem tem mais de uma organização — o superadmin sempre,
+  // porque alcança todas, e agora também quem participa de várias.
   const organizacoes =
-    sessao.perfil === 'superadmin'
+    sessao.perfil === 'superadmin' || sessao.organizacoes.length > 1
       ? await prisma.organization.findMany({
           where: escopoDeOrganizacao(sessao),
           orderBy: { nome: 'asc' },
@@ -82,15 +84,15 @@ export async function Casca({
         })
       : [];
   const orgEmVigor = organizacaoEmVigor(sessao);
-  const nomeDaOrganizacao =
-    sessao.perfil === 'superadmin'
-      ? (organizacoes.find((o) => o.id === orgEmVigor)?.nome ?? null)
-      : ((
-          await prisma.organization.findFirst({
-            where: escopoDeOrganizacao(sessao),
-            select: { nome: true },
-          })
-        )?.nome ?? null);
+  const podeTransitar = organizacoes.length > 0;
+  const nomeDaOrganizacao = podeTransitar
+    ? (organizacoes.find((o) => o.id === orgEmVigor)?.nome ?? null)
+    : ((
+        await prisma.organization.findFirst({
+          where: orgEmVigor ? { id: orgEmVigor } : escopoDeOrganizacao(sessao),
+          select: { nome: true },
+        })
+      )?.nome ?? null);
 
   return (
     <div className="shell">
@@ -143,8 +145,12 @@ export async function Casca({
             <h1>{titulo}</h1>
           </div>
           <span className="spacer" />
-          {sessao.perfil === 'superadmin' ? (
-            <SeletorDeOrganizacao organizacoes={organizacoes} ativa={orgEmVigor} />
+          {podeTransitar ? (
+            <SeletorDeOrganizacao
+              organizacoes={organizacoes}
+              ativa={orgEmVigor}
+              permiteNenhuma={sessao.perfil === 'superadmin'}
+            />
           ) : (
             <div className="orgpicker">
               <span className="dot" />

@@ -36,7 +36,7 @@ export default async function Organizacoes({
   const organizacoes = await prisma.organization.findMany({
     where: escopoDeOrganizacao(sessao),
     orderBy: { nome: 'asc' },
-    include: { _count: { select: { folders: true, users: true } } },
+    include: { _count: { select: { folders: true, usuarios: true } } },
   });
   const emEdicao = editar ? organizacoes.find((o) => o.id === editar) : undefined;
 
@@ -90,7 +90,7 @@ export default async function Organizacoes({
                   <td>{NOME_DO_IDIOMA[o.idiomaPadrao as Idioma] ?? o.idiomaPadrao}</td>
                   <td>{o.timezonePadrao}</td>
                   <td className="num">{o._count.folders}</td>
-                  <td className="num">{o._count.users}</td>
+                  <td className="num">{o._count.usuarios}</td>
                   <td>
                     <span className={o.ativa ? 'pill ok' : 'pill'}>
                       {o.ativa ? t('ativa') : comum('inativa')}

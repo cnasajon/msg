@@ -40,7 +40,7 @@ export default async function Perfil({
 
   const eu = await prisma.user.findUniqueOrThrow({
     where: { id: sessao.usuarioId },
-    include: { organization: { select: { nome: true } } },
+    include: { organizacoes: { include: { organization: { select: { nome: true } } } } },
   });
 
   return (
@@ -64,8 +64,14 @@ export default async function Perfil({
               <dd>
                 <span className="pill">{perfis(eu.perfil)}</span>
               </dd>
-              <dt>{t('organizacao')}</dt>
-              <dd>{eu.organization?.nome ?? <span className="faint">{comum('nenhum')}</span>}</dd>
+              <dt>{eu.organizacoes.length > 1 ? t('organizacoes') : t('organizacao')}</dt>
+              <dd>
+                {eu.organizacoes.length > 0 ? (
+                  eu.organizacoes.map((o) => o.organization.nome).join(' · ')
+                ) : (
+                  <span className="faint">{comum('nenhum')}</span>
+                )}
+              </dd>
               <dt>{t('ultimoAcesso')}</dt>
               <dd>
                 {eu.ultimoLoginEm ? (

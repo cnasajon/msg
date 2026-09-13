@@ -508,7 +508,11 @@
     "repetirSenha": "Repeat the password",
     "regraDaSenha": "At least {minimo} characters, with an uppercase letter, a digit and a special character.",
     "exigirTroca": "Require a change on first sign-in",
-    "definirExplicacao": "You choose the password and pass it on. Their sessions are ended."
+    "definirExplicacao": "You choose the password and pass it on. Their sessions are ended.",
+    "organizacoesDoUsuario": "Organizations",
+    "organizacoesExplicacao": "Which organizations this person belongs to. With more than one, they pick in the header which one they are working in. Only the superadmin changes this.",
+    "salvarOrganizacoes": "Save organizations",
+    "tirarOrganizacaoAviso": "Removing an organization also drops the folders of that organization assigned to this person."
   },
   "organizacoes": {
     "titulo": "Organisations",
@@ -639,7 +643,8 @@
     "remover_token_sobreposicao": "remove override token",
     "alerta": "alert",
     "mover": "move to another folder",
-    "definir_senha": "set password"
+    "definir_senha": "set password",
+    "definir_organizacoes": "set organizations"
   },
   "avisos": {
     "textoDuplicado": "This folder already has a text with exactly this content.",
@@ -790,7 +795,11 @@
     "alertaDaPastaSalvo": "Alert for “{pasta}” updated.",
     "cadastroSalvo": "Your details were saved.",
     "senhaTrocada": "Password changed.",
-    "senhaDefinida": "Password for “{nome}” set. Pass it on — it is not shown again."
+    "senhaDefinida": "Password for “{nome}” set. Pass it on — it is not shown again.",
+    "organizacoesAtualizadas": "Organizations for “{nome}” updated.",
+    "peloMenosUmaOrganizacao": "The person must belong to at least one organization.",
+    "organizacaoInexistente": "Organization not found.",
+    "superadminSemOrganizacao": "A superadmin belongs to no organization: the role reaches them all."
   },
   "esqueci": {
     "titulo": "I forgot my password",
@@ -818,6 +827,7 @@
     "senhaNova": "New password",
     "repetirSenha": "Repeat the new password",
     "regraDaSenha": "At least {minimo} characters, with an uppercase letter, a digit and a special character.",
-    "derrubaSessoes": "Changing the password ends sessions open on other devices. This one stays."
+    "derrubaSessoes": "Changing the password ends sessions open on other devices. This one stays.",
+    "organizacoes": "Organizations"
   }
 }

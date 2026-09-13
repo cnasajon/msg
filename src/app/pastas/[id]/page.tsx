@@ -62,7 +62,7 @@ export default async function ConfigurarPasta({
     prisma.text.count({ where: { folderId: pasta.id, status: 'publicado' } }),
     prisma.text.count({ where: { folderId: pasta.id, status: { not: 'arquivado' } } }),
     prisma.user.findMany({
-      where: { organizationId: pasta.organizationId, perfil: 'usuario' },
+      where: { organizacoes: { some: { organizationId: pasta.organizationId } }, perfil: 'usuario' },
       orderBy: { nome: 'asc' },
       include: { folders: { where: { folderId: pasta.id }, select: { folderId: true } } },
     }),

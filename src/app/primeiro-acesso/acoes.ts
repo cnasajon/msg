@@ -46,11 +46,11 @@ export async function trocarSenha(dados: FormData) {
     acao: 'trocar_senha',
     entidade: 'user',
     entidadeId: usuario.id,
-    organizationId: usuario.organizationId,
+    organizationId: sessao.organizationAtivaId,
   });
 
   await encerrarSessoesDoUsuario(usuario.id);
-  await criarSessao(usuario.id, usuario.perfil === 'superadmin' ? null : usuario.organizationId);
+  await criarSessao(usuario.id, sessao.organizationAtivaId);
 
   redirect('/inicio');
 }

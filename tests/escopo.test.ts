@@ -23,7 +23,7 @@ function sessao(parcial: Partial<Sessao>): Sessao {
   return {
     usuarioId: 'u',
     perfil: 'admin',
-    organizationId: ORG_A,
+    organizacoes: [ORG_A],
     organizationAtivaId: null,
     pastasAtribuidas: [],
     ...parcial,
@@ -31,24 +31,37 @@ function sessao(parcial: Partial<Sessao>): Sessao {
 }
 
 describe('organização em vigor', () => {
-  it('admin e usuário operam a própria organização', () => {
+  it('quem participa de uma só opera aquela, sem precisar escolher', () => {
     expect(organizacaoEmVigor(sessao({ perfil: 'admin' }))).toBe(ORG_A);
     expect(organizacaoEmVigor(sessao({ perfil: 'usuario' }))).toBe(ORG_A);
   });
 
+  it('quem participa de duas opera a escolhida, e a primeira antes de escolher', () => {
+    const emDuas = { organizacoes: [ORG_A, ORG_B] };
+    expect(organizacaoEmVigor(sessao({ ...emDuas, organizationAtivaId: ORG_B }))).toBe(ORG_B);
+    expect(organizacaoEmVigor(sessao({ ...emDuas, organizationAtivaId: null }))).toBe(ORG_A);
+  });
+
+  it('quem não participa de nenhuma não opera nada', () => {
+    expect(organizacaoEmVigor(sessao({ perfil: 'usuario', organizacoes: [] }))).toBeNull();
+  });
+
   it('superadmin opera a que escolheu, e nenhuma antes de escolher', () => {
     expect(
-      organizacaoEmVigor(sessao({ perfil: 'superadmin', organizationId: null, organizationAtivaId: ORG_B })),
+      organizacaoEmVigor(sessao({ perfil: 'superadmin', organizacoes: [], organizationAtivaId: ORG_B })),
     ).toBe(ORG_B);
     expect(
-      organizacaoEmVigor(sessao({ perfil: 'superadmin', organizationId: null, organizationAtivaId: null })),
+      organizacaoEmVigor(sessao({ perfil: 'superadmin', organizacoes: [], organizationAtivaId: null })),
     ).toBeNull();
   });
 
-  it('organização ativa forjada não vale para admin', () => {
-    // mesmo que alguém grave outra organização ativa na sessão de um admin,
-    // o que vale é a organização dele
+  it('ORGANIZAÇÃO FORJADA na sessão não vale: só as de que a pessoa participa', () => {
+    // alguém grava na sessão uma organização de que o admin não participa —
+    // o que vale continua sendo a dele
     expect(organizacaoEmVigor(sessao({ perfil: 'admin', organizationAtivaId: ORG_B }))).toBe(ORG_A);
+    expect(
+      organizacaoEmVigor(sessao({ perfil: 'usuario', organizationAtivaId: ORG_B })),
+    ).toBe(ORG_A);
   });
 });
 
@@ -68,7 +81,7 @@ describe('escopos', () => {
   });
 
   it('sem organização em vigor, o escopo não casa com nada — nunca com tudo', () => {
-    const orfa = sessao({ perfil: 'admin', organizationId: null });
+    const orfa = sessao({ perfil: 'admin', organizacoes: [] });
     expect(escopoDePasta(orfa)).toEqual({ id: NINGUEM });
     expect(escopoDeUsuario(orfa)).toEqual({ id: NINGUEM });
     expect(escopoDeAuditoria(orfa)).toEqual({ id: NINGUEM });
@@ -77,13 +90,17 @@ describe('escopos', () => {
   });
 
   it('organização: só o superadmin enxerga todas', () => {
-    expect(escopoDeOrganizacao(sessao({ perfil: 'superadmin', organizationId: null }))).toEqual({});
-    expect(escopoDeOrganizacao(sessao({ perfil: 'admin' }))).toEqual({ id: ORG_A });
+    expect(escopoDeOrganizacao(sessao({ perfil: 'superadmin', organizacoes: [] }))).toEqual({});
+    // os demais enxergam aquelas de que participam — é a lista do seletor
+    expect(escopoDeOrganizacao(sessao({ perfil: 'admin' }))).toEqual({ id: { in: [ORG_A] } });
+    expect(escopoDeOrganizacao(sessao({ organizacoes: [ORG_A, ORG_B] }))).toEqual({
+      id: { in: [ORG_A, ORG_B] },
+    });
   });
 
   it('usuário: admin nunca alcança superadmin', () => {
     expect(escopoDeUsuario(sessao({ perfil: 'admin' }))).toEqual({
-      organizationId: ORG_A,
+      organizacoes: { some: { organizationId: ORG_A } },
       perfil: { not: 'superadmin' },
     });
   });

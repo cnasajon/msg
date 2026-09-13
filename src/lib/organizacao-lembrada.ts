@@ -13,8 +13,14 @@ import { prisma } from './db';
  * e retomar uma organização inativa colocaria a pessoa a operar algo que está
  * fora do ar sem nenhum sinal na tela.
  */
-export async function ultimaOrganizacaoValida(id: string | null): Promise<string | null> {
+export async function ultimaOrganizacaoValida(
+  id: string | null,
+  /** Organizações de que a pessoa participa; `null` para superadmin, que alcança todas. */
+  participa: string[] | null = null,
+): Promise<string | null> {
   if (!id) return null;
+  // Participação pode ter sido retirada desde o último acesso.
+  if (participa !== null && !participa.includes(id)) return null;
   const organizacao = await prisma.organization.findFirst({
     where: { id, ativa: true },
     select: { id: true },

@@ -84,7 +84,19 @@ export async function sessaoAtual(): Promise<SessaoAtual | null> {
 
   const registro = await prisma.session.findUnique({
     where: { tokenHash: hashDoToken(token) },
-    include: { user: { include: { folders: { select: { folderId: true } } } } },
+    include: {
+      user: {
+        include: {
+          folders: { select: { folderId: true } },
+          // ordenadas pelo nome: a primeira é a que vale quando ainda não há
+          // escolha, e "a primeira" não pode variar a cada consulta
+          organizacoes: {
+            select: { organizationId: true },
+            orderBy: { organization: { nome: 'asc' } },
+          },
+        },
+      },
+    },
   });
   if (!registro) return null;
 
@@ -105,8 +117,8 @@ export async function sessaoAtual(): Promise<SessaoAtual | null> {
     sessaoId: registro.id,
     usuarioId: registro.userId,
     perfil,
-    organizationId: registro.user.organizationId,
-    organizationAtivaId: perfil === 'superadmin' ? registro.organizationAtivaId : null,
+    organizacoes: registro.user.organizacoes.map((o) => o.organizationId),
+    organizationAtivaId: registro.organizationAtivaId,
     pastasAtribuidas: registro.user.folders.map((f) => f.folderId),
     nome: registro.user.nome,
     username: registro.user.username,
