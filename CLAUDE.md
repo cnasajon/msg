@@ -107,10 +107,10 @@ Migrações rodam no build/release, nunca no start.
 
 ## Fases
 
-| Fase | Conteúdo |
-| :-- | :-- |
-| 0 | Modelo de dados, matriz de permissões, mockup estático, escolha do framework |
-| 1 | Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado |
-| 2 | Pastas, textos, imagens, importação CSV/XLSX, reordenação |
-| 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais |
-| 4 | Painel, i18n, auditoria, polimento visual |
+| Fase | Conteúdo | Situação |
+| :-- | :-- | :-- |
+| 0 | Modelo de dados, matriz de permissões, mockup estático, escolha do framework | entregue |
+| 1 | Railway conforme 3.3, autenticação, organizações, usuários, permissões, isolamento testado | entregue |
+| 2 | Pastas, textos, imagens, importação CSV/XLSX, exportação, reordenação | entregue |
+| 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | entregue |
+| 4 | Painel, i18n, auditoria, polimento visual | a fazer |

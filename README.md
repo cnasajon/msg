@@ -10,10 +10,11 @@ o username de um bot não se troca sem criar outro no BotFather.
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.5).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 
-> **Situação: fase 2 entregue.** Além da fase 1 (autenticação, organizações,
-> usuários e isolamento testado), agora existem pastas, textos com imagem,
-> importação de CSV/XLSX, exportação em cinco formatos e reordenação da fila. O
-> que ainda não existe é a publicação automática no Telegram — é a fase 3.
+> **Situação: fase 3 entregue.** O sistema publica: agendamentos por pasta,
+> dispatcher no serviço `worker` com a reivindicação do slot antes do envio,
+> integração com o Telegram, fila esgotada, slots perdidos e os alertas com a
+> precedência da seção 7.4. Falta a fase 4 — painel, i18n, tela de auditoria e
+> polimento.
 
 ## O que já existe
 
@@ -29,6 +30,9 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | `src/lib/imagem.ts` | Processamento das imagens com `sharp` antes de irem para o `bytea` |
 | `src/lib/telegram.ts` | Bot API sem biblioteca intermediária, com os envios serializados |
 | `src/lib/cifra.ts` | AES-256-GCM do token de sobreposição da pasta |
+| `src/lib/agenda.ts` | Cálculo dos slots no fuso da pasta, com as viradas de horário de verão |
+| `src/lib/dispatcher.ts` | **Reivindicação do slot antes do envio** — o que garante a idempotência |
+| `src/lib/alertas.ts` | Alertas com a precedência `settings` → ambiente → log e painel |
 | `src/worker/` | Serviço `worker`; o dispatcher entra na fase 3 |
 | `tests/` | Isolamento, permissões, autenticação e rotas HTTP |
 | `docs/mockup/` | Mockup navegável em HTML estático, sem build |
@@ -241,9 +245,14 @@ nas rotas HTTP — inclusive a rota de imagem, onde um admin pedindo a imagem de
 outra organização recebe 404 e zero byte —, a matriz de permissões linha a
 linha, senha com argon2id e limite de tentativas, **os dois limites de 4096 e
 1024 caracteres**, as tags aceitas pelo Telegram, o hash de duplicata, as datas
-da importação, a cifra do token de sobreposição e os cinco formatos de
-exportação. Falta cobrir, na fase 3: idempotência do dispatcher e precedência do
-destino dos alertas.
+da importação, a cifra do token de sobreposição, os cinco formatos de exportação,
+**a idempotência do dispatcher** (dois e quatro ciclos em paralelo publicam uma
+vez só) e **a precedência do destino dos alertas**, inclusive com o banco fora do
+ar.
+
+O cálculo dos slots é testado nas duas viradas de horário de verão: a hora que
+não existe resolve para depois da virada, e a que acontece duas vezes resolve
+para a primeira ocorrência, sempre igual.
 
 ## Fases
 
@@ -252,8 +261,41 @@ destino dos alertas.
 | 0 | Modelo de dados, permissões, mockup, escolha do framework | **aprovada** |
 | 1 | Railway, autenticação, organizações, usuários, permissões, isolamento testado | **entregue** |
 | 2 | Pastas, textos, imagens, importação CSV/XLSX, exportação, reordenação | **entregue** |
-| 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | — |
+| 3 | Agendamentos, dispatcher, Telegram, idempotência testada, alertas e configurações globais | **entregue** |
 | 4 | Painel, i18n, auditoria, polimento visual | — |
+
+## Como a publicação acontece
+
+1. O `worker` acorda a cada `DISPATCH_INTERVAL_MINUTES` (5 por padrão).
+2. Para cada pasta ativa com `chat_id`, calcula os slots vencidos **no fuso da
+   pasta**, dentro da tolerância de `DISPATCH_GRACE_MINUTES` (30).
+3. Para cada slot, **grava a reivindicação em `publications` antes de falar com
+   o Telegram**. Se outro processo já tiver gravado, a restrição única
+   `(folder_id, data_prevista, hora_prevista)` rejeita, e este desiste em
+   silêncio — é isso que impede publicação dupla em deploys sobrepostos,
+   restart ou réplica a mais.
+4. Pega o texto pendente de menor `ordem`. Com imagem vai por `sendPhoto` (texto
+   como legenda); sem imagem, por `sendMessage`.
+5. Sucesso: publicação marcada como enviada, com `telegram_message_id` e cópia do
+   conteúdo; texto marcado como publicado.
+6. Falha: até 3 tentativas com espera crescente. Esgotadas, publicação e texto
+   ficam com erro, sai alerta e **a fila não avança** — o mesmo texto continua
+   sendo o próximo.
+7. Slot vencido além da tolerância vira `perdida` e **nunca é publicado com
+   atraso**.
+
+Ao esgotar a fila, vale o que estiver configurado na pasta: *parar e notificar*
+registra a publicação sem texto e alerta; *reiniciar* devolve todos os textos a
+pendente, preservando a ordem, e publica o primeiro, com o evento na auditoria.
+
+## Alertas
+
+Destino, nesta ordem: o campo em **Configurações globais**, senão a variável
+`ALERTS_CHAT_ID`, senão apenas o log e o painel de alertas. A variável é o
+destino garantido — continua funcionando quando o próprio banco está
+inacessível, que é quando o alerta mais importa. Os dois podem ficar vazios sem
+quebrar o deploy. A falha de um canal nunca interrompe a publicação nem gera
+novo alerta.
 
 ## Política de senha
 
