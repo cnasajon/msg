@@ -1,3 +1,4 @@
+import { problema, type Problema } from './avisos';
 /**
  * Calculo dos slots de publicacao no fuso da pasta.
  *
@@ -186,8 +187,8 @@ export function proximoSlot(
 }
 
 /** "HH:MM" valido? */
-export function problemaNaHora(valor: string): string | null {
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(valor)) return 'Informe a hora no formato HH:MM, de 00:00 a 23:59.';
+export function problemaNaHora(valor: string): Problema | null {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(valor)) return problema('horaInvalida');
   return null;
 }
 

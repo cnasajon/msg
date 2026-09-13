@@ -1,3 +1,4 @@
+import { problema, type Problema } from './avisos';
 import { hash, verify } from '@node-rs/argon2';
 
 /**
@@ -39,23 +40,19 @@ export async function senhaConfere(senha: string, hashArmazenado: string): Promi
  */
 export const TAMANHO_MINIMO_DA_SENHA = 8;
 
-export function problemaNaSenha(senha: string): string | null {
-  if (senha.length > 200) return 'A senha é longa demais.';
-  if (/^\s|\s$/.test(senha)) return 'A senha não pode começar nem terminar com espaço.';
+export function problemaNaSenha(senha: string): Problema | null {
+  if (senha.length > 200) return problema('senhaLongaDemais');
+  if (/^\s|\s$/.test(senha)) return problema('senhaComEspaco');
 
   const faltando: string[] = [];
-  if (senha.length < TAMANHO_MINIMO_DA_SENHA) {
-    faltando.push(`ter pelo menos ${TAMANHO_MINIMO_DA_SENHA} caracteres`);
-  }
-  if (!/[A-ZÀ-ÖØ-Þ]/.test(senha)) faltando.push('uma letra maiúscula');
-  if (!/[0-9]/.test(senha)) faltando.push('um número');
+  if (senha.length < TAMANHO_MINIMO_DA_SENHA) faltando.push('senhaItemMinimo');
+  if (!/[A-ZÀ-ÖØ-Þ]/.test(senha)) faltando.push('senhaItemMaiuscula');
+  if (!/[0-9]/.test(senha)) faltando.push('senhaItemNumero');
   // especial é tudo que não for letra (com ou sem acento), número ou espaço
-  if (!/[^\p{L}\p{N}\s]/u.test(senha)) faltando.push('um caractere especial (por exemplo ! @ # $ % & *)');
+  if (!/[^\p{L}\p{N}\s]/u.test(senha)) faltando.push('senhaItemEspecial');
 
   if (faltando.length === 0) return null;
-  if (faltando.length === 1) return `A senha precisa ${faltando[0]}.`;
-  const ultimo = faltando.pop()!;
-  return `A senha precisa ${faltando.join(', ')} e ${ultimo}.`;
+  return problema('senhaPrecisa', { minimo: TAMANHO_MINIMO_DA_SENHA }, faltando);
 }
 
 /**

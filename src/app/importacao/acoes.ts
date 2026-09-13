@@ -8,6 +8,7 @@ import { NaoAutorizado } from '@/lib/erros';
 import { comEscopo } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { lerPlanilha, PlanilhaInvalida } from '@/lib/planilha';
 import { analisar, type Mapeamento } from '@/lib/importacao';
 
@@ -28,11 +29,12 @@ export async function importar(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.importar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
   const destino = `/importacao?pasta=${pasta.id}`;
 
   const arquivo = dados.get('arquivo');
-  if (!(arquivo instanceof File) || arquivo.size === 0) voltar(destino, 'Escolha um arquivo.');
+  if (!(arquivo instanceof File) || arquivo.size === 0) voltar(destino, t('escolhaArquivo'));
 
   let analise;
   let nomeDoArquivo = arquivo.name;
@@ -40,11 +42,11 @@ export async function importar(dados: FormData) {
     const planilha = await lerPlanilha(arquivo);
     analise = await analisar(planilha, lerMapeamento(dados), pasta.id);
   } catch (erro) {
-    voltar(destino, erro instanceof PlanilhaInvalida ? erro.message : 'Não foi possível ler o arquivo.');
+    voltar(destino, erro instanceof PlanilhaInvalida ? frase(erro.problema) : t('arquivoIlegivel'));
   }
 
   if (analise.importaveis === 0) {
-    voltar(destino, 'Nenhuma linha para importar com esse mapeamento — confira a coluna do texto.');
+    voltar(destino, t('nenhumaLinha'));
   }
 
   const ultimo = await prisma.text.findFirst({
@@ -120,10 +122,16 @@ export async function importar(dados: FormData) {
     },
   });
 
-  const partes = [`${analise.importaveis} texto(s) importado(s)`];
-  if (analise.comoHistorico > 0) partes.push(`${analise.comoHistorico} como histórico`);
-  if (analise.duplicadas > 0) partes.push(`${analise.duplicadas} duplicata(s) ignorada(s)`);
-  if (analise.descartadas > 0) partes.push(`${analise.descartadas} linha(s) descartada(s)`);
+  const partes = [t('importadasParte', { quantidade: analise.importaveis })];
+  if (analise.comoHistorico > 0) {
+    partes.push(t('comoHistoricoParte', { quantidade: analise.comoHistorico }));
+  }
+  if (analise.duplicadas > 0) {
+    partes.push(t('duplicadasParte', { quantidade: analise.duplicadas }));
+  }
+  if (analise.descartadas > 0) {
+    partes.push(t('descartadasParte', { quantidade: analise.descartadas }));
+  }
   voltar(destino, `${partes.join(' · ')}.`, 'ok');
 }
 
@@ -136,9 +144,10 @@ export async function desfazerImportacao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.importar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const importacao = await comEscopo(sessao).importacao(String(dados.get('id') ?? ''));
   const destino = `/importacao?pasta=${importacao.folderId}`;
-  if (importacao.desfeitoEm) voltar(destino, 'Esta importação já foi desfeita.');
+  if (importacao.desfeitoEm) voltar(destino, t('importacaoJaDesfeita'));
 
   const publicadosDeVerdade = await prisma.publication.count({
     where: {
@@ -163,5 +172,5 @@ export async function desfazerImportacao(dados: FormData) {
     entidadeId: importacao.id,
     detalhes: { textosApagados: apagados },
   });
-  voltar(destino, `Importação desfeita: ${apagados} texto(s) removido(s).`, 'ok');
+  voltar(destino, t('importacaoDesfeita', { quantidade: apagados }), 'ok');
 }

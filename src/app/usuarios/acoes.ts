@@ -10,6 +10,7 @@ import { comEscopo, escopoDePasta, organizacaoEmVigor, type Sessao } from '@/lib
 import { gerarHashDeSenha, gerarSenhaProvisoria } from '@/lib/senha';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos, type Tradutor } from '@/lib/avisos-servidor';
 
 function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
   redirect(comAviso('/usuarios', tipo, mensagem));
@@ -17,19 +18,17 @@ function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
 
 const IDIOMAS = ['pt', 'es', 'en'] as const;
 
-function normalizarTelegram(bruto: string): string | null {
+function normalizarTelegram(bruto: string, t: Tradutor): string | null {
   const limpo = bruto.trim().replace(/^@/, '');
   if (!limpo) return null;
-  if (!/^[A-Za-z0-9_]{4,32}$/.test(limpo)) {
-    voltar('Usuário do Telegram inválido: use de 4 a 32 letras, números ou _ (com ou sem @).');
-  }
+  if (!/^[A-Za-z0-9_]{4,32}$/.test(limpo)) voltar(t('telegramInvalido'));
   return `@${limpo}`;
 }
 
-function normalizarTelefone(bruto: string): string | null {
+function normalizarTelefone(bruto: string, t: Tradutor): string | null {
   const limpo = bruto.trim();
   if (!limpo) return null;
-  if (!/^[+()\d\s.-]{6,25}$/.test(limpo)) voltar('Telefone inválido.');
+  if (!/^[+()\d\s.-]{6,25}$/.test(limpo)) voltar(t('telefoneInvalido'));
   return limpo;
 }
 
@@ -39,9 +38,9 @@ function normalizarTelefone(bruto: string): string | null {
  * Nunca vem do formulário: é sempre a organização em vigor na sessão. Sem isso,
  * bastaria alterar um campo escondido para criar um admin em outra organização.
  */
-function organizacaoDeDestino(sessao: Sessao): string {
+function organizacaoDeDestino(sessao: Sessao, t: Tradutor): string {
   const org = organizacaoEmVigor(sessao);
-  if (!org) voltar('Escolha uma organização ativa antes de gerenciar usuários.');
+  if (!org) voltar(t('escolhaOrganizacaoUsuarios'));
   return org;
 }
 
@@ -49,23 +48,24 @@ export async function criarUsuario(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'usuarios.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const nome = String(dados.get('nome') ?? '').trim();
   const email = String(dados.get('email') ?? '').trim().toLowerCase();
   const perfil = String(dados.get('perfil') ?? 'usuario') as Perfil;
-  const telefone = normalizarTelefone(String(dados.get('telefone') ?? ''));
-  const telegram = normalizarTelegram(String(dados.get('telegramUsername') ?? ''));
+  const telefone = normalizarTelefone(String(dados.get('telefone') ?? ''), t);
+  const telegram = normalizarTelegram(String(dados.get('telegramUsername') ?? ''), t);
 
-  if (nome.length < 2) voltar('Informe o nome.');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) voltar('E-mail inválido.');
+  if (nome.length < 2) voltar(t('informeNome'));
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) voltar(t('emailInvalido'));
   if (!perfisQuePodeGerenciar(sessao.perfil).includes(perfil)) {
-    voltar('Você não pode criar um usuário com este perfil.');
+    voltar(t('perfilNaoPermitidoCriar'));
   }
 
   // Superadmin não pertence a organização; os demais nascem na organização em vigor.
-  const organizationId = perfil === 'superadmin' ? null : organizacaoDeDestino(sessao);
+  const organizationId = perfil === 'superadmin' ? null : organizacaoDeDestino(sessao, t);
 
   const jaExiste = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (jaExiste) voltar('Já existe um usuário com este e-mail.');
+  if (jaExiste) voltar(t('emailJaExiste'));
 
   const provisoria = gerarSenhaProvisoria();
   const criado = await prisma.user.create({
@@ -90,28 +90,29 @@ export async function criarUsuario(dados: FormData) {
 
   // A senha provisória aparece uma única vez, para ser repassada à pessoa.
   // Não é guardada em lugar nenhum além do hash.
-  voltar(`Usuário "${nome}" criado. Senha provisória: ${provisoria} — anote agora, ela não será mostrada de novo.`, 'ok');
+  voltar(t('usuarioCriado', { nome, senha: provisoria }), 'ok');
 }
 
 export async function editarUsuario(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'usuarios.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const alvo = await comEscopo(sessao).usuario(String(dados.get('id') ?? ''));
 
   const nome = String(dados.get('nome') ?? '').trim();
-  const telefone = normalizarTelefone(String(dados.get('telefone') ?? ''));
-  const telegram = normalizarTelegram(String(dados.get('telegramUsername') ?? ''));
+  const telefone = normalizarTelefone(String(dados.get('telefone') ?? ''), t);
+  const telegram = normalizarTelegram(String(dados.get('telegramUsername') ?? ''), t);
   const idiomaBruto = String(dados.get('idioma') ?? '');
   const idioma = IDIOMAS.includes(idiomaBruto as never) ? (idiomaBruto as 'pt' | 'es' | 'en') : null;
   const ativo = dados.get('ativo') === 'on';
   const perfilBruto = String(dados.get('perfil') ?? alvo.perfil) as Perfil;
 
-  if (nome.length < 2) voltar('Informe o nome.');
+  if (nome.length < 2) voltar(t('informeNome'));
   if (perfilBruto !== alvo.perfil && !perfisQuePodeGerenciar(sessao.perfil).includes(perfilBruto)) {
-    voltar('Você não pode atribuir este perfil.');
+    voltar(t('perfilNaoPermitidoAtribuir'));
   }
-  if (alvo.id === sessao.usuarioId && !ativo) voltar('Você não pode desativar a própria conta.');
+  if (alvo.id === sessao.usuarioId && !ativo) voltar(t('naoDesativeSuaConta'));
 
   await prisma.user.update({
     where: { id: alvo.id },
@@ -127,13 +128,14 @@ export async function editarUsuario(dados: FormData) {
     organizationId: alvo.organizationId,
     detalhes: { nome, perfil: perfilBruto, ativo },
   });
-  voltar(`Usuário "${nome}" salvo.`, 'ok');
+  voltar(t('usuarioSalvo', { nome }), 'ok');
 }
 
 export async function redefinirSenha(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'usuarios.redefinirSenha')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const alvo = await comEscopo(sessao).usuario(String(dados.get('id') ?? ''));
   const provisoria = gerarSenhaProvisoria();
 
@@ -149,7 +151,7 @@ export async function redefinirSenha(dados: FormData) {
     entidadeId: alvo.id,
     organizationId: alvo.organizationId,
   });
-  voltar(`Nova senha provisória de ${alvo.nome}: ${provisoria} — anote agora, ela não será mostrada de novo.`, 'ok');
+  voltar(t('novaSenhaProvisoria', { nome: alvo.nome, senha: provisoria }), 'ok');
 }
 
 /**
@@ -163,6 +165,7 @@ export async function atribuirPastas(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'usuarios.atribuirPastas')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const alvo = await comEscopo(sessao).usuario(String(dados.get('id') ?? ''));
   const pedidas = dados.getAll('pastas').map(String);
 
@@ -171,7 +174,7 @@ export async function atribuirPastas(dados: FormData) {
     select: { id: true },
   });
   if (permitidas.length !== pedidas.length) {
-    voltar('Uma das pastas escolhidas não pertence à organização deste usuário.');
+    voltar(t('pastaForaDaOrganizacao'));
   }
 
   await prisma.$transaction([
@@ -188,7 +191,7 @@ export async function atribuirPastas(dados: FormData) {
     organizationId: alvo.organizationId,
     detalhes: { pastas: permitidas.map((p) => p.id) },
   });
-  voltar(`Pastas de ${alvo.nome} atualizadas.`, 'ok');
+  voltar(t('pastasAtualizadas', { nome: alvo.nome }), 'ok');
 }
 
 export async function exigirUsuarioNoEscopo(sessao: Sessao, id: string) {

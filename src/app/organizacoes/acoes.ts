@@ -10,6 +10,7 @@ import { NaoAutorizado } from '@/lib/erros';
 import { comEscopo } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { fusoValido } from '@/lib/fuso';
 
 const IDIOMAS = ['pt', 'es', 'en'] as const;
@@ -42,13 +43,14 @@ export async function criarOrganizacao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'organizacoes.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const nome = String(dados.get('nome') ?? '').trim();
   const idioma = String(dados.get('idiomaPadrao') ?? 'pt') as Idioma;
   const timezone = String(dados.get('timezonePadrao') ?? '').trim();
 
-  if (nome.length < 2) voltar('Informe o nome da organização.');
-  if (!IDIOMAS.includes(idioma)) voltar('Idioma inválido.');
-  if (!fusoValido(timezone)) voltar(`Fuso horário desconhecido: ${timezone}`);
+  if (nome.length < 2) voltar(t('informeNomeOrganizacao'));
+  if (!IDIOMAS.includes(idioma)) voltar(t('idiomaInvalido'));
+  if (!fusoValido(timezone)) voltar(t('fusoDesconhecido', { fuso: timezone }));
 
   const criada = await prisma.organization.create({
     data: { nome, idiomaPadrao: idioma, timezonePadrao: timezone },
@@ -60,13 +62,14 @@ export async function criarOrganizacao(dados: FormData) {
     organizationId: criada.id,
     detalhes: { nome, idiomaPadrao: idioma, timezonePadrao: timezone },
   });
-  voltar(`Organização "${nome}" criada.`, 'ok');
+  voltar(t('organizacaoCriada', { nome }), 'ok');
 }
 
 export async function editarOrganizacao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'organizacoes.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const id = String(dados.get('id') ?? '');
   const alvo = await comEscopo(sessao).organizacao(id);
 
@@ -75,9 +78,9 @@ export async function editarOrganizacao(dados: FormData) {
   const timezone = String(dados.get('timezonePadrao') ?? '').trim();
   const ativa = dados.get('ativa') === 'on';
 
-  if (nome.length < 2) voltar('Informe o nome da organização.');
-  if (!IDIOMAS.includes(idioma)) voltar('Idioma inválido.');
-  if (!fusoValido(timezone)) voltar(`Fuso horário desconhecido: ${timezone}`);
+  if (nome.length < 2) voltar(t('informeNomeOrganizacao'));
+  if (!IDIOMAS.includes(idioma)) voltar(t('idiomaInvalido'));
+  if (!fusoValido(timezone)) voltar(t('fusoDesconhecido', { fuso: timezone }));
 
   await prisma.organization.update({
     where: { id: alvo.id },
@@ -90,5 +93,5 @@ export async function editarOrganizacao(dados: FormData) {
     organizationId: alvo.id,
     detalhes: { nome, idiomaPadrao: idioma, timezonePadrao: timezone, ativa },
   });
-  voltar(`Organização "${nome}" salva.`, 'ok');
+  voltar(t('organizacaoSalva', { nome }), 'ok');
 }

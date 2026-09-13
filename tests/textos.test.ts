@@ -1,6 +1,7 @@
 /** Limites de tamanho, tags aceitas e hash de duplicata. */
 import { describe, it, expect } from 'vitest';
 import { problemaNoChatId } from '@/lib/telegram';
+import { frase } from './helpers/frase';
 import {
   LIMITE_COM_IMAGEM,
   LIMITE_SEM_IMAGEM,
@@ -20,11 +21,11 @@ describe('limites de tamanho', () => {
   it('o mesmo texto passa sem imagem e falha com imagem', () => {
     const texto = 'a'.repeat(2000);
     expect(problemaNoTamanho(texto, false)).toBeNull();
-    expect(problemaNoTamanho(texto, true)).toMatch(/1024 caracteres/);
+    expect(frase(problemaNoTamanho(texto, true))).toMatch(/1024 caracteres/);
   });
 
   it('a mensagem com imagem explica as duas saídas', () => {
-    const problema = problemaNoTamanho('a'.repeat(1025), true)!;
+    const problema = frase(problemaNoTamanho('a'.repeat(1025), true))!;
     expect(problema).toMatch(/Reduza o texto ou remova a imagem/);
   });
 
@@ -36,8 +37,8 @@ describe('limites de tamanho', () => {
   });
 
   it('texto vazio é recusado nos dois casos', () => {
-    expect(problemaNoTamanho('', false)).toMatch(/vazio/);
-    expect(problemaNoTamanho('', true)).toMatch(/vazio/);
+    expect(frase(problemaNoTamanho('', false))).toMatch(/vazio/);
+    expect(frase(problemaNoTamanho('', true))).toMatch(/vazio/);
   });
 
   it('emoji conta como um caractere, como o Telegram conta', () => {
@@ -56,13 +57,13 @@ describe('tags do parse_mode HTML', () => {
   });
 
   it('recusa tag que o Telegram não conhece', () => {
-    expect(problemaNoHtml('<div>oi</div>')).toMatch(/<div>/);
-    expect(problemaNoHtml('<script>alert(1)</script>')).toMatch(/<script>/);
+    expect(frase(problemaNoHtml('<div>oi</div>'))).toMatch(/<div>/);
+    expect(frase(problemaNoHtml('<script>alert(1)</script>'))).toMatch(/<script>/);
   });
 
   it('recusa tag aberta e não fechada, e fechamento fora de ordem', () => {
-    expect(problemaNoHtml('<b>sem fim')).toMatch(/não foi fechada/);
-    expect(problemaNoHtml('<b><i>trocado</b></i>')).toMatch(/fora de ordem/);
+    expect(frase(problemaNoHtml('<b>sem fim'))).toMatch(/não foi fechada/);
+    expect(frase(problemaNoHtml('<b><i>trocado</b></i>'))).toMatch(/fora de ordem/);
   });
 });
 
@@ -102,17 +103,17 @@ describe('chat_id do Telegram', () => {
   it('RECUSA o número sem o sinal de menos, e sugere a correção', () => {
     // o engano mais comum: copiar o id do supergrupo sem o "-", que só aparece
     // como "chat not found" na hora de publicar
-    const problema = problemaNoChatId('1001492357816');
+    const problema = frase(problemaNoChatId('1001492357816'))!;
     expect(problema).toMatch(/sinal de menos/);
     expect(problema).toContain('-1001492357816');
   });
 
   it('recusa positivo qualquer, explicando que ali é conversa privada', () => {
-    expect(problemaNoChatId('987654321')).toMatch(/conversa privada/);
+    expect(frase(problemaNoChatId('987654321'))).toMatch(/conversa privada/);
   });
 
   it('recusa link e @nome', () => {
-    expect(problemaNoChatId('@uvpv')).toMatch(/numérico/);
-    expect(problemaNoChatId('https://t.me/uvpv')).toMatch(/numérico/);
+    expect(frase(problemaNoChatId('@uvpv'))).toMatch(/numérico/);
+    expect(frase(problemaNoChatId('https://t.me/uvpv'))).toMatch(/numérico/);
   });
 });

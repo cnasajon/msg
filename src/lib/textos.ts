@@ -1,3 +1,4 @@
+import { problema, type Problema } from './avisos';
 import { createHash } from 'node:crypto';
 
 /**
@@ -22,16 +23,13 @@ export function tamanhoDoTexto(texto: string): number {
   return [...texto].length;
 }
 
-export function problemaNoTamanho(texto: string, comImagem: boolean): string | null {
+export function problemaNoTamanho(texto: string, comImagem: boolean): Problema | null {
   const limite = limiteDeCaracteres(comImagem);
   const tamanho = tamanhoDoTexto(texto);
-  if (tamanho === 0) return 'O texto não pode ficar vazio.';
+  if (tamanho === 0) return problema('textoVazio');
   if (tamanho <= limite) return null;
 
-  return comImagem
-    ? `Com imagem o limite é ${LIMITE_COM_IMAGEM} caracteres, e o texto tem ${tamanho}. ` +
-        'Reduza o texto ou remova a imagem para voltar ao limite de 4096.'
-    : `O limite é ${LIMITE_SEM_IMAGEM} caracteres, e o texto tem ${tamanho}.`;
+  return problema(comImagem ? 'acimaComImagem' : 'acimaSemImagem', { limite, tamanho });
 }
 
 /** Tags aceitas pelo `parse_mode: HTML` da Bot API. */
@@ -45,11 +43,14 @@ export const TAGS_ACEITAS = [
  * HTML na nossa interface —, é para o envio não falhar no Telegram por causa de
  * uma tag que ele não conhece.
  */
-export function problemaNoHtml(texto: string): string | null {
+export function problemaNoHtml(texto: string): Problema | null {
   const usadas = [...texto.matchAll(/<\s*\/?\s*([a-zA-Z][a-zA-Z0-9-]*)/g)].map((m) => m[1]!.toLowerCase());
   const desconhecidas = [...new Set(usadas.filter((t) => !TAGS_ACEITAS.includes(t as never)))];
   if (desconhecidas.length > 0) {
-    return `O Telegram não aceita ${desconhecidas.map((t) => `<${t}>`).join(', ')}. Aceitas: ${TAGS_ACEITAS.map((t) => `<${t}>`).join(' ')}.`;
+    return problema('tagNaoAceita', {
+      tags: desconhecidas.map((t) => `<${t}>`).join(', '),
+      aceitas: TAGS_ACEITAS.map((t) => `<${t}>`).join(' '),
+    });
   }
 
   const abertas: string[] = [];
@@ -57,12 +58,12 @@ export function problemaNoHtml(texto: string): string | null {
     const fechando = marca[1] === '/';
     const tag = marca[2]!.toLowerCase();
     if (fechando) {
-      if (abertas.pop() !== tag) return `A tag <${tag}> está fechada fora de ordem ou sem abertura.`;
+      if (abertas.pop() !== tag) return problema('tagForaDeOrdem', { tag });
     } else {
       abertas.push(tag);
     }
   }
-  if (abertas.length > 0) return `A tag <${abertas[abertas.length - 1]}> foi aberta e não foi fechada.`;
+  if (abertas.length > 0) return problema('tagNaoFechada', { tag: abertas[abertas.length - 1]! });
   return null;
 }
 

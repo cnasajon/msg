@@ -85,6 +85,16 @@ describe('mensagens', () => {
         const [, tradutor, grupo] = achado;
         if (tradutor && grupo) grupoDoTradutor.set(tradutor, grupo);
       }
+      // as ações de servidor pegam o tradutor das faixas de aviso por aqui
+      if (/tradutorDeAvisos\(\)/.test(codigo)) grupoDoTradutor.set('t', 'avisos');
+
+      // `problema('chave', …)` nas validações de lib/ também aponta para avisos
+      for (const achado of codigo.matchAll(/\bproblema\('([\w.]+)'/g)) {
+        const chave = achado[1];
+        if (chave && !(pt as Mensagens).avisos?.[chave]) {
+          ausentes.push(`avisos.${chave} (${arquivo})`);
+        }
+      }
 
       // só as chamadas com chave literal; as dinâmicas (t(texto.status)) ficam
       // de fora porque o valor só existe em execução

@@ -1,3 +1,4 @@
+import { problema, type Problema } from './avisos';
 import Papa from 'papaparse';
 import ExcelJS from 'exceljs';
 
@@ -12,7 +13,12 @@ import ExcelJS from 'exceljs';
 
 export type Planilha = { colunas: string[]; linhas: string[][] };
 
-export class PlanilhaInvalida extends Error {}
+/** Carrega a chave da mensagem; a tradução acontece na ação que chamou. */
+export class PlanilhaInvalida extends Error {
+  constructor(readonly problema: Problema) {
+    super(problema.chave);
+  }
+}
 
 const LIMITE_DE_LINHAS = 5000;
 
@@ -20,7 +26,7 @@ export async function lerPlanilha(arquivo: File): Promise<Planilha> {
   const nome = arquivo.name.toLowerCase();
   if (nome.endsWith('.csv') || nome.endsWith('.txt')) return lerCsv(await arquivo.text());
   if (nome.endsWith('.xlsx') || nome.endsWith('.xlsm')) return lerXlsx(await arquivo.arrayBuffer());
-  throw new PlanilhaInvalida('Formato não reconhecido. Envie um arquivo .csv ou .xlsx.');
+  throw new PlanilhaInvalida(problema('formatoNaoReconhecido'));
 }
 
 function lerCsv(texto: string): Planilha {
@@ -29,7 +35,7 @@ function lerCsv(texto: string): Planilha {
   const resultado = Papa.parse<string[]>(texto.replace(/^﻿/, ''), {
     skipEmptyLines: 'greedy',
   });
-  if (resultado.data.length === 0) throw new PlanilhaInvalida('O arquivo está vazio.');
+  if (resultado.data.length === 0) throw new PlanilhaInvalida(problema('arquivoVazio'));
 
   const linhas = resultado.data.slice(0, LIMITE_DE_LINHAS).map((l) => l.map((c) => String(c ?? '')));
   const largura = Math.max(...linhas.map((l) => l.length));
@@ -44,10 +50,10 @@ async function lerXlsx(dados: ArrayBuffer): Promise<Planilha> {
   try {
     await pasta.xlsx.load(dados);
   } catch {
-    throw new PlanilhaInvalida('Não foi possível ler o arquivo .xlsx.');
+    throw new PlanilhaInvalida(problema('xlsxIlegivel'));
   }
   const aba = pasta.worksheets[0];
-  if (!aba) throw new PlanilhaInvalida('A planilha não tem nenhuma aba.');
+  if (!aba) throw new PlanilhaInvalida(problema('semAba'));
 
   const linhas: string[][] = [];
   aba.eachRow({ includeEmpty: false }, (linha) => {
@@ -58,7 +64,7 @@ async function lerXlsx(dados: ArrayBuffer): Promise<Planilha> {
     });
     linhas.push([...valores].map((v) => v ?? ''));
   });
-  if (linhas.length === 0) throw new PlanilhaInvalida('A planilha está vazia.');
+  if (linhas.length === 0) throw new PlanilhaInvalida(problema('planilhaVazia'));
 
   const largura = Math.max(...linhas.map((l) => l.length));
   return { colunas: rotulosDeColuna(largura), linhas: linhas.map((l) => preencher(l, largura)) };

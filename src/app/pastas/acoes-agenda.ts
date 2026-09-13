@@ -8,6 +8,7 @@ import { NaoAutorizado } from '@/lib/erros';
 import { comEscopo } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { problemaNaHora } from '@/lib/agenda';
 import { enviarFoto, enviarTexto, tokenDaPasta } from '@/lib/telegram';
 import { Prisma } from '@prisma/client';
@@ -22,18 +23,19 @@ export async function criarAgendamento(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'agendamentos.gerenciar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
   const destino = `/pastas/${pasta.id}`;
 
   const horaLocal = String(dados.get('horaLocal') ?? '').trim();
   const problema = problemaNaHora(horaLocal);
-  if (problema) voltar(destino, problema);
+  if (problema) voltar(destino, frase(problema));
 
   const diasSemana = dados
     .getAll('diasSemana')
     .map((d) => Number(d))
     .filter((d) => Number.isInteger(d) && d >= 1 && d <= 7);
-  if (diasSemana.length === 0) voltar(destino, 'Escolha pelo menos um dia da semana.');
+  if (diasSemana.length === 0) voltar(destino, t('escolhaUmDia'));
 
   try {
     const criado = await prisma.schedule.create({
@@ -49,29 +51,30 @@ export async function criarAgendamento(dados: FormData) {
     // A restricao unica (folder_id, hora_local) existe porque dois
     // agendamentos no mesmo horario da mesma pasta gerariam um slot so.
     if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002') {
-      voltar(destino, `Esta pasta já tem um agendamento às ${horaLocal}. Edite os dias dele em vez de criar outro.`);
+      voltar(destino, t('agendamentoRepetido', { hora: horaLocal }));
     }
     throw erro;
   }
-  voltar(destino, `Agendamento das ${horaLocal} criado.`, 'ok');
+  voltar(destino, t('agendamentoCriado', { hora: horaLocal }), 'ok');
 }
 
 export async function editarAgendamento(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'agendamentos.gerenciar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const agendamento = await exigirAgendamento(sessao, String(dados.get('id') ?? ''));
   const destino = `/pastas/${agendamento.folderId}`;
 
   const horaLocal = String(dados.get('horaLocal') ?? '').trim();
   const problema = problemaNaHora(horaLocal);
-  if (problema) voltar(destino, problema);
+  if (problema) voltar(destino, frase(problema));
 
   const diasSemana = dados
     .getAll('diasSemana')
     .map((d) => Number(d))
     .filter((d) => Number.isInteger(d) && d >= 1 && d <= 7);
-  if (diasSemana.length === 0) voltar(destino, 'Escolha pelo menos um dia da semana.');
+  if (diasSemana.length === 0) voltar(destino, t('escolhaUmDia'));
 
   try {
     await prisma.schedule.update({
@@ -80,7 +83,7 @@ export async function editarAgendamento(dados: FormData) {
     });
   } catch (erro) {
     if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002') {
-      voltar(destino, `Esta pasta já tem outro agendamento às ${horaLocal}.`);
+      voltar(destino, t('agendamentoRepetidoOutro', { hora: horaLocal }));
     }
     throw erro;
   }
@@ -90,13 +93,14 @@ export async function editarAgendamento(dados: FormData) {
     entidadeId: agendamento.id,
     detalhes: { horaLocal, diasSemana },
   });
-  voltar(destino, `Agendamento salvo para ${horaLocal}.`, 'ok');
+  voltar(destino, t('agendamentoSalvo', { hora: horaLocal }), 'ok');
 }
 
 export async function alternarAgendamento(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'agendamentos.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const agendamento = await exigirAgendamento(sessao, String(dados.get('id') ?? ''));
   const destino = `/pastas/${agendamento.folderId}`;
 
@@ -110,13 +114,14 @@ export async function alternarAgendamento(dados: FormData) {
     entidadeId: agendamento.id,
     detalhes: { ativo: atualizado.ativo },
   });
-  voltar(destino, atualizado.ativo ? 'Agendamento ativado.' : 'Agendamento pausado.', 'ok');
+  voltar(destino, atualizado.ativo ? t('agendamentoAtivado') : t('agendamentoPausado'), 'ok');
 }
 
 export async function excluirAgendamento(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'agendamentos.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const agendamento = await exigirAgendamento(sessao, String(dados.get('id') ?? ''));
   const destino = `/pastas/${agendamento.folderId}`;
 
@@ -127,7 +132,7 @@ export async function excluirAgendamento(dados: FormData) {
     entidadeId: agendamento.id,
     detalhes: { horaLocal: agendamento.horaLocal },
   });
-  voltar(destino, `Agendamento das ${agendamento.horaLocal} excluído.`, 'ok');
+  voltar(destino, t('agendamentoExcluido', { hora: agendamento.horaLocal }), 'ok');
 }
 
 /** O agendamento e alcancado pela pasta, que e quem passa pelo escopo. */
@@ -148,12 +153,13 @@ export async function publicarAgora(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.publicarAgora')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = String(dados.get('destino') ?? `/textos/${texto.id}`);
   const pasta = await prisma.folder.findUniqueOrThrow({ where: { id: texto.folderId } });
 
-  if (!pasta.telegramChatId) voltar(destino, 'Cadastre o chat_id da pasta antes de publicar.');
-  if (texto.status === 'publicado') voltar(destino, 'Este texto já foi publicado.');
+  if (!pasta.telegramChatId) voltar(destino, t('cadastreChatIdAntesDePublicar'));
+  if (texto.status === 'publicado') voltar(destino, t('textoJaPublicado'));
 
   const agora = new Date();
   let publicacaoId: string;
@@ -171,7 +177,7 @@ export async function publicarAgora(dados: FormData) {
     publicacaoId = publicacao.id;
   } catch (erro) {
     if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002') {
-      voltar(destino, 'Já existe uma publicação registrada para esta pasta neste minuto. Tente em seguida.');
+      voltar(destino, t('publicacaoNoMesmoMinuto'));
     }
     throw erro;
   }
@@ -191,7 +197,7 @@ export async function publicarAgora(dados: FormData) {
       entidadeId: texto.id,
       detalhes: { sucesso: false, erro: resposta.erro },
     });
-    voltar(destino, `Falhou: ${resposta.erro}`);
+    voltar(destino, t('publicacaoFalhou', { erro: resposta.erro ?? t('erroDesconhecido') }));
   }
 
   const enviadaEm = new Date();
@@ -218,7 +224,7 @@ export async function publicarAgora(dados: FormData) {
     entidadeId: texto.id,
     detalhes: { sucesso: true, messageId: resposta.messageId },
   });
-  voltar(destino, 'Publicado no grupo.', 'ok');
+  voltar(destino, t('publicadoNoGrupo'), 'ok');
 }
 
 /** Pular: manda o texto para o fim da fila, sem publicar e sem apagar. */
@@ -226,6 +232,7 @@ export async function pularTexto(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.publicarAgora')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = String(dados.get('destino') ?? `/textos?pasta=${texto.folderId}`);
 
@@ -239,7 +246,7 @@ export async function pularTexto(dados: FormData) {
     data: { ordem: (ultimo?.ordem ?? 0) + 1, status: 'pendente', erroMensagem: null },
   });
   await registrarAuditoria(sessao, { acao: 'pular', entidade: 'text', entidadeId: texto.id });
-  voltar(destino, 'Texto mandado para o fim da fila.', 'ok');
+  voltar(destino, t('textoMandadoAoFim'), 'ok');
 }
 
 /** Reenviar um texto que ficou com erro: devolve a fila e publica na hora. */
