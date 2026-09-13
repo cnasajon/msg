@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const CHAVE = 'msg-tema';
 
@@ -10,6 +11,7 @@ const CHAVE = 'msg-tema';
  */
 export function BotaoTema() {
   const [tema, setTema] = useState<'dark' | 'light'>('dark');
+  const t = useTranslations('comum');
 
   useEffect(() => {
     const guardado = (() => {
@@ -40,8 +42,8 @@ export function BotaoTema() {
       className="iconbtn"
       type="button"
       onClick={alternar}
-      title={tema === 'dark' ? 'Tema claro' : 'Tema escuro'}
-      aria-label="Alternar tema"
+      title={tema === 'dark' ? t('temaClaro') : t('temaEscuro')}
+      aria-label={t('alternarTema')}
     >
       {tema === 'dark' ? '☀' : '☾'}
     </button>

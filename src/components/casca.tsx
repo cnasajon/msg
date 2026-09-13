@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { Marca } from './marca';
 import { BotaoTema } from './tema';
 import { SeletorDeOrganizacao } from './seletor-organizacao';
 import { BotaoSair } from './sair';
+import { SeletorDeIdioma } from './seletor-idioma';
 import type { SessaoAtual } from '@/lib/sessao';
 import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
@@ -13,48 +15,46 @@ type ItemDeMenu = { href: string; ico: string; label: string };
 type GrupoDeMenu = { titulo: string; itens: ItemDeMenu[] };
 
 /** Menu na mesma divisão da tela inicial, filtrado pela matriz de permissões. */
-function menuPara(sessao: SessaoAtual): GrupoDeMenu[] {
+function menuPara(sessao: SessaoAtual, t: (chave: string) => string): GrupoDeMenu[] {
   const grupos: GrupoDeMenu[] = [
     {
-      titulo: 'Painel de controle',
+      titulo: t('painelDeControle'),
       itens: [
-        { href: '/painel', ico: '▦', label: 'Painel' },
-        { href: '/alertas', ico: '⚠', label: 'Alertas' },
+        { href: '/painel', ico: '▦', label: t('painel') },
+        { href: '/alertas', ico: '⚠', label: t('alertas') },
       ],
     },
     {
-      titulo: 'Textos',
+      titulo: t('textos'),
       itens: [
-        { href: '/textos', ico: '☰', label: 'Lista de textos' },
-        { href: '/importacao', ico: '⇪', label: 'Importação' },
-        { href: '/historico', ico: '↻', label: 'Histórico' },
+        { href: '/textos', ico: '☰', label: t('listaDeTextos') },
+        { href: '/importacao', ico: '⇪', label: t('importacao') },
+        { href: '/historico', ico: '↻', label: t('historico') },
       ],
     },
   ];
 
   if (podeFazer(sessao.perfil, 'pastas.gerenciar')) {
     grupos.push({
-      titulo: 'Configuração',
+      titulo: t('configuracao'),
       itens: [
-        { href: '/pastas', ico: '🗀', label: 'Pastas' },
-        { href: '/usuarios', ico: '☺', label: 'Usuários' },
-        { href: '/auditoria', ico: '⎘', label: 'Auditoria' },
+        { href: '/pastas', ico: '🗀', label: t('pastas') },
+        { href: '/usuarios', ico: '☺', label: t('usuarios') },
+        { href: '/auditoria', ico: '⎘', label: t('auditoria') },
       ],
     });
   }
   if (podeFazer(sessao.perfil, 'organizacoes.gerenciar')) {
     grupos.push({
-      titulo: 'Sistema',
+      titulo: t('sistema'),
       itens: [
-        { href: '/organizacoes', ico: '⬡', label: 'Organizações' },
-        { href: '/configuracoes', ico: '⚙', label: 'Configurações globais' },
+        { href: '/organizacoes', ico: '⬡', label: t('organizacoes') },
+        { href: '/configuracoes', ico: '⚙', label: t('configuracoesGlobais') },
       ],
     });
   }
   return grupos;
 }
-
-const ROTULO_DO_PERFIL = { superadmin: 'Superadmin', admin: 'Admin', usuario: 'Usuário' } as const;
 
 export async function Casca({
   sessao,
@@ -69,6 +69,10 @@ export async function Casca({
   atual?: string;
   children: React.ReactNode;
 }) {
+  const menu = await getTranslations('menu');
+  const comum = await getTranslations('comum');
+  const perfis = await getTranslations('perfis');
+
   const organizacoes =
     sessao.perfil === 'superadmin'
       ? await prisma.organization.findMany({
@@ -101,11 +105,12 @@ export async function Casca({
 
         <div className="navgroup nav">
           <Link href="/inicio">
-            <span className="ico">⌂</span>Início
+            <span className="ico">⌂</span>
+            {menu('inicio')}
           </Link>
         </div>
 
-        {menuPara(sessao).map((grupo) => (
+        {menuPara(sessao, menu).map((grupo) => (
           <div className="navgroup nav" key={grupo.titulo}>
             <h4>{grupo.titulo}</h4>
             {grupo.itens.map((item) => (
@@ -120,7 +125,7 @@ export async function Casca({
         <div className="foot">
           <div className="who">{sessao.nome}</div>
           <div className="role">
-            {ROTULO_DO_PERFIL[sessao.perfil]} · {sessao.email}
+            {perfis(sessao.perfil)} · {sessao.email}
           </div>
           <div style={{ marginTop: 8 }}>
             <BotaoSair token={tokenCsrfPara(sessao.sessaoId)} />
@@ -140,9 +145,10 @@ export async function Casca({
           ) : (
             <div className="orgpicker">
               <span className="dot" />
-              <span>{nomeDaOrganizacao ?? '—'}</span>
+              <span>{nomeDaOrganizacao ?? comum('nenhum')}</span>
             </div>
           )}
+          <SeletorDeIdioma />
           <BotaoTema />
         </div>
         <div className="content">{children}</div>

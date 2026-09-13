@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type ItemDaFila = { id: string; resumo: string; miniatura: string | null; caracteres: number };
 
@@ -18,6 +19,8 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
   csrf: React.ReactNode;
   folderId: string;
 }) {
+  const t = useTranslations('textos');
+  const comum = useTranslations('comum');
   const [lista, setLista] = useState(itens);
   const [arrastando, setArrastando] = useState<number | null>(null);
   const [mudou, setMudou] = useState(false);
@@ -40,8 +43,8 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
       <table>
         <thead>
           <tr>
-            <th style={{ width: 90 }}>Ordem</th>
-            <th>Texto</th>
+            <th style={{ width: 90 }}>{t('ordem')}</th>
+            <th>{t('texto')}</th>
             <th style={{ width: 110 }} />
           </tr>
         </thead>
@@ -60,7 +63,7 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
               style={arrastando === posicao ? { opacity: 0.5 } : undefined}
             >
               <td>
-                <span className="drag" title="Arraste para reordenar">
+                <span className="drag" title={t('arrasteParaReordenar')}>
                   ⠿
                 </span>{' '}
                 <span className="num">{posicao + 1}</span>
@@ -69,11 +72,11 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
                 {item.miniatura ? (
                   <img className="thumb" src={item.miniatura} alt="" />
                 ) : (
-                  <div className="thumb empty">—</div>
+                  <div className="thumb empty">{comum('nenhum')}</div>
                 )}
                 <div className="t">
                   <p>{item.resumo}</p>
-                  <div className="meta">{item.caracteres} caracteres</div>
+                  <div className="meta">{t('caracteres', { quantidade: item.caracteres })}</div>
                 </div>
               </td>
               <td style={{ whiteSpace: 'nowrap' }}>
@@ -82,7 +85,7 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
                   className="btn sm"
                   onClick={() => mover(posicao, posicao - 1)}
                   disabled={posicao === 0}
-                  aria-label="Mover para cima"
+                  aria-label={t('moverParaCima')}
                 >
                   ↑
                 </button>{' '}
@@ -91,7 +94,7 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
                   className="btn sm"
                   onClick={() => mover(posicao, posicao + 1)}
                   disabled={posicao === lista.length - 1}
-                  aria-label="Mover para baixo"
+                  aria-label={t('moverParaBaixo')}
                 >
                   ↓
                 </button>
@@ -103,10 +106,10 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
 
       <div className="body" style={{ borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center' }}>
         <button className="btn primary" type="submit" disabled={!mudou}>
-          Salvar ordem
+          {t('salvarOrdem')}
         </button>
         <span className="faint">
-          {mudou ? 'Há mudanças de ordem não salvas.' : 'Arraste as linhas ou use as setas.'}
+          {mudou ? t('mudancasNaoSalvas') : t('arrasteOuSetas')}
         </span>
       </div>
     </form>

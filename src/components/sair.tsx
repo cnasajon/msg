@@ -1,8 +1,10 @@
+import { getTranslations } from 'next-intl/server';
 import { CampoCsrf } from './csrf';
 import { sair } from '@/app/sair/acoes';
 
 /** Botão de sair, com a aparência de link. */
-export function BotaoSair({ token }: { token: string }) {
+export async function BotaoSair({ token }: { token: string }) {
+  const t = await getTranslations('comum');
   return (
     <form action={sair} style={{ display: 'inline' }}>
       <CampoCsrf token={token} />
@@ -19,7 +21,7 @@ export function BotaoSair({ token }: { token: string }) {
           textDecoration: 'underline',
         }}
       >
-        Sair
+        {t('sair')}
       </button>
     </form>
   );

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -13,13 +14,7 @@ import { reenviarTexto } from '../pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
 
-const SITUACOES = [
-  { valor: '', rotulo: 'Todas as situações' },
-  { valor: 'enviada', rotulo: 'Enviada' },
-  { valor: 'erro', rotulo: 'Erro' },
-  { valor: 'perdida', rotulo: 'Perdida' },
-  { valor: 'reivindicada', rotulo: 'Reivindicada' },
-];
+const SITUACOES = ['', 'enviada', 'erro', 'perdida', 'reivindicada'] as const;
 
 const CLASSE = {
   enviada: 'pill ok',
@@ -42,6 +37,11 @@ export default async function Historico({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
 
+  const t = await getTranslations('historico');
+  const textos = await getTranslations('textos');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+
   const filtros = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
 
@@ -51,7 +51,9 @@ export default async function Historico({
     select: { id: true, nome: true, timezone: true },
   });
   const pastaEscolhida = pastas.find((p) => p.id === filtros.pasta) ?? null;
-  const status = SITUACOES.some((s) => s.valor === filtros.status) ? filtros.status : '';
+  const status = SITUACOES.some((s) => s === filtros.status) ? filtros.status : '';
+  const rotuloDaSituacao = (valor: string) =>
+    valor === '' ? textos('todasAsSituacoes') : valor === 'erro' ? textos('erro') : t(valor);
 
   const publicacoes = await prisma.publication.findMany({
     where: {
@@ -70,13 +72,13 @@ export default async function Historico({
   });
 
   return (
-    <Casca sessao={sessao} titulo="Histórico de publicações" caminho="Textos" atual="/historico">
+    <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('textos')} atual="/historico">
       <Avisos erro={filtros.erro} ok={filtros.ok} />
 
       <div className="card">
         <form className="toolbar" method="get">
-          <select name="pasta" defaultValue={pastaEscolhida?.id ?? ''} aria-label="Pasta">
-            <option value="">Todas as pastas visíveis</option>
+          <select name="pasta" defaultValue={pastaEscolhida?.id ?? ''} aria-label={menu('pastas')}>
+            <option value="">{t('todasAsPastas')}</option>
             {pastas.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.nome}
@@ -85,26 +87,26 @@ export default async function Historico({
           </select>
           <select name="status" defaultValue={status}>
             {SITUACOES.map((s) => (
-              <option key={s.valor} value={s.valor}>
-                {s.rotulo}
+              <option key={s} value={s}>
+                {rotuloDaSituacao(s)}
               </option>
             ))}
           </select>
           <button className="btn" type="submit">
-            Filtrar
+            {comum('filtrar')}
           </button>
           <span className="spacer" />
-          <span className="faint">datas no fuso de cada pasta</span>
+          <span className="faint">{comum('fusoDaPasta')}</span>
         </form>
 
         <table>
           <thead>
             <tr>
-              <th style={{ width: 170 }}>Slot previsto</th>
-              <th style={{ width: 160 }}>Pasta</th>
-              <th>Texto publicado</th>
-              <th style={{ width: 110 }}>Situação</th>
-              <th style={{ width: 150 }}>Enviada em</th>
+              <th style={{ width: 170 }}>{t('slotPrevisto')}</th>
+              <th style={{ width: 160 }}>{t('pasta')}</th>
+              <th>{t('textoPublicado')}</th>
+              <th style={{ width: 110 }}>{textos('situacao')}</th>
+              <th style={{ width: 150 }}>{t('enviadaEm')}</th>
               <th style={{ width: 110 }}>message_id</th>
               <th style={{ width: 110 }} />
             </tr>
@@ -113,8 +115,7 @@ export default async function Historico({
             {publicacoes.length === 0 ? (
               <tr>
                 <td colSpan={7} className="faint">
-                  Nenhuma publicação ainda. Elas aparecem aqui assim que o dispatcher rodar o
-                  primeiro slot.
+                  {t('vazio')}
                 </td>
               </tr>
             ) : (
@@ -129,10 +130,12 @@ export default async function Historico({
                           {hora} <span className="tz">{siglaDoFuso(p.folder.timezone)}</span>
                         </>
                       ) : (
-                        <span className="faint">sem hora</span>
+                        <span className="faint">{t('semHora')}</span>
                       )}
                       {p.origem !== 'dispatcher' ? (
-                        <div className="faint">{p.origem === 'manual' ? 'publicado agora' : 'histórico importado'}</div>
+                        <div className="faint">
+                          {p.origem === 'manual' ? t('publicadoAgora') : t('historicoImportado')}
+                        </div>
                       ) : null}
                     </td>
                     <td>{p.folder.nome}</td>
@@ -141,15 +144,15 @@ export default async function Historico({
                         <>
                           {resumir(p.conteudoPublicado, 110)}
                           <div className="meta faint">
-                            {p.tinhaImagem ? 'com imagem · ' : ''}
-                            {p.texto ? '' : 'texto excluído depois da publicação — conteúdo preservado aqui'}
+                            {p.tinhaImagem ? `${t('comImagem')} · ` : ''}
+                            {p.texto ? '' : t('textoExcluido')}
                           </div>
                         </>
                       ) : (
                         <span className="faint">
                           {p.status === 'perdida'
-                            ? '— slot vencido além da tolerância'
-                            : p.erroMensagem ?? '—'}
+                            ? t('slotVencido')
+                            : (p.erroMensagem ?? comum('nenhum'))}
                         </span>
                       )}
                       {p.erroMensagem && p.conteudoPublicado ? (
@@ -160,17 +163,21 @@ export default async function Historico({
                       ) : null}
                     </td>
                     <td>
-                      <span className={CLASSE[p.status]}>{p.status}</span>
-                      {p.tentativas > 1 ? <div className="faint">{p.tentativas} tentativas</div> : null}
+                      <span className={CLASSE[p.status]}>{rotuloDaSituacao(p.status)}</span>
+                      {p.tentativas > 1 ? (
+                        <div className="faint">{t('tentativas', { quantidade: p.tentativas })}</div>
+                      ) : null}
                     </td>
                     <td>
                       {p.enviadaEm ? (
                         formatarNoFuso(p.enviadaEm, p.folder.timezone)
                       ) : (
-                        <span className="faint">—</span>
+                        <span className="faint">{comum('nenhum')}</span>
                       )}
                     </td>
-                    <td className="num">{p.telegramMessageId ?? <span className="faint">—</span>}</td>
+                    <td className="num">
+                      {p.telegramMessageId ?? <span className="faint">{comum('nenhum')}</span>}
+                    </td>
                     <td>
                       {p.status === 'erro' && p.texto ? (
                         <form action={reenviarTexto} style={{ display: 'inline' }}>
@@ -178,12 +185,12 @@ export default async function Historico({
                           <input type="hidden" name="id" value={p.texto.id} />
                           <input type="hidden" name="destino" value="/historico" />
                           <button className="btn sm" type="submit">
-                            Reenviar
+                            {textos('reenviar')}
                           </button>
                         </form>
                       ) : p.texto ? (
                         <Link className="btn sm" href={`/textos/${p.texto.id}`}>
-                          Ver texto
+                          {t('verTexto')}
                         </Link>
                       ) : null}
                     </td>
@@ -195,11 +202,7 @@ export default async function Historico({
         </table>
       </div>
 
-      <p className="faint">
-        Cada linha é um slot <code>(pasta, data prevista, hora prevista)</code> — a mesma chave única
-        que garante a idempotência: um slot nunca aparece duas vezes. O histórico importado entra sem
-        hora prevista e nunca é reenviado pelo dispatcher.
-      </p>
+      <p className="faint">{t('explicacao')}</p>
     </Casca>
   );
 }

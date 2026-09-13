@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { CampoCsrf } from '@/components/csrf';
@@ -6,6 +7,7 @@ import { Avisos } from '@/components/avisos';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { trocarSenha } from './acoes';
+import { SeletorDeIdioma } from '@/components/seletor-idioma';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +19,12 @@ export default async function PrimeiroAcesso({
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
   const { erro } = await searchParams;
+  const t = await getTranslations('primeiroAcesso');
 
   return (
     <>
       <div className="mockctl floating" style={{ position: 'fixed', top: 14, right: 16 }}>
+        <SeletorDeIdioma />
         <BotaoTema />
       </div>
       <div className="auth">
@@ -29,7 +33,7 @@ export default async function PrimeiroAcesso({
             <Marca />
             <div>
               <div className="name">msg</div>
-              <div className="env">Primeiro acesso</div>
+              <div className="env">{t('titulo')}</div>
             </div>
           </div>
           <div className="card">
@@ -38,8 +42,8 @@ export default async function PrimeiroAcesso({
               {sessao.senhaProvisoria ? (
                 <div className="banner warn" style={{ marginBottom: 16 }}>
                   <div>
-                    <div className="ttl">Senha provisória</div>
-                    Sua conta foi criada com senha provisória. Defina uma senha nova para continuar.
+                    <div className="ttl">{t('senhaProvisoria')}</div>
+                    {t('explicacao')}
                   </div>
                 </div>
               ) : null}
@@ -47,23 +51,20 @@ export default async function PrimeiroAcesso({
               <form action={trocarSenha}>
                 <CampoCsrf token={tokenCsrfPara(sessao.sessaoId)} />
                 <label className="field">
-                  <span className="lbl">Senha atual</span>
+                  <span className="lbl">{t('senhaAtual')}</span>
                   <input type="password" name="atual" autoComplete="current-password" required />
                 </label>
                 <label className="field">
-                  <span className="lbl">Nova senha</span>
+                  <span className="lbl">{t('novaSenha')}</span>
                   <input type="password" name="nova" autoComplete="new-password" required minLength={8} />
-                  <span className="hint">
-                    Pelo menos 8 caracteres, com uma letra maiúscula, um número e um caractere
-                    especial. Armazenada com argon2id.
-                  </span>
+                  <span className="hint">{t('regra')}</span>
                 </label>
                 <label className="field">
-                  <span className="lbl">Repita a nova senha</span>
+                  <span className="lbl">{t('repita')}</span>
                   <input type="password" name="repetida" autoComplete="new-password" required minLength={8} />
                 </label>
                 <button className="btn primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
-                  Salvar e entrar
+                  {t('salvarEEntrar')}
                 </button>
               </form>
             </div>

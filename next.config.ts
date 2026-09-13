@@ -1,4 +1,8 @@
 import type { NextConfig } from 'next';
+import criarPluginDeIdioma from 'next-intl/plugin';
+
+// sem rota por idioma: o idioma vem da sessão, não do endereço
+const comIdioma = criarPluginDeIdioma('./src/i18n/request.ts');
 
 const config: NextConfig = {
   // O worker roda fora do Next; aqui só a interface e a API.
@@ -11,4 +15,4 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default comIdioma(config);

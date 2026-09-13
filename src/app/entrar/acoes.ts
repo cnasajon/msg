@@ -8,6 +8,10 @@ import { criarSessao, ipDaRequisicao } from '@/lib/sessao';
 import { permiteTentativaDeLogin, limparTentativas } from '@/lib/rate-limit';
 import { registrarAuditoria } from '@/lib/auditoria';
 
+/**
+ * O erro volta como **chave** de tradução, não como texto: a ação roda no
+ * servidor e não sabe em que idioma a tela está.
+ */
 export type EstadoDoLogin = { erro?: string };
 
 /**
@@ -22,14 +26,14 @@ export async function entrar(_estado: EstadoDoLogin, dados: FormData): Promise<E
   const senha = String(dados.get('senha') ?? '');
   const ip = ipDaRequisicao(await headers());
 
-  if (!email || !senha) return { erro: 'Informe e-mail e senha.' };
+  if (!email || !senha) return { erro: 'informeOsDois' };
 
   if (!permiteTentativaDeLogin(ip, email)) {
-    return { erro: 'Tentativas demais. Espere alguns minutos e tente de novo.' };
+    return { erro: 'tentativasDemais' };
   }
 
   const usuario = await prisma.user.findUnique({ where: { email } });
-  const generico = { erro: 'E-mail ou senha incorretos.' };
+  const generico = { erro: 'credenciaisInvalidas' };
 
   if (!usuario || !usuario.ativo) {
     // Gasta o mesmo tempo de um hash real, para não denunciar pelo relógio

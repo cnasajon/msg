@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -20,19 +21,28 @@ export default async function NovoTexto({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
 
+  const t = await getTranslations('editor');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+
   const { pasta: pastaId, erro } = await searchParams;
   if (!pastaId) redirect('/textos');
   const pasta = await comEscopo(sessao).pasta(pastaId);
   const csrf = tokenCsrfPara(sessao.sessaoId);
 
   return (
-    <Casca sessao={sessao} titulo="Novo texto" caminho={`Textos · ${pasta.nome}`} atual="/textos">
+    <Casca
+      sessao={sessao}
+      titulo={t('novoTextoTitulo')}
+      caminho={`${menu('textos')} · ${pasta.nome}`}
+      atual="/textos"
+    >
       <Avisos erro={erro} />
       <div className="card">
         <header>
-          <h2>Conteúdo</h2>
+          <h2>{t('conteudo')}</h2>
           <span className="spacer" />
-          <span className="sub">entra no fim da fila de {pasta.nome}</span>
+          <span className="sub">{t('entraNoFim', { pasta: pasta.nome })}</span>
         </header>
         <div className="body">
           <form action={criarTexto}>
@@ -41,10 +51,10 @@ export default async function NovoTexto({
             <EditorDeTexto />
             <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
               <button className="btn primary" type="submit">
-                Criar texto
+                {t('criarTexto')}
               </button>
               <Link className="btn" href={`/textos?pasta=${pasta.id}`}>
-                Cancelar
+                {comum('cancelar')}
               </Link>
             </div>
           </form>
