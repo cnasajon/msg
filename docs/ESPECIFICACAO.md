@@ -181,10 +181,16 @@ O cookie leva um token aleatório e o banco guarda apenas o HMAC dele, de modo q
 Relação muitos-para-muitos usada apenas pelo perfil `usuario`: `user_id`, `folder_id`
 
 ### folders
-`id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `ao_esgotar` (parar_notificar | reiniciar), `ativa`, `criada_em`
+`id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `tipo_de_lista` (fila | data), `ao_esgotar` (parar_notificar | reiniciar), `ativa`, `criada_em`
+
+**Tipo de lista.** `fila` é o padrão: o slot leva o próximo texto ainda não publicado, na ordem. `data` seleciona pela data do slot — cada texto carrega um dia/mês/ano com curinga, descrito em `texts`. Os dois dependem do agendamento para existir slot: sem dia da semana marcado, nada é publicado. `ao_esgotar` só vale para `fila`, porque em lista por data não há fila que acabe.
 
 ### texts
-`id`, `folder_id`, `conteudo`, `ordem`, `imagem` (bytea, nulo), `imagem_mime`, `imagem_bytes`, `imagem_nome_original`, `status` (pendente | publicado | erro | arquivado), `publicado_em`, `arquivado_em`, `erro_mensagem`, `import_id`, `hash_conteudo`, `criado_por`, `criado_em`
+`id`, `folder_id`, `conteudo`, `ordem`, `imagem` (bytea, nulo), `imagem_mime`, `imagem_bytes`, `imagem_nome_original`, `status` (pendente | publicado | erro | arquivado), `publicado_em`, `arquivado_em`, `erro_mensagem`, `dia_da_publicacao` (nulo), `mes_da_publicacao` (nulo), `ano_da_publicacao` (nulo), `import_id`, `hash_conteudo`, `criado_por`, `criado_em`
+
+**Data da publicação.** As três colunas só são lidas quando a pasta é do tipo `data`, e nulo em cada uma significa "todos" — é assim que o curinga da tela (`*`) chega ao banco, e é o que permite filtrar pelo índice em vez de ler a pasta inteira. Um texto de mês 9 com dia e ano nulos sai em todos os dias de setembro que estiverem marcados no agendamento.
+
+Em lista por data a situação do texto não o tira do caminho, tirando `arquivado`: o mesmo texto sai sempre que a data casar. Com mais de um texto para o mesmo dia, sai o que está há mais tempo sem sair — quem nunca saiu vem antes de todos, e a `ordem` desempata —, para o primeiro deles não ocupar todos os slots. Uma data que nunca aconteceria, como 31 de fevereiro, é recusada na hora de escrever.
 
 Índice único em (`folder_id`, `hash_conteudo`) para detectar duplicatas na importação. O `hash_conteudo` considera apenas o texto, não a imagem.
 
@@ -202,9 +208,11 @@ Os dias são gravados em ISO-8601 (1 = segunda … 7 = domingo), que é o padrã
 Índice único em (`folder_id`, `hora_local`): dois agendamentos no mesmo horário da mesma pasta gerariam um slot só, então o cadastro é bloqueado com mensagem clara.
 
 ### publications
-`id`, `folder_id`, `text_id` (nulo quando a fila está vazia ou quando o texto foi excluído), `origem` (dispatcher | manual | importacao), `data_prevista` (date), `hora_prevista` (time, nula apenas no histórico importado), `status` (reivindicada | enviada | erro | perdida), `conteudo_publicado`, `tinha_imagem`, `tentativas`, `telegram_message_id`, `erro_mensagem`, `reivindicada_em`, `enviada_em`
+`id`, `folder_id`, `text_id` (nulo quando a fila está vazia ou quando o texto foi excluído), `origem` (dispatcher | manual | importacao), `data_prevista` (date), `hora_prevista` (time, nula apenas no histórico importado), `status` (reivindicada | enviada | erro | perdida | sem_texto), `conteudo_publicado`, `tinha_imagem`, `tentativas`, `telegram_message_id`, `erro_mensagem`, `reivindicada_em`, `enviada_em`
 
 **Índice único em (`folder_id`, `data_prevista`, `hora_prevista`).** É esta restrição que garante a idempotência.
+
+`sem_texto` é o slot de uma lista por data em que nenhum texto casava com o dia. Não é erro e não alerta ninguém: o slot existe porque o dia da semana está marcado no agendamento, e simplesmente não havia nada agendado para aquela data. Fica registrado para o slot não ser tentado de novo nem virar `perdida`.
 
 `conteudo_publicado` e `tinha_imagem` são a cópia do que foi enviado. Sem eles, excluir um texto deixaria o histórico com uma linha vazia: `text_id` vira nulo e ninguém mais sabe o que foi publicado naquele dia. A imagem não é copiada — some junto com o texto, e o histórico apenas indica que havia uma.
 
@@ -288,7 +296,7 @@ O painel avisa quando uma pasta tem menos de cinco textos pendentes.
 
 ### 7.4 Alertas operacionais
 
-Eventos que geram alerta: falha definitiva de publicação, slot perdido, fila esgotada em pasta configurada como `parar_notificar`, fila com menos de cinco textos pendentes e falha de autenticação do bot.
+Eventos que geram alerta: falha definitiva de publicação, slot perdido, fila esgotada em pasta configurada como `parar_notificar`, fila com menos de cinco textos pendentes, falha de autenticação do bot e pedido de redefinição de senha. Os dois avisos de fila valem apenas para pastas do tipo `fila`: em lista por data não há fila que acabe, e um dia sem texto agendado é situação normal.
 
 **Destino do alerta, nesta ordem de precedência:**
 
@@ -482,10 +490,11 @@ Comece lendo docs/ESPECIFICACAO.md e me apresentando a fase 0.
 14. **Dias da semana:** ISO-8601 no banco (1 = segunda … 7 = domingo), siglas na interface começando no domingo.
 15. **Fuso padrão das organizações:** `America/Sao_Paulo` como valor inicial, editável por organização e sobreposto por pasta.
 16. **Interface:** tema escuro por padrão; entrada em quatro blocos.
+17. **Tipo de lista:** por pasta — `fila`, o comportamento original, ou `data`, em que cada texto tem dia/mês/ano com curinga. Os dois dependem dos dias da semana marcados no agendamento.
 
 ### Em aberto
 
-- **Entrar pelo Telegram:** hoje o login é por e-mail e senha. Autenticar pelo usuário do Telegram, ou aceitar qualquer um dos dois, fica como evolutiva a decidir.
+- **Entrar pelo Telegram:** hoje o login é por nome de usuário e senha. Autenticar pelo usuário do Telegram, ou aceitar qualquer um dos dois, fica como evolutiva a decidir.
 - **Levantamento dos `chat_id`** restantes: grupo de alertas e grupos das OAs em espanhol e inglês (ver anexo).
 
 ---

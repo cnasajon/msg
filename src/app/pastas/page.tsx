@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
+import { Ajuda } from '@/components/ajuda';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -35,7 +36,11 @@ export default async function Pastas({
     where: escopoDePasta(sessao),
     orderBy: { nome: 'asc' },
     include: {
-      _count: { select: { schedules: true } },
+      // Em lista por fila conta o que ainda não saiu; em lista por data não há
+      // fila que acabe, e o que informa é quanto texto a pasta tem no total.
+      _count: {
+        select: { schedules: true, textos: { where: { status: { not: 'arquivado' } } } },
+      },
       textos: { where: { status: 'pendente' }, select: { id: true } },
     },
   });
@@ -70,6 +75,7 @@ export default async function Pastas({
               <th>{t('grupoDeDestino')}</th>
               <th>{t('fuso')}</th>
               <th className="num">{t('agendamentos')}</th>
+              <th>{t('tipoDeLista')}</th>
               <th>{t('fila')}</th>
               <th>{t('aoEsgotar')}</th>
               <th>{t('situacao')}</th>
@@ -79,7 +85,7 @@ export default async function Pastas({
           <tbody>
             {pastas.length === 0 ? (
               <tr>
-                <td colSpan={8} className="faint">
+                <td colSpan={9} className="faint">
                   {t('nenhumaPasta')}
                 </td>
               </tr>
@@ -104,10 +110,19 @@ export default async function Pastas({
                     </td>
                     <td>{p.timezone}</td>
                     <td className="num">{p._count.schedules}</td>
+                    <td>{p.tipoDeLista === 'data' ? t('tipoData') : t('tipoFila')}</td>
                     <td>
-                      <span className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill'}>
-                        {t('pendentes', { quantidade: pendentes })}
-                      </span>
+                      {p.tipoDeLista === 'data' ? (
+                        <span className="pill">
+                          {t('textosNaLista', { quantidade: p._count.textos })}
+                        </span>
+                      ) : (
+                        <span
+                          className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill'}
+                        >
+                          {t('pendentes', { quantidade: pendentes })}
+                        </span>
+                      )}
                     </td>
                     <td>
                       {p.aoEsgotar === 'reiniciar'
@@ -153,19 +168,36 @@ export default async function Pastas({
                   <input type="text" name="descricao" />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('fusoHorario')}</span>
+                  <span className="lbl">
+                    {t('fusoHorario')}
+                    <Ajuda texto={t('fusoHint')} rotulo={comum('ajudaSobre', { campo: t('fusoHorario') })} />
+                  </span>
                   <input
                     type="text"
                     name="timezone"
                     defaultValue={organizacao?.timezonePadrao ?? 'America/Sao_Paulo'}
                     required
                   />
-                  <span className="hint">{t('fusoHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('chatId')}</span>
+                  <span className="lbl">
+                    {t('chatId')}
+                    <Ajuda texto={t('chatIdHint')} rotulo={comum('ajudaSobre', { campo: t('chatId') })} />
+                  </span>
                   <input type="text" name="telegramChatId" placeholder="-100…" />
-                  <span className="hint">{t('chatIdHint')}</span>
+                </label>
+                <label className="field" style={{ margin: 0 }}>
+                  <span className="lbl">
+                    {t('tipoDeLista')}
+                    <Ajuda
+                      texto={t('tipoDeListaHint')}
+                      rotulo={comum('ajudaSobre', { campo: t('tipoDeLista') })}
+                    />
+                  </span>
+                  <select name="tipoDeLista" defaultValue="fila">
+                    <option value="fila">{t('tipoFila')}</option>
+                    <option value="data">{t('tipoData')}</option>
+                  </select>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">{t('aoEsgotarFila')}</span>

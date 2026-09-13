@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
+import { Ajuda } from '@/components/ajuda';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -133,6 +134,20 @@ export default async function ConfigurarPasta({
                   <span className="hint">
                     {t.rich('chatIdExplicacao', { b: (partes) => <b>{partes}</b> })}
                   </span>
+                </label>
+
+                <label className="field">
+                  <span className="lbl">
+                    {t('tipoDeLista')}
+                    <Ajuda
+                      texto={t('tipoDeListaHint')}
+                      rotulo={comum('ajudaSobre', { campo: t('tipoDeLista') })}
+                    />
+                  </span>
+                  <select name="tipoDeLista" defaultValue={pasta.tipoDeLista}>
+                    <option value="fila">{t('tipoFila')}</option>
+                    <option value="data">{t('tipoData')}</option>
+                  </select>
                 </label>
 
                 <h3 style={{ fontSize: 13, margin: '18px 0 8px' }}>{t('aoEsgotarFila')}</h3>

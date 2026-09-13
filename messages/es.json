@@ -22,7 +22,8 @@
     "carregando": "Cargando…",
     "reiniciarFila": "reiniciar la cola",
     "pararNotificar": "parar y notificar",
-    "descricaoDoApp": "Publicación programada de textos e imágenes en grupos de Telegram."
+    "descricaoDoApp": "Publicación programada de textos e imágenes en grupos de Telegram.",
+    "ajudaSobre": "Ayuda sobre {campo}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -168,7 +169,9 @@
     "mover": "Mover",
     "escolhidos": "{quantidade} elegido(s)",
     "escolherTodos": "Elegir todos",
-    "semOutraPasta": "No hay otra carpeta a la que mover."
+    "semOutraPasta": "No hay otra carpeta a la que mover.",
+    "dataDaPublicacao": "Fecha de publicación",
+    "qualquerData": "cualquier fecha"
   },
   "editor": {
     "conteudo": "Contenido",
@@ -206,7 +209,9 @@
     "semChatId": "Registre el chat_id de la carpeta para poder publicar.",
     "tirarDaLista": "Quitar de la lista",
     "excluir": "Eliminar",
-    "explicacaoTirar": "Archivar conserva el registro y es el camino normal. Eliminar borra el texto — el historial de publicaciones sobrevive, porque la publicación guarda lo que salió al aire."
+    "explicacaoTirar": "Archivar conserva el registro y es el camino normal. Eliminar borra el texto — el historial de publicaciones sobrevive, porque la publicación guarda lo que salió al aire.",
+    "dataDaPublicacao": "Fecha de publicación",
+    "dataHint": "Día/mes/año, con * para “todos”. 25/12/* sale cada Navidad; */09/* sale en los días de septiembre marcados en la programación; 01/01/2027 sale una sola vez."
   },
   "historico": {
     "titulo": "Historial de publicaciones",
@@ -227,7 +232,8 @@
     "verTexto": "Ver texto",
     "tentativas": "{quantidade} intentos",
     "vazio": "Todavía no hay publicaciones. Aparecen aquí en cuanto el dispatcher ejecute el primer slot.",
-    "explicacao": "Cada fila es un slot (carpeta, fecha prevista, hora prevista) — la misma clave única que garantiza la idempotencia: un slot nunca aparece dos veces. El historial importado entra sin hora prevista y el dispatcher nunca lo reenvía."
+    "explicacao": "Cada fila es un slot (carpeta, fecha prevista, hora prevista) — la misma clave única que garantiza la idempotencia: un slot nunca aparece dos veces. El historial importado entra sin hora prevista y el dispatcher nunca lo reenvía.",
+    "sem_texto": "sin texto para la fecha"
   },
   "alertas": {
     "titulo": "Panel de alertas",
@@ -411,7 +417,12 @@
     "excluirPasta": "Eliminar carpeta",
     "excluirExplicacao": "Eliminar borra la carpeta y sus textos. Las carpetas con textos ya publicados no pueden eliminarse — desactívelas, para conservar el historial.",
     "horariosNoFuso": "horarios en la zona de la carpeta",
-    "situacao": "Situación"
+    "situacao": "Situación",
+    "tipoDeLista": "Tipo de lista",
+    "tipoFila": "Basada en cola",
+    "tipoData": "Basada en fecha",
+    "tipoDeListaHint": "En cola, sale el próximo texto todavía no publicado, en orden. En fecha, sale el texto cuya fecha coincide con el día del slot — con * valiendo para “todos”. En ambos casos, solo hay publicación en los días de la semana marcados en la programación.",
+    "textosNaLista": "{quantidade, plural, one {# texto} other {# textos}}"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -733,7 +744,14 @@
     "moverNenhumEscolhido": "Elija al menos un texto para mover.",
     "moverTodosRepetidos": "Nada movido: la carpeta de destino ya tiene los {quantidade} texto(s) elegido(s), con el mismo contenido.",
     "moverFeito": "{quantidade} texto(s) movido(s) a {pasta}, al final de la cola.",
-    "moverParcial": "{movidos} texto(s) movido(s) a {pasta}. {pulados} saltado(s): la carpeta de destino ya tenía el mismo contenido."
+    "moverParcial": "{movidos} texto(s) movido(s) a {pasta}. {pulados} saltado(s): la carpeta de destino ya tenía el mismo contenido.",
+    "dataFormato": "Escriba la fecha como día/mes/año, usando * para “todos”. Por ejemplo: 25/12/*, */09/* o 01/01/2027.",
+    "dataMesInvalido": "El mes va de 1 a 12.",
+    "dataDiaInvalido": "El día va de 1 a 31.",
+    "dataAnoInvalido": "El año va de 2000 a 2100.",
+    "dataDiaNaoExisteNoMes": "El día {dia} no existe en el mes {mes} — el texto nunca saldría.",
+    "semTextoParaAData": "Ningún texto agendado para esta fecha.",
+    "tipoDeListaInvalido": "Tipo de lista inválido."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",

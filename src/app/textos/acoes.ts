@@ -9,12 +9,31 @@ import { comEscopo, escopoDeTexto } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
 import { tradutorDeAvisos } from '@/lib/avisos-servidor';
+import type { Problema } from '@/lib/avisos';
 import { hashDoConteudo, problemaNoHtml, problemaNoTamanho } from '@/lib/textos';
 import { ImagemInvalida, processarImagem } from '@/lib/imagem';
 import { moverTextosParaPasta } from '@/lib/mover';
+import { analisarPadraoDeData, QUALQUER_DATA } from '@/lib/data-da-publicacao';
 
 function voltar(destino: string, mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
   redirect(comAviso(destino, tipo, mensagem));
+}
+
+/**
+ * Padrão de data do formulário. Em lista por fila o campo não existe na tela, e
+ * gravar o que viesse ali seria aceitar um valor que ninguém digitou.
+ */
+function lerPadrao(
+  tipoDeLista: 'fila' | 'data',
+  dados: FormData,
+  destino: string,
+  frase: (problema: Problema) => string,
+) {
+  if (tipoDeLista !== 'data') return QUALQUER_DATA;
+
+  const analise = analisarPadraoDeData(String(dados.get('dataDaPublicacao') ?? ''));
+  if ('problema' in analise) voltar(destino, frase(analise.problema));
+  return analise.padrao;
 }
 
 /** Próxima posição da fila: depois do último texto da pasta. */
@@ -54,6 +73,9 @@ export async function criarTexto(dados: FormData) {
   const problemaHtml = problemaNoHtml(conteudo);
   if (problemaHtml) voltar(destino, frase(problemaHtml));
 
+  // Só a pasta de lista por data mostra o campo; nas outras ele nem é lido.
+  const padrao = lerPadrao(pasta.tipoDeLista, dados, destino, frase);
+
   const hash = hashDoConteudo(conteudo);
   const duplicado = await prisma.text.findFirst({
     where: { folderId: pasta.id, hashConteudo: hash },
@@ -76,6 +98,9 @@ export async function criarTexto(dados: FormData) {
       conteudo,
       ordem: await proximaOrdem(pasta.id),
       hashConteudo: hash,
+      diaDaPublicacao: padrao.dia,
+      mesDaPublicacao: padrao.mes,
+      anoDaPublicacao: padrao.ano,
       criadoPor: sessao.usuarioId,
       ...(processada
         ? {
@@ -115,6 +140,12 @@ export async function editarTexto(dados: FormData) {
   const problemaHtml = problemaNoHtml(conteudo);
   if (problemaHtml) voltar(destino, frase(problemaHtml));
 
+  const pastaDoTexto = await prisma.folder.findUniqueOrThrow({
+    where: { id: texto.folderId },
+    select: { tipoDeLista: true },
+  });
+  const padrao = lerPadrao(pastaDoTexto.tipoDeLista, dados, destino, frase);
+
   const hash = hashDoConteudo(conteudo);
   if (hash !== texto.hashConteudo) {
     const duplicado = await prisma.text.findFirst({
@@ -143,7 +174,14 @@ export async function editarTexto(dados: FormData) {
 
   await prisma.text.update({
     where: { id: texto.id },
-    data: { conteudo, hashConteudo: hash, ...camposDaImagem },
+    data: {
+      conteudo,
+      hashConteudo: hash,
+      diaDaPublicacao: padrao.dia,
+      mesDaPublicacao: padrao.mes,
+      anoDaPublicacao: padrao.ano,
+      ...camposDaImagem,
+    },
   });
   await registrarAuditoria(sessao, {
     acao: 'editar',

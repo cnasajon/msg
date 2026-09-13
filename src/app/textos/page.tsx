@@ -13,6 +13,7 @@ import { prisma } from '@/lib/db';
 import { escopoDePasta, escopoDeTexto } from '@/lib/escopo';
 import { resumir, tamanhoDoTexto } from '@/lib/textos';
 import { formatarNoFuso } from '@/lib/fuso';
+import { formatarPadraoDeData } from '@/lib/data-da-publicacao';
 import { arquivarTexto, desarquivarTexto, moverTextos, reordenarFila } from './acoes';
 import { publicarAgora, pularTexto, reenviarTexto } from '../pastas/acoes-agenda';
 
@@ -47,7 +48,7 @@ export default async function Textos({
   const pastas = await prisma.folder.findMany({
     where: escopoDePasta(sessao),
     orderBy: { nome: 'asc' },
-    select: { id: true, nome: true, timezone: true, aoEsgotar: true },
+    select: { id: true, nome: true, timezone: true, aoEsgotar: true, tipoDeLista: true },
   });
   // A pasta escolhida na URL só vale se estiver no escopo — caso contrário, a
   // primeira que a pessoa realmente enxerga.
@@ -88,6 +89,9 @@ export default async function Textos({
       status: true,
       publicadoEm: true,
       arquivadoEm: true,
+      diaDaPublicacao: true,
+      mesDaPublicacao: true,
+      anoDaPublicacao: true,
       erroMensagem: true,
       imagemBytes: true,
       imagemMime: true,
@@ -101,11 +105,12 @@ export default async function Textos({
   // motivo.
   const posicaoNaFila = new Map(pendentes.map((texto, indice) => [texto.id, indice + 1]));
   const semFiltro = !busca && !status && !filtros.imagem;
-  const podeReordenar = semFiltro && pendentes.length > 1;
+  const podeReordenar = semFiltro && pendentes.length > 1 && pasta.tipoDeLista === 'fila';
 
   // Mover é de admin para cima; o destino sai da mesma lista de pastas que a
   // pessoa já enxerga, menos a que está aberta.
   const podeMover = podeFazer(sessao.perfil, 'textos.mover');
+  const porData = pasta.tipoDeLista === 'data';
   const destinos = pastas.filter((p) => p.id !== pasta.id).map((p) => ({ id: p.id, nome: p.nome }));
 
   return (
@@ -117,7 +122,7 @@ export default async function Textos({
     >
       <Avisos erro={filtros.erro} ok={filtros.ok} />
 
-      {pendentes.length < 5 ? (
+      {pendentes.length < 5 && pasta.tipoDeLista === 'fila' ? (
         <div className={pendentes.length === 0 ? 'banner err' : 'banner warn'}>
           <div>
             {pendentes.length === 0
@@ -185,7 +190,9 @@ export default async function Textos({
                   <CaixaDeTodos rotulo={t('escolherTodos')} />
                 </th>
               ) : null}
-              <th style={{ width: 60 }}>{t('ordem')}</th>
+              <th style={{ width: porData ? 110 : 60 }}>
+                {porData ? t('dataDaPublicacao') : t('ordem')}
+              </th>
               <th>{t('texto')}</th>
               <th style={{ width: 110 }}>{t('situacao')}</th>
               <th style={{ width: 170 }}>{t('publicadoEm')}</th>
@@ -208,7 +215,13 @@ export default async function Textos({
                     </td>
                   ) : null}
                   <td className="num">
-                    {texto.status === 'pendente' ? (
+                    {porData ? (
+                      formatarPadraoDeData({
+                        dia: texto.diaDaPublicacao,
+                        mes: texto.mesDaPublicacao,
+                        ano: texto.anoDaPublicacao,
+                      })
+                    ) : texto.status === 'pendente' ? (
                       posicaoNaFila.get(texto.id)
                     ) : (
                       <span className="faint">{comum('nenhum')}</span>

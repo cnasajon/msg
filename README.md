@@ -27,6 +27,8 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | `src/lib/escopo.ts` | **Isolamento entre organizações** — o filtro por onde passa toda consulta |
 | `src/lib/usuario.ts` | Regras do nome de usuário, a credencial de entrada |
 | `src/lib/mover.ts` | Mover textos entre pastas, com o escopo dos dois lados |
+| `src/lib/data-da-publicacao.ts` | O padrão `dia/mês/ano` das listas por data |
+| `src/lib/proximo-texto.ts` | Qual texto sai em cada slot, por fila ou por data |
 | `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
 | `src/app/` | Interface e server actions (Next.js App Router) |
 | `src/lib/textos.ts` | Os dois limites (4096/1024), tags aceitas e hash de duplicata |
@@ -258,7 +260,10 @@ da importação, a cifra do token de sobreposição, os cinco formatos de export
 vez só) e **a precedência do destino dos alertas**, inclusive com o banco fora do
 ar. O **mover entre pastas** tem teste nas duas direções — não deixar sair para
 outra organização e não deixar entrar de outra — e no caso do conteúdo repetido
-no destino.
+no destino. As **listas por data** têm teste do padrão (inclusive a data que
+nunca aconteceria), do revezamento entre textos do mesmo dia, da repetição que a
+fila não faria, e do dispatcher: sem texto para a data não é erro, e dois ciclos
+no mesmo slot continuam publicando uma vez só.
 
 O cálculo dos slots é testado nas duas viradas de horário de verão: a hora que
 não existe resolve para depois da virada, e a que acontece duas vezes resolve
@@ -288,8 +293,8 @@ usado no navegador fora da lista que vai para o cliente.
    `(folder_id, data_prevista, hora_prevista)` rejeita, e este desiste em
    silêncio — é isso que impede publicação dupla em deploys sobrepostos,
    restart ou réplica a mais.
-4. Pega o texto pendente de menor `ordem`. Com imagem vai por `sendPhoto` (texto
-   como legenda); sem imagem, por `sendMessage`.
+4. Escolhe o texto conforme o **tipo da lista** (abaixo). Com imagem vai por
+   `sendPhoto` (texto como legenda); sem imagem, por `sendMessage`.
 5. Sucesso: publicação marcada como enviada, com `telegram_message_id` e cópia do
    conteúdo; texto marcado como publicado.
 6. Falha: até 3 tentativas com espera crescente. Esgotadas, publicação e texto
@@ -301,6 +306,46 @@ usado no navegador fora da lista que vai para o cliente.
 Ao esgotar a fila, vale o que estiver configurado na pasta: *parar e notificar*
 registra a publicação sem texto e alerta; *reiniciar* devolve todos os textos a
 pendente, preservando a ordem, e publica o primeiro, com o evento na auditoria.
+
+## Tipo de lista: por fila ou por data
+
+Cada pasta escolhe como seleciona o texto de cada slot. Nos dois casos o
+agendamento manda no *quando*: **só há publicação nos dias da semana marcados**.
+Sem nenhum dia marcado, não existe slot e nada sai.
+
+**Baseada em fila** — o padrão, e como o sistema sempre funcionou. Sai o próximo
+texto ainda não publicado, na ordem da fila. Publicar tira o texto do caminho, e
+ao esgotar vale o comportamento configurado na pasta.
+
+**Baseada em data** — cada texto carrega um `dia/mês/ano`, com `*` valendo para
+"todos":
+
+| Padrão | Quando sai |
+| :-- | :-- |
+| `25/12/*` | todo dia 25 de dezembro, em qualquer ano |
+| `*/09/*` | em todos os dias de setembro que estiverem marcados |
+| `01/01/2027` | uma vez só, em 1º de janeiro de 2027 |
+| `*/*/*` | em qualquer data marcada |
+
+Três diferenças que valem registro:
+
+- **A situação do texto não tira ele do caminho**, tirando `arquivado`. Numa
+  lista por data o mesmo texto sai sempre que a data casar — é o que "todos os
+  dias de setembro" quer dizer —, então ficar `publicado` não pode escondê-lo,
+  como esconde na fila.
+- **Com mais de um texto para o mesmo dia, eles se revezam:** sai quem está há
+  mais tempo sem sair, e quem nunca saiu vem antes de todos; a ordem desempata.
+  Sem isso o primeiro deles ocuparia todos os slots e os outros nunca
+  apareceriam.
+- **Não haver texto para a data não é erro.** O slot fica registrado como
+  `sem texto para a data`, para não ser tentado de novo nem virar "perdido", e
+  ninguém é alertado: o slot existe porque o dia da semana está marcado, e
+  simplesmente não havia nada agendado. Pelo mesmo motivo, o aviso de fila curta
+  não vale para estas pastas.
+
+Uma data que nunca aconteceria, como `31/02/*`, é recusada na hora de escrever —
+o texto ficaria esperando para sempre. `29/02` continua valendo, porque ano
+bissexto existe.
 
 ## Entrada e senha esquecida
 

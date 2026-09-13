@@ -22,7 +22,8 @@
     "carregando": "Carregando…",
     "reiniciarFila": "reiniciar a fila",
     "pararNotificar": "parar e notificar",
-    "descricaoDoApp": "Publicação programada de textos e imagens em grupos de Telegram."
+    "descricaoDoApp": "Publicação programada de textos e imagens em grupos de Telegram.",
+    "ajudaSobre": "Ajuda sobre {campo}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -168,7 +169,9 @@
     "mover": "Mover",
     "escolhidos": "{quantidade} escolhido(s)",
     "escolherTodos": "Escolher todos",
-    "semOutraPasta": "Não há outra pasta para onde mover."
+    "semOutraPasta": "Não há outra pasta para onde mover.",
+    "dataDaPublicacao": "Data da publicação",
+    "qualquerData": "qualquer data"
   },
   "editor": {
     "conteudo": "Conteúdo",
@@ -206,7 +209,9 @@
     "semChatId": "Cadastre o chat_id da pasta para poder publicar.",
     "tirarDaLista": "Tirar da lista",
     "excluir": "Excluir",
-    "explicacaoTirar": "Arquivar preserva o registro e é o caminho normal. Excluir apaga o texto — o histórico das publicações sobrevive, porque a publicação guarda o que foi ao ar."
+    "explicacaoTirar": "Arquivar preserva o registro e é o caminho normal. Excluir apaga o texto — o histórico das publicações sobrevive, porque a publicação guarda o que foi ao ar.",
+    "dataDaPublicacao": "Data da publicação",
+    "dataHint": "Dia/mês/ano, com * para “todos”. 25/12/* sai todo Natal; */09/* sai nos dias de setembro que estiverem marcados no agendamento; 01/01/2027 sai uma vez só."
   },
   "historico": {
     "titulo": "Histórico de publicações",
@@ -227,7 +232,8 @@
     "verTexto": "Ver texto",
     "tentativas": "{quantidade} tentativas",
     "vazio": "Nenhuma publicação ainda. Elas aparecem aqui assim que o dispatcher rodar o primeiro slot.",
-    "explicacao": "Cada linha é um slot (pasta, data prevista, hora prevista) — a mesma chave única que garante a idempotência: um slot nunca aparece duas vezes. O histórico importado entra sem hora prevista e nunca é reenviado pelo dispatcher."
+    "explicacao": "Cada linha é um slot (pasta, data prevista, hora prevista) — a mesma chave única que garante a idempotência: um slot nunca aparece duas vezes. O histórico importado entra sem hora prevista e nunca é reenviado pelo dispatcher.",
+    "sem_texto": "sem texto para a data"
   },
   "alertas": {
     "titulo": "Painel de alertas",
@@ -411,7 +417,12 @@
     "excluirPasta": "Excluir pasta",
     "excluirExplicacao": "Excluir apaga a pasta e os textos dela. Pastas com textos já publicados não podem ser excluídas — desative-as, para preservar o histórico.",
     "horariosNoFuso": "horários no fuso da pasta",
-    "situacao": "Situação"
+    "situacao": "Situação",
+    "tipoDeLista": "Tipo de lista",
+    "tipoFila": "Baseada em fila",
+    "tipoData": "Baseada em data",
+    "tipoDeListaHint": "Em fila, sai o próximo texto ainda não publicado, na ordem. Em data, sai o texto cuja data casa com o dia do slot — com * valendo para “todos”. Nos dois casos, só há publicação nos dias da semana marcados no agendamento.",
+    "textosNaLista": "{quantidade, plural, one {# texto} other {# textos}}"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -733,7 +744,14 @@
     "moverNenhumEscolhido": "Escolha ao menos um texto para mover.",
     "moverTodosRepetidos": "Nada movido: a pasta de destino já tem os {quantidade} texto(s) escolhido(s), com o mesmo conteúdo.",
     "moverFeito": "{quantidade} texto(s) movido(s) para {pasta}, no fim da fila.",
-    "moverParcial": "{movidos} texto(s) movido(s) para {pasta}. {pulados} pulado(s): a pasta de destino já tinha o mesmo conteúdo."
+    "moverParcial": "{movidos} texto(s) movido(s) para {pasta}. {pulados} pulado(s): a pasta de destino já tinha o mesmo conteúdo.",
+    "dataFormato": "Escreva a data como dia/mês/ano, usando * para “todos”. Por exemplo: 25/12/*, */09/* ou 01/01/2027.",
+    "dataMesInvalido": "O mês vai de 1 a 12.",
+    "dataDiaInvalido": "O dia vai de 1 a 31.",
+    "dataAnoInvalido": "O ano vai de 2000 a 2100.",
+    "dataDiaNaoExisteNoMes": "O dia {dia} não existe no mês {mes} — o texto nunca sairia.",
+    "semTextoParaAData": "Nenhum texto agendado para esta data.",
+    "tipoDeListaInvalido": "Tipo de lista inválido."
   },
   "esqueci": {
     "titulo": "Esqueci a senha",

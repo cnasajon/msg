@@ -273,3 +273,115 @@ describe.skipIf(!temBanco)('idempotencia do dispatcher', () => {
     expect(publicacao.tinhaImagem).toBe(true);
   });
 });
+
+describe.skipIf(!temBanco)('lista por data no dispatcher', () => {
+  beforeAll(async () => {
+    await prepararBanco();
+  });
+
+  beforeEach(async () => {
+    await limpar();
+    enviosDeTexto.length = 0;
+    enviosDeFoto.length = 0;
+  });
+
+  afterAll(async () => {
+    await cliente().$disconnect();
+  });
+
+  /** Pasta por data, publicando todos os dias às 07:00 no fuso de São Paulo. */
+  async function pastaPorData() {
+    const db = cliente();
+    const organizacao = await db.organization.create({
+      data: { nome: `Org ${randomUUID().slice(0, 8)}`, idiomaPadrao: 'pt', timezonePadrao: FUSO },
+    });
+    const pasta = await db.folder.create({
+      data: {
+        organizationId: organizacao.id,
+        nome: 'Pasta por data',
+        timezone: FUSO,
+        telegramChatId: CHAT,
+        tipoDeLista: 'data',
+      },
+    });
+    await db.schedule.create({
+      data: { folderId: pasta.id, horaLocal: '07:00', diasSemana: [1, 2, 3, 4, 5, 6, 7], ativo: true },
+    });
+    return pasta;
+  }
+
+  async function texto(folderId: string, conteudo: string, dia: number | null, mes: number | null) {
+    return cliente().text.create({
+      data: {
+        folderId,
+        conteudo,
+        ordem: 1,
+        hashConteudo: randomUUID(),
+        diaDaPublicacao: dia,
+        mesDaPublicacao: mes,
+      },
+    });
+  }
+
+  it('publica o texto da data e ignora o que é de outro dia', async () => {
+    // AGORA é 14/09/2026
+    const pasta = await pastaPorData();
+    await texto(pasta.id, 'É dia 14 de setembro', 14, 9);
+    await texto(pasta.id, 'Isto é do Natal', 25, 12);
+
+    const resultado = await rodarCiclo(cliente(), AGORA);
+
+    expect(resultado.enviados).toBe(1);
+    expect(enviosDeTexto).toHaveLength(1);
+    expect(enviosDeTexto[0]?.texto).toBe('É dia 14 de setembro');
+  });
+
+  it('sem texto para a data NÃO é erro nem fila esgotada', async () => {
+    const pasta = await pastaPorData();
+    await texto(pasta.id, 'Isto é do Natal', 25, 12);
+
+    const resultado = await rodarCiclo(cliente(), AGORA);
+
+    expect(enviosDeTexto).toHaveLength(0);
+    expect(resultado.semTextoParaAData).toBe(1);
+    expect(resultado.erros).toBe(0);
+    expect(resultado.filasEsgotadas).toBe(0);
+
+    // o slot fica registrado, para não ser tentado de novo nem virar "perdido".
+    // A pasta nasce com slots anteriores já vencidos, então o filtro é pela data
+    // do slot desta rodada, não pela primeira publicação que aparecer.
+    const publicacao = await cliente().publication.findFirstOrThrow({
+      where: { folderId: pasta.id, dataPrevista: new Date('2026-09-14T00:00:00.000Z') },
+    });
+    expect(publicacao.status).toBe('sem_texto');
+    expect(publicacao.textId).toBeNull();
+    expect(publicacao.erroMensagem).toBeNull();
+  });
+
+  it('o mesmo texto volta a sair no dia seguinte, o que a fila não faria', async () => {
+    const pasta = await pastaPorData();
+    await texto(pasta.id, 'Todo dia de setembro', null, 9);
+
+    await rodarCiclo(cliente(), AGORA);
+    // dia seguinte, mesmo horário
+    await rodarCiclo(cliente(), new Date('2026-09-15T10:05:00Z'));
+
+    expect(enviosDeTexto.map((e) => e.texto)).toEqual([
+      'Todo dia de setembro',
+      'Todo dia de setembro',
+    ]);
+  });
+
+  it('continua idempotente: dois ciclos no mesmo slot publicam uma vez só', async () => {
+    const pasta = await pastaPorData();
+    await texto(pasta.id, 'É dia 14 de setembro', 14, 9);
+
+    const [um, dois] = await Promise.all([
+      rodarCiclo(cliente(), AGORA),
+      rodarCiclo(cliente(), AGORA),
+    ]);
+
+    expect(enviosDeTexto).toHaveLength(1);
+    expect(um.enviados + dois.enviados).toBe(1);
+  });
+});
