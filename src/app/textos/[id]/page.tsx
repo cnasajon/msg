@@ -11,6 +11,7 @@ import { prisma } from '@/lib/db';
 import { formatarNoFuso } from '@/lib/fuso';
 import { tamanhoDoTexto } from '@/lib/textos';
 import { arquivarTexto, desarquivarTexto, editarTexto, excluirTexto } from '../acoes';
+import { publicarAgora, pularTexto, reenviarTexto } from '@/app/pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
 
@@ -156,6 +157,52 @@ export default async function EditarTexto({
                   )}
                 </dd>
               </dl>
+            </div>
+          </div>
+
+          <div className="card">
+            <header>
+              <h2>Publicar</h2>
+            </header>
+            <div className="body" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              {texto.status === 'erro' ? (
+                <form action={reenviarTexto}>
+                  <CampoCsrf token={csrf} />
+                  <input type="hidden" name="id" value={texto.id} />
+                  <input type="hidden" name="destino" value={`/textos/${texto.id}`} />
+                  <button className="btn primary" type="submit" disabled={!pasta.telegramChatId}>
+                    Reenviar agora
+                  </button>
+                </form>
+              ) : (
+                <form action={publicarAgora}>
+                  <CampoCsrf token={csrf} />
+                  <input type="hidden" name="id" value={texto.id} />
+                  <input type="hidden" name="destino" value={`/textos/${texto.id}`} />
+                  <button
+                    className="btn primary"
+                    type="submit"
+                    disabled={!pasta.telegramChatId || texto.status !== 'pendente'}
+                  >
+                    Publicar agora
+                  </button>
+                </form>
+              )}
+              {texto.status === 'pendente' ? (
+                <form action={pularTexto}>
+                  <CampoCsrf token={csrf} />
+                  <input type="hidden" name="id" value={texto.id} />
+                  <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
+                  <button className="btn" type="submit">
+                    Pular
+                  </button>
+                </form>
+              ) : null}
+              <span className="faint" style={{ flexBasis: '100%' }}>
+                {pasta.telegramChatId
+                  ? 'Publicar agora envia ao grupo na hora e registra a publicação como manual. Pular manda o texto para o fim da fila, sem publicar.'
+                  : 'Cadastre o chat_id da pasta para poder publicar.'}
+              </span>
             </div>
           </div>
 

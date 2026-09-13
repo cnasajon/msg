@@ -11,7 +11,7 @@ import { decifrar } from './cifra';
  *    dividem a mesma cota de taxa da API.
  */
 
-const BASE = 'https://api.telegram.org';
+
 
 export type ResultadoDoEnvio =
   | { ok: true; messageId: string }
@@ -88,19 +88,31 @@ async function chamar(
         };
 
   try {
-    const resposta = await fetch(`${BASE}/bot${token}/${metodo}`, {
+    const resposta = await fetch(`${env.telegramApiBase}/bot${token}/${metodo}`, {
       ...requisicao,
       signal: AbortSignal.timeout(30_000),
     });
     return (await resposta.json()) as { ok: boolean; description?: string };
   } catch (erro) {
-    // falha de rede não é resposta da API; devolve no mesmo formato
+    // Falha de rede não é resposta da API; devolve no mesmo formato. A causa vai
+    // para o log — sem a URL, que carrega o token —, porque "não foi possível
+    // falar com a API" sozinho não diz nada a quem precisa consertar.
+    const causa = erro instanceof Error ? `${erro.name}: ${erro.message}` : String(erro);
+    console.log(
+      JSON.stringify({
+        servico: 'telegram',
+        em: new Date().toISOString(),
+        metodo,
+        falhouEm: 'rede',
+        causa,
+      }),
+    );
     return {
       ok: false,
       description:
         erro instanceof Error && erro.name === 'TimeoutError'
           ? 'A API do Telegram não respondeu a tempo.'
-          : 'Não foi possível falar com a API do Telegram.',
+          : `Não foi possível falar com a API do Telegram (${causa}).`,
     };
   }
 }

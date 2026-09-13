@@ -11,6 +11,7 @@ import { escopoDePasta, escopoDeTexto } from '@/lib/escopo';
 import { resumir, tamanhoDoTexto } from '@/lib/textos';
 import { formatarNoFuso } from '@/lib/fuso';
 import { arquivarTexto, desarquivarTexto, reordenarFila } from './acoes';
+import { publicarAgora, pularTexto, reenviarTexto } from '../pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
 
@@ -225,6 +226,38 @@ export default async function Textos({
                     <Link className="btn sm" href={`/textos/${t.id}`}>
                       Abrir
                     </Link>{' '}
+                    {t.status === 'pendente' ? (
+                      <>
+                        <form action={publicarAgora} style={{ display: 'inline' }}>
+                          <CampoCsrf token={csrf} />
+                          <input type="hidden" name="id" value={t.id} />
+                          <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
+                          <button className="btn sm" type="submit">
+                            Publicar agora
+                          </button>
+                        </form>{' '}
+                        <form action={pularTexto} style={{ display: 'inline' }}>
+                          <CampoCsrf token={csrf} />
+                          <input type="hidden" name="id" value={t.id} />
+                          <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
+                          <button className="btn sm" type="submit" title="Manda para o fim da fila">
+                            Pular
+                          </button>
+                        </form>{' '}
+                      </>
+                    ) : null}
+                    {t.status === 'erro' ? (
+                      <>
+                        <form action={reenviarTexto} style={{ display: 'inline' }}>
+                          <CampoCsrf token={csrf} />
+                          <input type="hidden" name="id" value={t.id} />
+                          <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
+                          <button className="btn sm" type="submit">
+                            Reenviar
+                          </button>
+                        </form>{' '}
+                      </>
+                    ) : null}
                     {t.status === 'arquivado' ? (
                       <form action={desarquivarTexto} style={{ display: 'inline' }}>
                         <CampoCsrf token={csrf} />

@@ -61,6 +61,14 @@ export const env = {
   get telegramBotToken() {
     return obrigatoria('TELEGRAM_BOT_TOKEN');
   },
+  /**
+   * Endereço da Bot API. Em produção é sempre o do Telegram; existe como
+   * variável para que a verificação de ponta a ponta aponte para um servidor
+   * local e exercite o dispatcher sem tocar em grupo nenhum.
+   */
+  get telegramApiBase() {
+    return opcional('TELEGRAM_API_BASE') ?? 'https://api.telegram.org';
+  },
   get maxImageMb() {
     return numero('MAX_IMAGE_MB', 2);
   },
