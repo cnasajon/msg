@@ -55,7 +55,8 @@
     "tentativasDemais": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
     "esqueceu": "Olvidé la contraseña",
     "semCadastro": "No hay registro público.",
-    "usuario": "Usuario"
+    "usuario": "Usuario",
+    "bancoDesatualizado": "La base de datos está por detrás de esta versión del sistema: faltan aplicar las migraciones. Avise a un administrador — el comando es npm run migrate:deploy."
   },
   "primeiroAcesso": {
     "titulo": "Primer acceso",
@@ -249,7 +250,6 @@
     "slotsPerdidos": "Slots perdidos",
     "vencidosAlemDaTolerancia": "vencidos más allá de la tolerancia",
     "pastasComFilaCurta": "Carpetas con cola corta",
-    "menosDeCinco": "menos de cinco textos pendientes",
     "filasCurtas": "Colas cortas",
     "aoEsgotar": "Al agotarse",
     "abrirTextos": "Abrir textos",
@@ -265,7 +265,8 @@
     "slot": "Slot",
     "pendentes": "Pendientes",
     "importar": "Importar",
-    "pasta": "Carpeta"
+    "pasta": "Carpeta",
+    "abaixoDoLimiteDaPasta": "por debajo del límite configurado en cada carpeta"
   },
   "importacao": {
     "titulo": "Importar CSV o XLSX",
@@ -402,7 +403,6 @@
     "sobreposicaoAtiva": "sobrescritura activa",
     "situacaoDaFila": "Situación de la cola",
     "textosPendentes": "Textos pendientes",
-    "avisaAbaixoDeCinco": "el panel avisa por debajo de cinco",
     "jaPublicados": "Ya publicados",
     "agendamentosAtivos": "Programaciones activas",
     "proximaPublicacao": "Próxima publicación",
@@ -422,7 +422,11 @@
     "tipoFila": "Basada en cola",
     "tipoData": "Basada en fecha",
     "tipoDeListaHint": "En cola, sale el próximo texto todavía no publicado, en orden. En fecha, sale el texto cuya fecha coincide con el día del slot — con * valiendo para “todos”. En ambos casos, solo hay publicación en los días de la semana marcados en la programación.",
-    "textosNaLista": "{quantidade, plural, one {# texto} other {# textos}}"
+    "textosNaLista": "{quantidade, plural, one {# texto} other {# textos}}",
+    "alertarAbaixoDe": "Avisar con menos de",
+    "alertarAbaixoDeHint": "Cuántos textos pendientes quedan cuando se envía la alerta de cola corta a los administradores. Cero desactiva el aviso. Solo vale para lista basada en cola.",
+    "textosNaFila": "textos",
+    "avisaAbaixoDe": "el panel avisa por debajo de {quantidade}"
   },
   "agendamentos": {
     "hora": "Hora",
@@ -751,7 +755,8 @@
     "dataAnoInvalido": "El año va de 2000 a 2100.",
     "dataDiaNaoExisteNoMes": "El día {dia} no existe en el mes {mes} — el texto nunca saldría.",
     "semTextoParaAData": "Ningún texto agendado para esta fecha.",
-    "tipoDeListaInvalido": "Tipo de lista inválido."
+    "tipoDeListaInvalido": "Tipo de lista inválido.",
+    "alertarAbaixoDeInvalido": "El aviso de cola corta va de 0 a 999 textos."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",

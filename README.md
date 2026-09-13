@@ -185,6 +185,12 @@ existir código; os demais exigem `package.json` com `start:web` e
    migração manualmente a cada deploy que mude o schema — não a coloque no start
    command.
 
+   **Sem isso o sintoma engana:** o serviço sobe, e é só ao usar o sistema que
+   ele quebra, porque o banco não tem as colunas que o código espera. O
+   `/health` responde **503 com a lista de migrações pendentes**, e a tela de
+   entrada diz que o banco está atrás da versão em vez de mostrar uma falha
+   genérica — mas quem resolve continua sendo o `migrate:deploy`.
+
 O `package.json` traz um script `start` apontando para `start:web`: o builder do
 Railway (Railpack) exige esse script e falha no *prepare* sem ele, mesmo quando o
 serviço define um Custom Start Command. Cada serviço continua subindo pelo seu
@@ -205,7 +211,9 @@ publicação.
 
 ### Verificação final
 
-- `https://msg.oa12.org/health` responde.
+- `https://msg.oa12.org/health` responde **`{"ok":true, …, "migracoes":"em dia"}`**.
+  Se vier `503` com `"migracoes":"pendentes"`, o banco está atrás do código: a
+  resposta lista quais faltam e o comando (`npm run migrate:deploy`).
 - O log do `worker` mostra o ciclo de 5 minutos acontecendo.
 - O `postgres` tem as tabelas criadas pela migração.
 - O botão "testar conexão" de uma pasta publica no grupo correto.
@@ -306,6 +314,11 @@ usado no navegador fora da lista que vai para o cliente.
 Ao esgotar a fila, vale o que estiver configurado na pasta: *parar e notificar*
 registra a publicação sem texto e alerta; *reiniciar* devolve todos os textos a
 pendente, preservando a ordem, e publica o primeiro, com o evento na auditoria.
+
+O **aviso de fila curta** também é de cada pasta: o campo *Avisar com menos de*
+diz com quantos textos pendentes o alerta sai para os administradores. **Zero
+desliga o aviso.** Só vale para lista baseada em fila — em lista por data não há
+fila que acabe.
 
 ## Tipo de lista: por fila ou por data
 

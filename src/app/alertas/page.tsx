@@ -58,13 +58,23 @@ export default async function Alertas() {
         nome: true,
         timezone: true,
         aoEsgotar: true,
+        tipoDeLista: true,
+        alertarAbaixoDe: true,
         textos: { where: { status: 'pendente' }, select: { id: true } },
         schedules: { where: { ativo: true }, select: { id: true } },
       },
     }),
   ]);
 
-  const filasCurtas = pastas.filter((p) => p.schedules.length > 0 && p.textos.length < 5);
+  // O limite é de cada pasta, e zero desliga o aviso. Lista por data não tem
+  // fila que acabe, então também fica de fora.
+  const filasCurtas = pastas.filter(
+    (p) =>
+      p.tipoDeLista === 'fila' &&
+      p.alertarAbaixoDe > 0 &&
+      p.schedules.length > 0 &&
+      p.textos.length < p.alertarAbaixoDe,
+  );
 
   return (
     <Casca
@@ -111,7 +121,7 @@ export default async function Alertas() {
         <div className="card stat">
           <div className="k">{t('pastasComFilaCurta')}</div>
           <div className="v num">{filasCurtas.length}</div>
-          <div className="d">{t('menosDeCinco')}</div>
+          <div className="d">{t('abaixoDoLimiteDaPasta')}</div>
         </div>
       </div>
 

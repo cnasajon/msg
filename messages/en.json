@@ -55,7 +55,8 @@
     "tentativasDemais": "Too many attempts. Wait a few minutes and try again.",
     "esqueceu": "I forgot my password",
     "semCadastro": "There is no public sign-up.",
-    "usuario": "Username"
+    "usuario": "Username",
+    "bancoDesatualizado": "The database is behind this version of the system: the migrations have not been applied. Tell an administrator — the command is npm run migrate:deploy."
   },
   "primeiroAcesso": {
     "titulo": "First sign-in",
@@ -249,7 +250,6 @@
     "slotsPerdidos": "Missed slots",
     "vencidosAlemDaTolerancia": "past the tolerance window",
     "pastasComFilaCurta": "Folders with short queues",
-    "menosDeCinco": "fewer than five pending texts",
     "filasCurtas": "Short queues",
     "aoEsgotar": "When it runs out",
     "abrirTextos": "Open texts",
@@ -265,7 +265,8 @@
     "slot": "Slot",
     "pendentes": "Pending",
     "importar": "Import",
-    "pasta": "Folder"
+    "pasta": "Folder",
+    "abaixoDoLimiteDaPasta": "below the limit set on each folder"
   },
   "importacao": {
     "titulo": "Import CSV or XLSX",
@@ -402,7 +403,6 @@
     "sobreposicaoAtiva": "override active",
     "situacaoDaFila": "Queue status",
     "textosPendentes": "Pending texts",
-    "avisaAbaixoDeCinco": "the panel warns below five",
     "jaPublicados": "Already published",
     "agendamentosAtivos": "Active schedules",
     "proximaPublicacao": "Next publication",
@@ -422,7 +422,11 @@
     "tipoFila": "Queue-based",
     "tipoData": "Date-based",
     "tipoDeListaHint": "In a queue, the next unpublished text goes out, in order. By date, the text whose date matches the slot’s day goes out — with * meaning “any”. Either way, publishing only happens on the weekdays marked in the schedule.",
-    "textosNaLista": "{quantidade, plural, one {# text} other {# texts}}"
+    "textosNaLista": "{quantidade, plural, one {# text} other {# texts}}",
+    "alertarAbaixoDe": "Warn below",
+    "alertarAbaixoDeHint": "How many pending texts are left when the short-queue alert goes to the administrators. Zero turns the warning off. Only applies to queue-based lists.",
+    "textosNaFila": "texts",
+    "avisaAbaixoDe": "the panel warns below {quantidade}"
   },
   "agendamentos": {
     "hora": "Time",
@@ -751,7 +755,8 @@
     "dataAnoInvalido": "The year goes from 2000 to 2100.",
     "dataDiaNaoExisteNoMes": "Day {dia} does not exist in month {mes} — the text would never go out.",
     "semTextoParaAData": "No text scheduled for this date.",
-    "tipoDeListaInvalido": "Invalid list type."
+    "tipoDeListaInvalido": "Invalid list type.",
+    "alertarAbaixoDeInvalido": "The short-queue warning goes from 0 to 999 texts."
   },
   "esqueci": {
     "titulo": "I forgot my password",

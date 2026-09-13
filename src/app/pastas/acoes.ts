@@ -38,8 +38,9 @@ function lerCampos(dados: FormData) {
   const chatIdBruto = String(dados.get('telegramChatId') ?? '').trim();
   const aoEsgotar = String(dados.get('aoEsgotar') ?? 'parar_notificar') as AoEsgotar;
   const tipoDeLista = String(dados.get('tipoDeLista') ?? 'fila') as TipoDeLista;
+  const alertarAbaixoDe = Number(dados.get('alertarAbaixoDe') ?? 5);
   const ativa = dados.get('ativa') === 'on';
-  return { nome, descricao, timezone, chatIdBruto, aoEsgotar, tipoDeLista, ativa };
+  return { nome, descricao, timezone, chatIdBruto, aoEsgotar, tipoDeLista, alertarAbaixoDe, ativa };
 }
 
 function validar(
@@ -52,6 +53,13 @@ function validar(
   if (!fusoValido(campos.timezone)) voltar(destino, t('fusoDesconhecido', { fuso: campos.timezone }));
   if (!AO_ESGOTAR.includes(campos.aoEsgotar)) voltar(destino, t('aoEsgotarInvalido'));
   if (!TIPOS_DE_LISTA.includes(campos.tipoDeLista)) voltar(destino, t('tipoDeListaInvalido'));
+  if (
+    !Number.isInteger(campos.alertarAbaixoDe) ||
+    campos.alertarAbaixoDe < 0 ||
+    campos.alertarAbaixoDe > 999
+  ) {
+    voltar(destino, t('alertarAbaixoDeInvalido'));
+  }
   if (campos.chatIdBruto) {
     const problema = problemaNoChatId(campos.chatIdBruto);
     if (problema) voltar(destino, frase(problema));
@@ -82,6 +90,7 @@ export async function criarPasta(dados: FormData) {
       telegramChatId: campos.chatIdBruto || null,
       aoEsgotar: campos.aoEsgotar,
       tipoDeLista: campos.tipoDeLista,
+      alertarAbaixoDe: campos.alertarAbaixoDe,
       ativa: true,
     },
   });
@@ -118,6 +127,7 @@ export async function editarPasta(dados: FormData) {
       telegramChatId: campos.chatIdBruto || null,
       aoEsgotar: campos.aoEsgotar,
       tipoDeLista: campos.tipoDeLista,
+      alertarAbaixoDe: campos.alertarAbaixoDe,
       ativa: campos.ativa,
     },
   });
@@ -130,6 +140,7 @@ export async function editarPasta(dados: FormData) {
       timezone: campos.timezone,
       aoEsgotar: campos.aoEsgotar,
       tipoDeLista: campos.tipoDeLista,
+      alertarAbaixoDe: campos.alertarAbaixoDe,
       ativa: campos.ativa,
       chatIdAlterado: campos.chatIdBruto !== (pasta.telegramChatId ?? ''),
     },

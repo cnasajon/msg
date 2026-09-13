@@ -206,6 +206,23 @@ export default async function Pastas({
                     <option value="reiniciar">{t('reiniciarOpcao')}</option>
                   </select>
                 </label>
+                <label className="field" style={{ margin: 0 }}>
+                  <span className="lbl">
+                    {t('alertarAbaixoDe')}
+                    <Ajuda
+                      texto={t('alertarAbaixoDeHint')}
+                      rotulo={comum('ajudaSobre', { campo: t('alertarAbaixoDe') })}
+                    />
+                  </span>
+                  <input
+                    type="number"
+                    name="alertarAbaixoDe"
+                    min={0}
+                    max={999}
+                    defaultValue={5}
+                    style={{ maxWidth: 120 }}
+                  />
+                </label>
               </div>
               <button className="btn primary" type="submit" style={{ marginTop: 4 }}>
                 {t('criarPasta')}

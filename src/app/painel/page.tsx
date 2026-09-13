@@ -88,7 +88,15 @@ export default async function Painel() {
   });
 
   const totalPendentes = linhas.reduce((soma, l) => soma + l.pendentes, 0);
-  const filasCurtas = linhas.filter((l) => l.agendamentosAtivos.length > 0 && l.pendentes < 5);
+  // O limite é de cada pasta, e zero desliga o aviso. Lista por data fica de
+  // fora: ali não há fila que acabe.
+  const filasCurtas = linhas.filter(
+    (l) =>
+      l.agendamentosAtivos.length > 0 &&
+      l.pasta.tipoDeLista === 'fila' &&
+      l.pasta.alertarAbaixoDe > 0 &&
+      l.pendentes < l.pasta.alertarAbaixoDe,
+  );
   const semAgendamento = linhas.filter((l) => l.agendamentosAtivos.length === 0);
   const semChatId = linhas.filter((l) => !l.pasta.telegramChatId);
 

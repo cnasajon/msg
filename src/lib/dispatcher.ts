@@ -110,9 +110,13 @@ export async function rodarCiclo(
     // Aviso de fila curta, uma vez por ciclo e so quando ha agendamento ativo.
     // Nao vale para lista por data: ali nao ha fila que acabe — o texto sai
     // quando a data dele chega, e "pouco texto pendente" nao diz nada.
-    if (pasta.tipoDeLista === 'fila' && pasta.schedules.some((s) => s.ativo)) {
+    if (
+      pasta.tipoDeLista === 'fila' &&
+      pasta.alertarAbaixoDe > 0 &&
+      pasta.schedules.some((s) => s.ativo)
+    ) {
       const pendentes = await prisma.text.count({ where: { folderId: pasta.id, status: 'pendente' } });
-      if (pendentes > 0 && pendentes < 5) {
+      if (pendentes > 0 && pendentes < pasta.alertarAbaixoDe) {
         resultado.filasCurtas += 1;
         await alertar(prisma, {
           tipo: 'fila_curta',
