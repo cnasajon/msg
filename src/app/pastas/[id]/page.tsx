@@ -5,6 +5,7 @@ import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
 import { Ajuda } from '@/components/ajuda';
+import { CamposDoTipoDeLista } from '@/components/campos-do-tipo-de-lista';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -55,9 +56,11 @@ export default async function ConfigurarPasta({
     pasta.timezone,
     new Date(),
   );
-  const [pendentes, publicados, usuarios] = await Promise.all([
+  const porData = pasta.tipoDeLista === 'data';
+  const [pendentes, publicados, textosDaLista, usuarios] = await Promise.all([
     prisma.text.count({ where: { folderId: pasta.id, status: 'pendente' } }),
     prisma.text.count({ where: { folderId: pasta.id, status: 'publicado' } }),
+    prisma.text.count({ where: { folderId: pasta.id, status: { not: 'arquivado' } } }),
     prisma.user.findMany({
       where: { organizationId: pasta.organizationId, perfil: 'usuario' },
       orderBy: { nome: 'asc' },
@@ -136,63 +139,13 @@ export default async function ConfigurarPasta({
                   </span>
                 </label>
 
-                <label className="field">
-                  <span className="lbl">
-                    {t('tipoDeLista')}
-                    <Ajuda
-                      texto={t('tipoDeListaHint')}
-                      rotulo={comum('ajudaSobre', { campo: t('tipoDeLista') })}
-                    />
-                  </span>
-                  <select name="tipoDeLista" defaultValue={pasta.tipoDeLista}>
-                    <option value="fila">{t('tipoFila')}</option>
-                    <option value="data">{t('tipoData')}</option>
-                  </select>
-                </label>
-
-                <h3 style={{ fontSize: 13, margin: '18px 0 8px' }}>{t('aoEsgotarFila')}</h3>
-                <div className="check">
-                  <input
-                    type="radio"
-                    id="esgotar-parar"
-                    name="aoEsgotar"
-                    value="parar_notificar"
-                    defaultChecked={pasta.aoEsgotar === 'parar_notificar'}
-                  />
-                  <label htmlFor="esgotar-parar">
-                    {t.rich('pararNotificarExplicacao', { b: (partes) => <b>{partes}</b> })}
-                  </label>
-                </div>
-                <div className="check">
-                  <input
-                    type="radio"
-                    id="esgotar-reiniciar"
-                    name="aoEsgotar"
-                    value="reiniciar"
-                    defaultChecked={pasta.aoEsgotar === 'reiniciar'}
-                  />
-                  <label htmlFor="esgotar-reiniciar">
-                    {t.rich('reiniciarExplicacao', { b: (partes) => <b>{partes}</b> })}
-                  </label>
-                </div>
-
-                <label className="field" style={{ marginTop: 14 }}>
-                  <span className="lbl">
-                    {t('alertarAbaixoDe')}
-                    <Ajuda
-                      texto={t('alertarAbaixoDeHint')}
-                      rotulo={comum('ajudaSobre', { campo: t('alertarAbaixoDe') })}
-                    />
-                  </span>
-                  <input
-                    type="number"
-                    name="alertarAbaixoDe"
-                    min={0}
-                    max={999}
-                    defaultValue={pasta.alertarAbaixoDe}
-                    style={{ maxWidth: 120 }}
-                  />
-                </label>
+                <CamposDoTipoDeLista
+                  tipoInicial={pasta.tipoDeLista}
+                  aoEsgotarInicial={pasta.aoEsgotar}
+                  alertaAtivoInicial={pasta.alertaDeFilaCurtaAtivo}
+                  alertarAbaixoDeInicial={pasta.alertarAbaixoDe}
+                  folderId={pasta.id}
+                />
 
                 <div className="check" style={{ marginTop: 12 }}>
                   <input type="checkbox" id="ativa" name="ativa" defaultChecked={pasta.ativa} />
@@ -273,31 +226,42 @@ export default async function ConfigurarPasta({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="card">
             <header>
-              <h2>{t('situacaoDaFila')}</h2>
+              <h2>{porData ? t('situacaoDaLista') : t('situacaoDaFila')}</h2>
             </header>
             <div className="body">
               <dl className="kv">
-                <dt>{t('textosPendentes')}</dt>
-                <dd>
-                  <span
-                    className={
-                      pendentes === 0
-                        ? 'pill err'
-                        : pasta.alertarAbaixoDe > 0 && pendentes < pasta.alertarAbaixoDe
-                          ? 'pill warn'
-                          : 'pill ok'
-                    }
-                  >
-                    {pendentes}
-                  </span>{' '}
-                  {pasta.alertarAbaixoDe > 0 && pendentes < pasta.alertarAbaixoDe ? (
-                    <span className="faint">
-                      {t('avisaAbaixoDe', { quantidade: pasta.alertarAbaixoDe })}
-                    </span>
-                  ) : null}
-                </dd>
-                <dt>{t('jaPublicados')}</dt>
-                <dd>{publicados}</dd>
+                {porData ? (
+                  <>
+                    {/* Numa lista por data nada fica "pendente" esperando a vez:
+                        o que informa é quanto texto a pasta tem. */}
+                    <dt>{t('textosNaLista')}</dt>
+                    <dd>{textosDaLista}</dd>
+                  </>
+                ) : (
+                  <>
+                    <dt>{t('textosPendentes')}</dt>
+                    <dd>
+                      <span
+                        className={
+                          pendentes === 0
+                            ? 'pill err'
+                            : pasta.alertaDeFilaCurtaAtivo && pendentes < pasta.alertarAbaixoDe
+                              ? 'pill warn'
+                              : 'pill ok'
+                        }
+                      >
+                        {pendentes}
+                      </span>{' '}
+                      {pasta.alertaDeFilaCurtaAtivo && pendentes < pasta.alertarAbaixoDe ? (
+                        <span className="faint">
+                          {t('avisaAbaixoDe', { quantidade: pasta.alertarAbaixoDe })}
+                        </span>
+                      ) : null}
+                    </dd>
+                    <dt>{t('jaPublicados')}</dt>
+                    <dd>{publicados}</dd>
+                  </>
+                )}
                 <dt>{t('agendamentosAtivos')}</dt>
                 <dd>{agendamentos.filter((a) => a.ativo).length}</dd>
                 <dt>{t('proximaPublicacao')}</dt>

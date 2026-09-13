@@ -39,8 +39,12 @@ function lerCampos(dados: FormData) {
   const aoEsgotar = String(dados.get('aoEsgotar') ?? 'parar_notificar') as AoEsgotar;
   const tipoDeLista = String(dados.get('tipoDeLista') ?? 'fila') as TipoDeLista;
   const alertarAbaixoDe = Number(dados.get('alertarAbaixoDe') ?? 5);
+  const alertaDeFilaCurtaAtivo = dados.get('alertaDeFilaCurtaAtivo') === 'on';
   const ativa = dados.get('ativa') === 'on';
-  return { nome, descricao, timezone, chatIdBruto, aoEsgotar, tipoDeLista, alertarAbaixoDe, ativa };
+  return {
+    nome, descricao, timezone, chatIdBruto, aoEsgotar, tipoDeLista,
+    alertarAbaixoDe, alertaDeFilaCurtaAtivo, ativa,
+  };
 }
 
 function validar(
@@ -55,7 +59,7 @@ function validar(
   if (!TIPOS_DE_LISTA.includes(campos.tipoDeLista)) voltar(destino, t('tipoDeListaInvalido'));
   if (
     !Number.isInteger(campos.alertarAbaixoDe) ||
-    campos.alertarAbaixoDe < 0 ||
+    campos.alertarAbaixoDe < 1 ||
     campos.alertarAbaixoDe > 999
   ) {
     voltar(destino, t('alertarAbaixoDeInvalido'));
@@ -91,6 +95,7 @@ export async function criarPasta(dados: FormData) {
       aoEsgotar: campos.aoEsgotar,
       tipoDeLista: campos.tipoDeLista,
       alertarAbaixoDe: campos.alertarAbaixoDe,
+      alertaDeFilaCurtaAtivo: campos.alertaDeFilaCurtaAtivo,
       ativa: true,
     },
   });
@@ -128,6 +133,7 @@ export async function editarPasta(dados: FormData) {
       aoEsgotar: campos.aoEsgotar,
       tipoDeLista: campos.tipoDeLista,
       alertarAbaixoDe: campos.alertarAbaixoDe,
+      alertaDeFilaCurtaAtivo: campos.alertaDeFilaCurtaAtivo,
       ativa: campos.ativa,
     },
   });
@@ -141,6 +147,7 @@ export async function editarPasta(dados: FormData) {
       aoEsgotar: campos.aoEsgotar,
       tipoDeLista: campos.tipoDeLista,
       alertarAbaixoDe: campos.alertarAbaixoDe,
+      alertaDeFilaCurtaAtivo: campos.alertaDeFilaCurtaAtivo,
       ativa: campos.ativa,
       chatIdAlterado: campos.chatIdBruto !== (pasta.telegramChatId ?? ''),
     },

@@ -112,7 +112,7 @@ export async function rodarCiclo(
     // quando a data dele chega, e "pouco texto pendente" nao diz nada.
     if (
       pasta.tipoDeLista === 'fila' &&
-      pasta.alertarAbaixoDe > 0 &&
+      pasta.alertaDeFilaCurtaAtivo &&
       pasta.schedules.some((s) => s.ativo)
     ) {
       const pendentes = await prisma.text.count({ where: { folderId: pasta.id, status: 'pendente' } });

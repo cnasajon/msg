@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
+import { Ajuda } from '@/components/ajuda';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer, perfisQuePodeGerenciar } from '@/lib/autorizacao';
@@ -161,7 +162,10 @@ export default async function Usuarios({
                   <input type="text" name="nome" defaultValue={emEdicao.nome} required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('usuario')}</span>
+                  <span className="lbl">
+                    {t('usuario')}
+                    <Ajuda texto={t('usuarioHint')} rotulo={comum('ajudaSobre', { campo: t('usuario') })} />
+                  </span>
                   <input
                     type="text"
                     name="username"
@@ -170,7 +174,6 @@ export default async function Usuarios({
                     spellCheck={false}
                     required
                   />
-                  <span className="hint">{t('usuarioHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">
@@ -286,7 +289,10 @@ export default async function Usuarios({
                   <input type="text" name="nome" required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('usuario')}</span>
+                  <span className="lbl">
+                    {t('usuario')}
+                    <Ajuda texto={t('usuarioHint')} rotulo={comum('ajudaSobre', { campo: t('usuario') })} />
+                  </span>
                   <input
                     type="text"
                     name="username"
@@ -294,7 +300,6 @@ export default async function Usuarios({
                     spellCheck={false}
                     required
                   />
-                  <span className="hint">{t('usuarioHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">

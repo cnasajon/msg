@@ -94,7 +94,7 @@ export default async function Painel() {
     (l) =>
       l.agendamentosAtivos.length > 0 &&
       l.pasta.tipoDeLista === 'fila' &&
-      l.pasta.alertarAbaixoDe > 0 &&
+      l.pasta.alertaDeFilaCurtaAtivo &&
       l.pendentes < l.pasta.alertarAbaixoDe,
   );
   const semAgendamento = linhas.filter((l) => l.agendamentosAtivos.length === 0);

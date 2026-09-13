@@ -31,12 +31,15 @@ export function idiomaValido(valor: string | null | undefined): Idioma | null {
  */
 export const GRUPOS_DO_CLIENTE = [
   'agendamentos',
+  'alertas',
+  'auditoria',
   'comum',
   'dias',
   'editor',
   'entrada',
   'esqueci',
   'importacao',
+  'pastas',
   'situacoesDaLinha',
   'textos',
 ] as const;

@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
+import { Ajuda } from '@/components/ajuda';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -121,7 +122,10 @@ export default async function Organizacoes({
                 <input type="text" name="nome" defaultValue={emEdicao?.nome ?? ''} required />
               </label>
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">{t('idiomaPadrao')}</span>
+                <span className="lbl">
+                  {t('idiomaPadrao')}
+                  <Ajuda texto={t('idiomaHint')} rotulo={comum('ajudaSobre', { campo: t('idiomaPadrao') })} />
+                </span>
                 <select name="idiomaPadrao" defaultValue={emEdicao?.idiomaPadrao ?? 'pt'}>
                   {IDIOMAS.map((codigo) => (
                     <option key={codigo} value={codigo}>
@@ -129,17 +133,18 @@ export default async function Organizacoes({
                     </option>
                   ))}
                 </select>
-                <span className="hint">{t('idiomaHint')}</span>
               </label>
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">{t('fusoPadrao')}</span>
+                <span className="lbl">
+                  {t('fusoPadrao')}
+                  <Ajuda texto={t('fusoHint')} rotulo={comum('ajudaSobre', { campo: t('fusoPadrao') })} />
+                </span>
                 <input
                   type="text"
                   name="timezonePadrao"
                   defaultValue={emEdicao?.timezonePadrao ?? 'America/Sao_Paulo'}
                   required
                 />
-                <span className="hint">{t('fusoHint')}</span>
               </label>
             </div>
             {emEdicao ? (

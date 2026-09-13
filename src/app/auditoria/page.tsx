@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
+import { DetalhesDaAuditoria } from '@/components/detalhes-da-auditoria';
 import { sessaoAtual } from '@/lib/sessao';
 import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
@@ -151,7 +152,7 @@ export default async function Auditoria({
               ) : null}
               <th style={{ width: 180 }}>{t('acao')}</th>
               <th style={{ width: 120 }}>{t('entidade')}</th>
-              <th>{t('detalhes')}</th>
+              <th style={{ width: 120 }}>{t('detalhes')}</th>
               <th style={{ width: 120 }}>IP</th>
             </tr>
           </thead>
@@ -180,13 +181,19 @@ export default async function Auditoria({
                     </span>
                   </td>
                   <td className="mono">{r.entidade}</td>
-                  <td className="faint">
+                  <td>
                     {r.detalhes ? (
-                      <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                        {JSON.stringify(r.detalhes)}
-                      </code>
+                      <DetalhesDaAuditoria
+                        detalhes={r.detalhes}
+                        resumo={[
+                          formatarNoFuso(r.criadoEm, 'America/Sao_Paulo', idioma),
+                          r.user?.nome ?? t('sistema'),
+                          ACOES.includes(r.acao) ? acoes(r.acao) : r.acao,
+                          r.entidade,
+                        ].join(' · ')}
+                      />
                     ) : (
-                      comum('nenhum')
+                      <span className="faint">{comum('nenhum')}</span>
                     )}
                   </td>
                   <td className="mono">

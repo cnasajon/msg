@@ -5,6 +5,7 @@ import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
 import { Ajuda } from '@/components/ajuda';
+import { CamposDoTipoDeListaEmLinha } from '@/components/campos-do-tipo-de-lista';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -118,7 +119,13 @@ export default async function Pastas({
                         </span>
                       ) : (
                         <span
-                          className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill'}
+                          className={
+                            pendentes === 0
+                              ? 'pill err'
+                              : p.alertaDeFilaCurtaAtivo && pendentes < p.alertarAbaixoDe
+                                ? 'pill warn'
+                                : 'pill'
+                          }
                         >
                           {t('pendentes', { quantidade: pendentes })}
                         </span>
@@ -186,43 +193,7 @@ export default async function Pastas({
                   </span>
                   <input type="text" name="telegramChatId" placeholder="-100…" />
                 </label>
-                <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">
-                    {t('tipoDeLista')}
-                    <Ajuda
-                      texto={t('tipoDeListaHint')}
-                      rotulo={comum('ajudaSobre', { campo: t('tipoDeLista') })}
-                    />
-                  </span>
-                  <select name="tipoDeLista" defaultValue="fila">
-                    <option value="fila">{t('tipoFila')}</option>
-                    <option value="data">{t('tipoData')}</option>
-                  </select>
-                </label>
-                <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">{t('aoEsgotarFila')}</span>
-                  <select name="aoEsgotar" defaultValue="parar_notificar">
-                    <option value="parar_notificar">{t('pararNotificarOpcao')}</option>
-                    <option value="reiniciar">{t('reiniciarOpcao')}</option>
-                  </select>
-                </label>
-                <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">
-                    {t('alertarAbaixoDe')}
-                    <Ajuda
-                      texto={t('alertarAbaixoDeHint')}
-                      rotulo={comum('ajudaSobre', { campo: t('alertarAbaixoDe') })}
-                    />
-                  </span>
-                  <input
-                    type="number"
-                    name="alertarAbaixoDe"
-                    min={0}
-                    max={999}
-                    defaultValue={5}
-                    style={{ maxWidth: 120 }}
-                  />
-                </label>
+                <CamposDoTipoDeListaEmLinha />
               </div>
               <button className="btn primary" type="submit" style={{ marginTop: 4 }}>
                 {t('criarPasta')}

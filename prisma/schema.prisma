@@ -167,8 +167,11 @@ model Folder {
   telegramBotTokenCifrado String? @map("telegram_bot_token_cifrado")
   tipoDeLista            TipoDeLista @default(fila) @map("tipo_de_lista")
   aoEsgotar      AoEsgotar @default(parar_notificar) @map("ao_esgotar")
-  // Abaixo de quantos pendentes o alerta de fila curta sai. Zero desliga o
-  // aviso; em lista por data não é lido, porque ali não há fila que acabe.
+  // Alerta de fila curta: a chave liga e desliga, o número diz abaixo de
+  // quantos pendentes ele sai. Só a chave desliga — assim o número sobrevive a
+  // um período de silêncio e volta como estava. Em lista por data nenhum dos
+  // dois é lido: ali não há fila que acabe.
+  alertaDeFilaCurtaAtivo Boolean @default(true) @map("alerta_de_fila_curta_ativo")
   alertarAbaixoDe Int      @default(5) @map("alertar_abaixo_de")
   ativa          Boolean   @default(true)
   criadaEm       DateTime  @default(now()) @map("criada_em") @db.Timestamptz(3)

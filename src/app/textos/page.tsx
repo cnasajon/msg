@@ -6,6 +6,7 @@ import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
 import { FilaOrdenavel } from '@/components/fila-ordenavel';
 import { MoverTextos, CaixaDeTexto, CaixaDeTodos } from '@/components/mover-textos';
+import { SelectQueFiltra } from '@/components/filtro-imediato';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -140,13 +141,13 @@ export default async function Textos({
 
       <div className="card">
         <form className="toolbar" method="get">
-          <select name="pasta" defaultValue={pasta.id} aria-label={menu('pastas')}>
+          <SelectQueFiltra name="pasta" defaultValue={pasta.id} aria-label={menu('pastas')}>
             {pastas.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.nome}
               </option>
             ))}
-          </select>
+          </SelectQueFiltra>
           <input type="text" name="busca" defaultValue={busca} placeholder={comum('buscar')} />
           <select name="status" defaultValue={status}>
             {SITUACOES.map((s) => (
