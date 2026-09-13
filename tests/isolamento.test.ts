@@ -152,6 +152,36 @@ describe.skipIf(!temBanco)('isolamento entre organizações', () => {
     await expect(comEscopo(sessao).usuario(cenario.superadmin.id)).rejects.toThrow(NaoEncontrado);
   });
 
+  it('11. quem participa de duas organizações só alcança uma de cada vez', async () => {
+    // a participação amplia para onde a pessoa PODE ir; não mistura o que ela vê
+    const emDuas = sessaoDe(
+      { ...cenario.a.admin, organizacoes: [cenario.a.organizacao.id, cenario.b.organizacao.id] },
+      { organizationAtivaId: cenario.a.organizacao.id },
+    );
+    await expect(comEscopo(emDuas).pasta(cenario.a.pasta.id)).resolves.toMatchObject({
+      id: cenario.a.pasta.id,
+    });
+    await expect(comEscopo(emDuas).pasta(cenario.b.pasta.id)).rejects.toThrow(NaoEncontrado);
+
+    // troca a organização em vigor: inverte exatamente
+    const naOutra = { ...emDuas, organizationAtivaId: cenario.b.organizacao.id };
+    await expect(comEscopo(naOutra).pasta(cenario.b.pasta.id)).resolves.toMatchObject({
+      id: cenario.b.pasta.id,
+    });
+    await expect(comEscopo(naOutra).pasta(cenario.a.pasta.id)).rejects.toThrow(NaoEncontrado);
+  });
+
+  it('12. organização FORJADA na sessão não dá acesso a quem não participa dela', async () => {
+    // o admin de A grava a organização de B como ativa; participa só de A
+    const forjada = sessaoDe(cenario.a.admin, { organizationAtivaId: cenario.b.organizacao.id });
+    await expect(comEscopo(forjada).pasta(cenario.b.pasta.id)).rejects.toThrow(NaoEncontrado);
+    await expect(comEscopo(forjada).organizacao(cenario.b.organizacao.id)).rejects.toThrow(NaoEncontrado);
+    // e continua enxergando a sua, em vez de ficar sem nenhuma
+    await expect(comEscopo(forjada).pasta(cenario.a.pasta.id)).resolves.toMatchObject({
+      id: cenario.a.pasta.id,
+    });
+  });
+
   it('10. admin não alcança superadmin pela lista de usuários', async () => {
     const sessao = sessaoDe(cenario.a.admin);
     const usuarios = await cliente().user.findMany({ where: escopoDeUsuario(sessao) });

@@ -26,7 +26,8 @@
     "ajudaSobre": "Ajuda sobre {campo}",
     "fechar": "Fechar",
     "semPastaTitulo": "Você ainda não tem nenhuma pasta atribuída",
-    "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui."
+    "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui.",
+    "versaoEData": "Versão {versao} · publicada em {data}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -508,7 +509,12 @@
     "repetirSenha": "Repetir a senha",
     "regraDaSenha": "Pelo menos {minimo} caracteres, com uma maiúscula, um número e um caractere especial.",
     "exigirTroca": "Exigir troca no primeiro acesso",
-    "definirExplicacao": "Você escolhe a senha e a repassa à pessoa. As sessões dela são encerradas."
+    "definirExplicacao": "Você escolhe a senha e a repassa à pessoa. As sessões dela são encerradas.",
+    "organizacoesDoUsuario": "Organizações",
+    "organizacoesExplicacao": "De quais organizações esta pessoa participa. Com mais de uma, ela escolhe no cabeçalho qual está operando. Só o superadmin muda isto.",
+    "salvarOrganizacoes": "Salvar organizações",
+    "tirarOrganizacaoAviso": "Tirar uma organização também remove as pastas dela que estavam atribuídas a esta pessoa.",
+    "semPastaAtribuidaAlerta": "Usuário não tem pastas atribuídas"
   },
   "organizacoes": {
     "titulo": "Organizações",
@@ -639,7 +645,8 @@
     "remover_token_sobreposicao": "remover token de sobreposição",
     "alerta": "alerta",
     "mover": "mover para outra pasta",
-    "definir_senha": "definir senha"
+    "definir_senha": "definir senha",
+    "definir_organizacoes": "definir organizações"
   },
   "avisos": {
     "textoDuplicado": "Esta pasta já tem um texto com exatamente este conteúdo.",
@@ -790,7 +797,11 @@
     "alertaDaPastaSalvo": "Alerta de “{pasta}” atualizado.",
     "cadastroSalvo": "Seus dados foram salvos.",
     "senhaTrocada": "Senha trocada.",
-    "senhaDefinida": "Senha de “{nome}” definida. Repasse-a à pessoa — ela não é exibida de novo."
+    "senhaDefinida": "Senha de “{nome}” definida. Repasse-a à pessoa — ela não é exibida de novo.",
+    "organizacoesAtualizadas": "Organizações de “{nome}” atualizadas.",
+    "peloMenosUmaOrganizacao": "A pessoa precisa participar de pelo menos uma organização.",
+    "organizacaoInexistente": "Organização não encontrada.",
+    "superadminSemOrganizacao": "Superadmin não participa de organização: ele alcança todas pelo perfil."
   },
   "esqueci": {
     "titulo": "Esqueci a senha",
@@ -818,6 +829,51 @@
     "senhaNova": "Nova senha",
     "repetirSenha": "Repetir a nova senha",
     "regraDaSenha": "Pelo menos {minimo} caracteres, com uma maiúscula, um número e um caractere especial.",
-    "derrubaSessoes": "Trocar a senha encerra as sessões abertas em outros dispositivos. Esta continua."
+    "derrubaSessoes": "Trocar a senha encerra as sessões abertas em outros dispositivos. Esta continua.",
+    "organizacoes": "Organizações"
+  },
+  "rodape": {
+    "direitos": "Desenvolvido por OA12 — Todos os direitos reservados",
+    "versao": "Versão {versao} ({data})",
+    "privacidade": "Política de privacidade",
+    "termos": "Termos de serviço"
+  },
+  "privacidade": {
+    "titulo": "Política de privacidade",
+    "resumo": "Como o msg trata os dados de quem usa o sistema: o que é guardado, para quê, por quanto tempo e quais são os seus direitos.",
+    "atualizadoEm": "Atualizada em {data}.",
+    "queDadosTitulo": "Que dados são guardados",
+    "queDadosCorpo": "Do cadastro: nome, nome de usuário e, quando você preenche, e-mail, telefone e usuário do Telegram — os três últimos são opcionais e servem apenas para que um administrador consiga falar com você. Da senha, guardamos apenas o resultado de um cálculo irreversível (argon2id); a senha em si não fica registrada em lugar nenhum. Do uso: a data do último acesso, o endereço IP e o navegador da sessão, e um registro de auditoria com as ações realizadas. Dos conteúdos: os textos e as imagens que você cadastra para publicação.",
+    "paraQueTitulo": "Para que servem",
+    "paraQueCorpo": "Para operar o sistema e nada além disso: identificar quem entra, publicar os textos nos grupos de Telegram configurados, avisar os administradores quando algo falha e permitir auditar quem fez o quê. Não há publicidade, perfilamento nem venda de dados.",
+    "comQuemTitulo": "Com quem são compartilhados",
+    "comQuemCorpo": "O conteúdo que você agenda é enviado ao Telegram, porque é essa a finalidade do sistema — a partir do envio, valem as regras do Telegram. A hospedagem é feita pela Railway, que opera a infraestrutura onde a aplicação e o banco de dados rodam. Fora isso, os dados não são repassados a terceiros.",
+    "cookiesTitulo": "Cookies",
+    "cookiesCorpo": "Usamos dois, ambos necessários para o funcionamento e nenhum deles de rastreamento: um guarda o identificador da sua sessão, para que você não precise entrar a cada página; o outro guarda o idioma escolhido antes de entrar. Não há cookies de publicidade nem de análise de comportamento.",
+    "porQuantoTempoTitulo": "Por quanto tempo ficam",
+    "porQuantoTempoCorpo": "As sessões expiram em doze horas de inatividade e são apagadas. Os dados de cadastro permanecem enquanto a conta existir. Os registros de auditoria e o histórico de publicações permanecem para que seja possível reconstituir o que foi publicado e por quem.",
+    "seusDireitosTitulo": "Seus direitos",
+    "seusDireitosCorpo": "Você pode ver e alterar os seus dados de contato e a sua senha na tela Perfil, a qualquer momento. Para corrigir o nome, mudar o perfil de acesso ou encerrar a conta, fale com um administrador da sua organização — não há autoatendimento para isso porque essas informações definem o seu acesso, e mudá-las sozinho abriria uma porta.",
+    "contatoTitulo": "Contato",
+    "contatoCorpo": "Dúvidas sobre esta política, ou pedidos relativos aos seus dados, devem ser dirigidos ao administrador da organização que criou a sua conta. Este documento descreve o funcionamento do sistema; a organização responsável pelo tratamento dos dados é aquela que opera esta instalação."
+  },
+  "termos": {
+    "titulo": "Termos de serviço",
+    "resumo": "As regras de uso do msg: para que serve, quem pode usar, o que é sua responsabilidade e como a conta pode ser encerrada.",
+    "atualizadoEm": "Atualizados em {data}.",
+    "oQueETitulo": "O que é o msg",
+    "oQueECorpo": "Uma aplicação para publicar textos e imagens, em dia e hora programados, em grupos de Telegram. Cada organização opera de forma independente, com suas próprias pastas, seus grupos e seus usuários.",
+    "quemUsaTitulo": "Quem pode usar",
+    "quemUsaCorpo": "Não há cadastro público. Cada conta é criada por um administrador, que define o perfil de acesso e as pastas que a pessoa enxerga. O acesso existe enquanto essa autorização existir.",
+    "suasContasTitulo": "A sua conta é sua",
+    "suasContasCorpo": "A senha é pessoal e não deve ser compartilhada. Toda ação feita com a sua conta é registrada como sua na auditoria. Se desconfiar que alguém a conhece, troque-a na tela Perfil — a troca encerra as sessões abertas em outros dispositivos.",
+    "oQuePublicaTitulo": "O que você publica",
+    "oQuePublicaCorpo": "O conteúdo cadastrado é de responsabilidade de quem o cadastra e da organização a que pertence. O sistema entrega ao Telegram o que foi agendado, sem julgar o conteúdo. Não publique o que você não teria direito de publicar, nem o que contrarie as regras do Telegram.",
+    "disponibilidadeTitulo": "Disponibilidade",
+    "disponibilidadeCorpo": "O sistema depende de serviços que não controlamos, entre eles a API do Telegram e a hospedagem. Uma publicação pode falhar ou atrasar por causa deles. Quando isso acontece, a falha é registrada e os administradores são avisados, mas não há garantia de publicação em horário exato.",
+    "encerramentoTitulo": "Encerramento",
+    "encerramentoCorpo": "Um administrador pode desativar uma conta a qualquer momento, e as sessões abertas caem na hora. Os textos e o histórico de publicações permanecem com a organização, porque pertencem a ela e não à conta que os cadastrou.",
+    "mudancasTitulo": "Mudanças nestes termos",
+    "mudancasCorpo": "Estes termos podem mudar conforme o sistema evolui. A data no topo desta página indica a última revisão, e a versão publicada aparece no rodapé de todas as telas."
   }
 }

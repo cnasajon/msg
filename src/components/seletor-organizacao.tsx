@@ -11,9 +11,16 @@ import { trocarOrganizacaoAtiva } from '@/app/organizacoes/acoes';
 export function SeletorDeOrganizacao({
   organizacoes,
   ativa,
+  /**
+   * Só o superadmin pode ficar sem organização nenhuma — e antes de escolher
+   * ele não alcança dado algum. Quem participa de organizações sempre está
+   * operando uma delas, então para essas pessoas a opção vazia não existe.
+   */
+  permiteNenhuma = false,
 }: {
   organizacoes: { id: string; nome: string; ativa: boolean }[];
   ativa: string | null;
+  permiteNenhuma?: boolean;
 }) {
   const [pendente, iniciar] = useTransition();
   const t = useTranslations('comum');
@@ -32,7 +39,7 @@ export function SeletorDeOrganizacao({
           });
         }}
       >
-        <option value="">{t('escolher')}</option>
+        {permiteNenhuma ? <option value="">{t('escolher')}</option> : null}
         {organizacoes.map((o) => (
           <option key={o.id} value={o.id}>
             {o.nome}

@@ -112,7 +112,22 @@ tela de Usuários:
 Nos dois casos as sessões abertas daquela pessoa são encerradas, e a auditoria
 registra que a senha mudou — nunca o valor.
 
-A **organização ativa** do superadmin é lembrada entre acessos: a escolha vive no
+### Participar de mais de uma organização
+
+A mesma pessoa pode atuar em várias organizações. Quem tem mais de uma ganha o
+seletor no cabeçalho e transita entre elas; os dados continuam isolados **uma de
+cada vez**, pela organização em vigor na sessão.
+
+Quem concede é **só o superadmin**, na tela de Usuários. O motivo é a fronteira
+de quem entra: para um admin escolher outra organização numa lista, ele
+precisaria enxergar todas — e poderia incluir a si mesmo onde quisesse. Os
+dados seguem isolados, mas a porta de entrada fica com quem administra o
+sistema.
+
+Tirar uma organização de alguém também remove as pastas dela que estavam
+atribuídas a essa pessoa, para não sobrar acesso órfão.
+
+A **organização ativa** é lembrada entre acessos: a escolha vive no
 usuário, não na sessão, então entrar de novo não recomeça na tela de escolha.
 Uma organização desativada desde o último acesso não é retomada.
 

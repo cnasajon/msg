@@ -42,4 +42,5 @@ export const GRUPOS_DO_CLIENTE = [
   'pastas',
   'situacoesDaLinha',
   'textos',
+  'usuarios',
 ] as const;

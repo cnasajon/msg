@@ -1,6 +1,7 @@
 import { getRequestConfig } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { organizacaoEmVigor } from '@/lib/escopo';
 import { sessaoAtual } from '@/lib/sessao';
 import { COOKIE_DE_IDIOMA, IDIOMA_PADRAO, idiomaValido as valido, type Idioma } from './idiomas';
 
@@ -23,7 +24,9 @@ export async function idiomaEmVigor(): Promise<Idioma> {
     const doUsuario = valido(sessao.idioma);
     if (doUsuario) return doUsuario;
 
-    const organizationId = sessao.organizationId ?? sessao.organizationAtivaId;
+    // O idioma segue a organização que está sendo operada agora: quem participa
+    // de duas vê cada uma no idioma dela.
+    const organizationId = organizacaoEmVigor(sessao);
     if (organizationId) {
       const organizacao = await prisma.organization
         .findUnique({ where: { id: organizationId }, select: { idiomaPadrao: true } })

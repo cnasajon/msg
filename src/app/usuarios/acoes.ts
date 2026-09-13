@@ -86,7 +86,9 @@ export async function criarUsuario(dados: FormData) {
       telefone,
       telegramUsername: telegram,
       perfil,
-      organizationId,
+      // Superadmin não participa de nenhuma; os demais nascem na organização
+      // em vigor e podem receber outras depois, pelo superadmin.
+      ...(organizationId ? { organizacoes: { create: { organizationId } } } : {}),
       senhaHash: await gerarHashDeSenha(provisoria),
       senhaProvisoria: true,
     },
@@ -151,7 +153,6 @@ export async function editarUsuario(dados: FormData) {
     acao: 'editar',
     entidade: 'user',
     entidadeId: alvo.id,
-    organizationId: alvo.organizationId,
     detalhes: { nome, username, perfil: perfilBruto, ativo },
   });
   voltar(t('usuarioSalvo', { nome: username }), 'ok');
@@ -175,7 +176,6 @@ export async function redefinirSenha(dados: FormData) {
     acao: 'redefinir_senha',
     entidade: 'user',
     entidadeId: alvo.id,
-    organizationId: alvo.organizationId,
   });
   voltar(t('novaSenhaProvisoria', { nome: alvo.username, senha: provisoria }), 'ok');
 }
@@ -225,7 +225,7 @@ export async function definirSenha(dados: FormData) {
   if (alvo.id === sessao.usuarioId) {
     await criarSessao(
       alvo.id,
-      alvo.perfil === 'superadmin' ? alvo.ultimaOrganizacaoId : alvo.organizationId,
+      alvo.perfil === 'superadmin' ? alvo.ultimaOrganizacaoId : sessao.organizationAtivaId,
     );
   }
 
@@ -233,7 +233,6 @@ export async function definirSenha(dados: FormData) {
     acao: 'definir_senha',
     entidade: 'user',
     entidadeId: alvo.id,
-    organizationId: alvo.organizationId,
     detalhes: { exigirTroca },
   });
   voltar(t('senhaDefinida', { nome: alvo.username }), 'ok');
@@ -255,7 +254,16 @@ export async function atribuirPastas(dados: FormData) {
   const pedidas = dados.getAll('pastas').map(String);
 
   const permitidas = await prisma.folder.findMany({
-    where: { AND: [{ id: { in: pedidas } }, escopoDePasta(sessao), { organizationId: alvo.organizationId ?? '' }] },
+    // A pasta tem de estar no escopo de quem atribui **e** em alguma
+    // organização de que o alvo participa: atribuir pasta de organização a que
+    // a pessoa não pertence seria criar acesso pela porta lateral.
+    where: {
+      AND: [
+        { id: { in: pedidas } },
+        escopoDePasta(sessao),
+        { organizationId: { in: (await organizacoesDoUsuario(alvo.id)) } },
+      ],
+    },
     select: { id: true },
   });
   if (permitidas.length !== pedidas.length) {
@@ -273,10 +281,65 @@ export async function atribuirPastas(dados: FormData) {
     acao: 'atribuir_pastas',
     entidade: 'user',
     entidadeId: alvo.id,
-    organizationId: alvo.organizationId,
     detalhes: { pastas: permitidas.map((p) => p.id) },
   });
   voltar(t('pastasAtualizadas', { nome: alvo.nome }), 'ok');
+}
+
+/** As organizações de que a pessoa participa. */
+async function organizacoesDoUsuario(userId: string): Promise<string[]> {
+  const linhas = await prisma.userOrganization.findMany({
+    where: { userId },
+    select: { organizationId: true },
+  });
+  return linhas.map((l) => l.organizationId);
+}
+
+/**
+ * De quais organizações a pessoa participa — só o superadmin decide.
+ *
+ * Um admin enxerga apenas a própria organização; para escolher outra ele
+ * precisaria enxergar a lista inteira, e poderia incluir a si mesmo onde
+ * quisesse. Isso não é isolamento de dados, é a fronteira de quem entra — e ela
+ * fica com quem administra o sistema.
+ */
+export async function definirOrganizacoes(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'organizacoes.gerenciar')) throw new NaoAutorizado();
+
+  const { t } = await tradutorDeAvisos();
+  const alvo = await comEscopo(sessao).usuario(String(dados.get('id') ?? ''));
+  if (alvo.perfil === 'superadmin') voltar(t('superadminSemOrganizacao'));
+
+  const pedidas = dados.getAll('organizacoes').map(String);
+  // Existir de verdade: o formulário vem do navegador.
+  const existentes = await prisma.organization.findMany({
+    where: { id: { in: pedidas } },
+    select: { id: true },
+  });
+  if (existentes.length !== pedidas.length) voltar(t('organizacaoInexistente'));
+  if (existentes.length === 0) voltar(t('peloMenosUmaOrganizacao'));
+
+  // As pastas atribuídas que pertenciam a uma organização retirada deixam de
+  // fazer sentido, e ficariam como acesso órfão — saem junto.
+  const permanecem = existentes.map((o) => o.id);
+  await prisma.$transaction([
+    prisma.userOrganization.deleteMany({ where: { userId: alvo.id } }),
+    prisma.userOrganization.createMany({
+      data: permanecem.map((organizationId) => ({ userId: alvo.id, organizationId })),
+    }),
+    prisma.userFolder.deleteMany({
+      where: { userId: alvo.id, folder: { organizationId: { notIn: permanecem } } },
+    }),
+  ]);
+
+  await registrarAuditoria(sessao, {
+    acao: 'definir_organizacoes',
+    entidade: 'user',
+    entidadeId: alvo.id,
+    detalhes: { organizacoes: permanecem },
+  });
+  voltar(t('organizacoesAtualizadas', { nome: alvo.nome }), 'ok');
 }
 
 export async function exigirUsuarioNoEscopo(sessao: Sessao, id: string) {

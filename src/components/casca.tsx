@@ -10,6 +10,7 @@ import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
 import { tokenCsrfPara } from '@/lib/csrf';
+import { Rodape } from './rodape';
 
 type ItemDeMenu = { href: string; ico: string; label: string };
 type GrupoDeMenu = { titulo: string; itens: ItemDeMenu[] };
@@ -73,8 +74,10 @@ export async function Casca({
   const comum = await getTranslations('comum');
   const perfis = await getTranslations('perfis');
 
+  // O seletor vale para quem tem mais de uma organização — o superadmin sempre,
+  // porque alcança todas, e agora também quem participa de várias.
   const organizacoes =
-    sessao.perfil === 'superadmin'
+    sessao.perfil === 'superadmin' || sessao.organizacoes.length > 1
       ? await prisma.organization.findMany({
           where: escopoDeOrganizacao(sessao),
           orderBy: { nome: 'asc' },
@@ -82,15 +85,15 @@ export async function Casca({
         })
       : [];
   const orgEmVigor = organizacaoEmVigor(sessao);
-  const nomeDaOrganizacao =
-    sessao.perfil === 'superadmin'
-      ? (organizacoes.find((o) => o.id === orgEmVigor)?.nome ?? null)
-      : ((
-          await prisma.organization.findFirst({
-            where: escopoDeOrganizacao(sessao),
-            select: { nome: true },
-          })
-        )?.nome ?? null);
+  const podeTransitar = organizacoes.length > 0;
+  const nomeDaOrganizacao = podeTransitar
+    ? (organizacoes.find((o) => o.id === orgEmVigor)?.nome ?? null)
+    : ((
+        await prisma.organization.findFirst({
+          where: orgEmVigor ? { id: orgEmVigor } : escopoDeOrganizacao(sessao),
+          select: { nome: true },
+        })
+      )?.nome ?? null);
 
   return (
     <div className="shell">
@@ -122,12 +125,15 @@ export async function Casca({
           </div>
         ))}
 
-        <div className="foot">
+        {/* Logo depois do menu, e não colado no fim da barra: com muitos itens
+            a barra rolava, e Perfil e Sair ficavam abaixo da dobra — quem quer
+            sair não deveria ter de procurar. */}
+        <div className="quem-sou">
           <div className="who">{sessao.nome}</div>
           <div className="role">
             {perfis(sessao.perfil)} · {sessao.username}
           </div>
-          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link href="/perfil" style={{ fontSize: '12.5px' }}>
               {menu('perfil')}
             </Link>
@@ -143,8 +149,12 @@ export async function Casca({
             <h1>{titulo}</h1>
           </div>
           <span className="spacer" />
-          {sessao.perfil === 'superadmin' ? (
-            <SeletorDeOrganizacao organizacoes={organizacoes} ativa={orgEmVigor} />
+          {podeTransitar ? (
+            <SeletorDeOrganizacao
+              organizacoes={organizacoes}
+              ativa={orgEmVigor}
+              permiteNenhuma={sessao.perfil === 'superadmin'}
+            />
           ) : (
             <div className="orgpicker">
               <span className="dot" />
@@ -155,6 +165,9 @@ export async function Casca({
           <BotaoTema />
         </div>
         <div className="content">{children}</div>
+        <footer className="rodape">
+          <Rodape />
+        </footer>
       </div>
     </div>
   );

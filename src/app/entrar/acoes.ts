@@ -40,7 +40,10 @@ export async function entrar(_estado: EstadoDoLogin, dados: FormData): Promise<E
   // de falha — sem nenhuma pista de que faltou `npm run migrate:deploy`.
   let usuario;
   try {
-    usuario = await prisma.user.findUnique({ where: { username } });
+    usuario = await prisma.user.findUnique({
+      where: { username },
+      include: { organizacoes: { select: { organizationId: true } } },
+    });
   } catch (erro) {
     if (bancoDesatualizado(erro)) return { erro: 'bancoDesatualizado' };
     throw erro;
@@ -57,13 +60,13 @@ export async function entrar(_estado: EstadoDoLogin, dados: FormData): Promise<E
 
   limparTentativas(ip, username);
 
-  // O superadmin retoma a última organização que operou; os demais já vêm
-  // presos à sua. A preferência vive no usuário justamente porque a sessão não
-  // sobrevive nem ao logout nem à troca de domínio — o cookie é por domínio.
-  const organizacaoAtiva =
-    usuario.perfil === 'superadmin'
-      ? await ultimaOrganizacaoValida(usuario.ultimaOrganizacaoId)
-      : usuario.organizationId;
+  // Retoma a última organização operada, se ela ainda servir. Para quem
+  // participa de várias isso evita recomeçar na escolha; para quem participa de
+  // uma só, `organizacaoEmVigor` cai nela de qualquer jeito.
+  const organizacaoAtiva = await ultimaOrganizacaoValida(
+    usuario.ultimaOrganizacaoId,
+    usuario.perfil === 'superadmin' ? null : usuario.organizacoes.map((o) => o.organizationId),
+  );
 
   await criarSessao(usuario.id, organizacaoAtiva);
   await prisma.user.update({ where: { id: usuario.id }, data: { ultimoLoginEm: new Date() } });
@@ -71,7 +74,7 @@ export async function entrar(_estado: EstadoDoLogin, dados: FormData): Promise<E
     acao: 'login',
     entidade: 'user',
     entidadeId: usuario.id,
-    organizationId: usuario.organizationId,
+    organizationId: organizacaoAtiva,
     ip,
   });
 

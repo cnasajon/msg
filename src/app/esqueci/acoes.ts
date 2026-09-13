@@ -34,22 +34,26 @@ export async function pedirRedefinicao(
 
   const usuario = await prisma.user.findUnique({
     where: { username },
-    select: { id: true, nome: true, username: true, ativo: true, organizationId: true },
+    select: {
+      id: true, nome: true, username: true, ativo: true,
+      organizacoes: { select: { organizationId: true } },
+    },
   });
 
   // Conta inexistente ou desativada sai por aqui, com a mesma resposta de
   // sucesso: quem pediu não fica sabendo a diferença.
   if (usuario?.ativo) {
-    const organizacao = usuario.organizationId
+    const primeira = usuario.organizacoes[0]?.organizationId ?? null;
+    const organizacao = primeira
       ? await prisma.organization.findUnique({
-          where: { id: usuario.organizationId },
+          where: { id: primeira },
           select: { nome: true, idiomaPadrao: true },
         })
       : null;
 
     await alertar(prisma, {
       tipo: 'senha_esquecida',
-      organizationId: usuario.organizationId,
+      organizationId: primeira,
       chave: usuario.username,
       // uma vez por hora por conta: o pedido repetido não vira enxurrada no grupo
       repetirAposHoras: 1,

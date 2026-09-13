@@ -28,6 +28,7 @@ const ACOES = [
   'redefinir_senha',
   'definir_senha',
   'atribuir_pastas',
+  'definir_organizacoes',
   'trocar_organizacao',
   'importar',
   'desfazer_importacao',

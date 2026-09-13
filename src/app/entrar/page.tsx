@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { sessaoAtual } from '@/lib/sessao';
+import { Rodape } from '@/components/rodape';
 import { FormularioDeLogin } from './formulario';
 import { SeletorDeIdioma } from '@/components/seletor-idioma';
 
@@ -37,9 +38,13 @@ export default async function Entrar() {
               <p className="faint" style={{ margin: '6px 0 0', textAlign: 'center' }}>
                 {t('semCadastro')}
               </p>
+
             </div>
           </div>
         </div>
+        <footer className="rodape rodape-entrada">
+          <Rodape />
+        </footer>
       </div>
     </>
   );

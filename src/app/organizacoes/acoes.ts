@@ -23,7 +23,13 @@ function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
 /** Troca a organização que o superadmin está operando. Fica na auditoria. */
 export async function trocarOrganizacaoAtiva(organizationId: string | null) {
   const sessao = await exigirSessao();
-  if (!podeFazer(sessao.perfil, 'organizacoes.transitar')) throw new NaoAutorizado();
+  // Transitar deixou de ser exclusividade do superadmin: quem participa de mais
+  // de uma organização transita entre as suas. Quem manda no limite é
+  // `comEscopo(...).organizacao`, logo abaixo — uma organização de que a pessoa
+  // não participa não sobrevive ao filtro.
+  if (sessao.perfil !== 'superadmin' && sessao.organizacoes.length < 2) {
+    throw new NaoAutorizado();
+  }
 
   // Passa pelo escopo: um identificador qualquer não vira organização ativa.
   const destino = organizationId ? await comEscopo(sessao).organizacao(organizationId) : null;

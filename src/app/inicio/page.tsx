@@ -9,6 +9,7 @@ import { BotaoSair } from '@/components/sair';
 import { SeletorDeIdioma } from '@/components/seletor-idioma';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
+import { Rodape } from '@/components/rodape';
 import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
@@ -148,6 +149,9 @@ export default async function Inicio() {
         <span className="spacer" />
         <BotaoSair token={tokenCsrfPara(sessao.sessaoId)} />
       </div>
+      <footer className="rodape" style={{ borderTop: 0, paddingLeft: 0, paddingRight: 0 }}>
+        <Rodape />
+      </footer>
     </div>
   );
 }
