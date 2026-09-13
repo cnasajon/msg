@@ -181,9 +181,9 @@ O cookie leva um token aleatório e o banco guarda apenas o HMAC dele, de modo q
 Relação muitos-para-muitos usada apenas pelo perfil `usuario`: `user_id`, `folder_id`
 
 ### folders
-`id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `tipo_de_lista` (fila | data), `ao_esgotar` (parar_notificar | reiniciar), `ativa`, `criada_em`
+`id`, `organization_id`, `nome`, `descricao`, `timezone`, `telegram_chat_id`, `telegram_bot_token_cifrado` (**nulo por padrão** — sobreposição opcional; quando nulo, usa o bot global da variável de ambiente), `tipo_de_lista` (fila | data), `ao_esgotar` (parar_notificar | reiniciar), `alertar_abaixo_de` (inteiro), `ativa`, `criada_em`
 
-**Tipo de lista.** `fila` é o padrão: o slot leva o próximo texto ainda não publicado, na ordem. `data` seleciona pela data do slot — cada texto carrega um dia/mês/ano com curinga, descrito em `texts`. Os dois dependem do agendamento para existir slot: sem dia da semana marcado, nada é publicado. `ao_esgotar` só vale para `fila`, porque em lista por data não há fila que acabe.
+**Tipo de lista.** `fila` é o padrão: o slot leva o próximo texto ainda não publicado, na ordem. `data` seleciona pela data do slot — cada texto carrega um dia/mês/ano com curinga, descrito em `texts`. Os dois dependem do agendamento para existir slot: sem dia da semana marcado, nada é publicado. `ao_esgotar` e `alertar_abaixo_de` só valem para `fila`, porque em lista por data não há fila que acabe. `alertar_abaixo_de` é o número de textos pendentes a partir do qual o alerta de fila curta sai; zero desliga o aviso.
 
 ### texts
 `id`, `folder_id`, `conteudo`, `ordem`, `imagem` (bytea, nulo), `imagem_mime`, `imagem_bytes`, `imagem_nome_original`, `status` (pendente | publicado | erro | arquivado), `publicado_em`, `arquivado_em`, `erro_mensagem`, `dia_da_publicacao` (nulo), `mes_da_publicacao` (nulo), `ano_da_publicacao` (nulo), `import_id`, `hash_conteudo`, `criado_por`, `criado_em`
@@ -296,7 +296,7 @@ O painel avisa quando uma pasta tem menos de cinco textos pendentes.
 
 ### 7.4 Alertas operacionais
 
-Eventos que geram alerta: falha definitiva de publicação, slot perdido, fila esgotada em pasta configurada como `parar_notificar`, fila com menos de cinco textos pendentes, falha de autenticação do bot e pedido de redefinição de senha. Os dois avisos de fila valem apenas para pastas do tipo `fila`: em lista por data não há fila que acabe, e um dia sem texto agendado é situação normal.
+Eventos que geram alerta: falha definitiva de publicação, slot perdido, fila esgotada em pasta configurada como `parar_notificar`, fila abaixo do limite configurado na pasta, falha de autenticação do bot e pedido de redefinição de senha. Os dois avisos de fila valem apenas para pastas do tipo `fila`: em lista por data não há fila que acabe, e um dia sem texto agendado é situação normal.
 
 **Destino do alerta, nesta ordem de precedência:**
 

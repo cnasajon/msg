@@ -7,6 +7,7 @@ import { senhaConfere } from '@/lib/senha';
 import { criarSessao, ipDaRequisicao } from '@/lib/sessao';
 import { permiteTentativaDeLogin, limparTentativas } from '@/lib/rate-limit';
 import { normalizarUsername } from '@/lib/usuario';
+import { bancoDesatualizado } from '@/lib/migracoes';
 import { registrarAuditoria } from '@/lib/auditoria';
 
 /**
@@ -33,7 +34,16 @@ export async function entrar(_estado: EstadoDoLogin, dados: FormData): Promise<E
     return { erro: 'tentativasDemais' };
   }
 
-  const usuario = await prisma.user.findUnique({ where: { username } });
+  // O banco pode estar atrás do código quando a migração não rodou no deploy.
+  // Sem este tratamento, o Prisma sobe um erro cru e a pessoa vê a tela genérica
+  // de falha — sem nenhuma pista de que faltou `npm run migrate:deploy`.
+  let usuario;
+  try {
+    usuario = await prisma.user.findUnique({ where: { username } });
+  } catch (erro) {
+    if (bancoDesatualizado(erro)) return { erro: 'bancoDesatualizado' };
+    throw erro;
+  }
   const generico = { erro: 'credenciaisInvalidas' };
 
   if (!usuario || !usuario.ativo) {

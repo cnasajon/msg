@@ -41,7 +41,11 @@ const FUSO = 'America/Sao_Paulo';
 /** 10:05 UTC = 07:05 em Sao Paulo: cinco minutos depois do slot das 07:00. */
 const AGORA = new Date('2026-09-14T10:05:00Z');
 
-async function montarPasta(opcoes: { textos: number; aoEsgotar?: 'parar_notificar' | 'reiniciar' }) {
+async function montarPasta(opcoes: {
+  textos: number;
+  aoEsgotar?: 'parar_notificar' | 'reiniciar';
+  alertarAbaixoDe?: number;
+}) {
   const db = cliente();
   const organizacao = await db.organization.create({
     data: { nome: `Org ${randomUUID().slice(0, 8)}`, idiomaPadrao: 'pt', timezonePadrao: FUSO },
@@ -53,6 +57,9 @@ async function montarPasta(opcoes: { textos: number; aoEsgotar?: 'parar_notifica
       timezone: FUSO,
       telegramChatId: CHAT,
       aoEsgotar: opcoes.aoEsgotar ?? 'parar_notificar',
+      ...(opcoes.alertarAbaixoDe === undefined
+        ? {}
+        : { alertarAbaixoDe: opcoes.alertarAbaixoDe }),
     },
   });
   await db.schedule.create({
@@ -383,5 +390,61 @@ describe.skipIf(!temBanco)('lista por data no dispatcher', () => {
 
     expect(enviosDeTexto).toHaveLength(1);
     expect(um.enviados + dois.enviados).toBe(1);
+  });
+});
+
+describe.skipIf(!temBanco)('limite do alerta de fila curta, por pasta', () => {
+  beforeAll(async () => {
+    await prepararBanco();
+  });
+
+  beforeEach(async () => {
+    await limpar();
+    enviosDeTexto.length = 0;
+    enviosDeFoto.length = 0;
+  });
+
+  afterAll(async () => {
+    await cliente().$disconnect();
+  });
+
+  /** Quantos alertas de fila curta este ciclo registrou. */
+  async function alertasDeFilaCurta(folderId: string) {
+    const pasta = await cliente().folder.findUniqueOrThrow({ where: { id: folderId } });
+    return cliente().auditLog.count({
+      where: {
+        acao: 'alerta',
+        entidadeId: 'fila_curta',
+        detalhes: { path: ['pasta'], equals: pasta.nome },
+      },
+    });
+  }
+
+  it('usa o número da pasta, não o cinco que era fixo', async () => {
+    // três pendentes: com o antigo limite fixo de 5 isto alertaria
+    const { pasta } = await montarPasta({ textos: 3, alertarAbaixoDe: 2 });
+
+    const resultado = await rodarCiclo(cliente(), AGORA);
+
+    expect(resultado.filasCurtas).toBe(0);
+    expect(await alertasDeFilaCurta(pasta.id)).toBe(0);
+  });
+
+  it('alerta quando a fila fica abaixo do número da pasta', async () => {
+    const { pasta } = await montarPasta({ textos: 3, alertarAbaixoDe: 10 });
+
+    const resultado = await rodarCiclo(cliente(), AGORA);
+
+    expect(resultado.filasCurtas).toBe(1);
+    expect(await alertasDeFilaCurta(pasta.id)).toBe(1);
+  });
+
+  it('ZERO desliga o aviso, mesmo com um texto só na fila', async () => {
+    const { pasta } = await montarPasta({ textos: 1, alertarAbaixoDe: 0 });
+
+    const resultado = await rodarCiclo(cliente(), AGORA);
+
+    expect(resultado.filasCurtas).toBe(0);
+    expect(await alertasDeFilaCurta(pasta.id)).toBe(0);
   });
 });

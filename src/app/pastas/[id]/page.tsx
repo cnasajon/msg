@@ -176,6 +176,24 @@ export default async function ConfigurarPasta({
                   </label>
                 </div>
 
+                <label className="field" style={{ marginTop: 14 }}>
+                  <span className="lbl">
+                    {t('alertarAbaixoDe')}
+                    <Ajuda
+                      texto={t('alertarAbaixoDeHint')}
+                      rotulo={comum('ajudaSobre', { campo: t('alertarAbaixoDe') })}
+                    />
+                  </span>
+                  <input
+                    type="number"
+                    name="alertarAbaixoDe"
+                    min={0}
+                    max={999}
+                    defaultValue={pasta.alertarAbaixoDe}
+                    style={{ maxWidth: 120 }}
+                  />
+                </label>
+
                 <div className="check" style={{ marginTop: 12 }}>
                   <input type="checkbox" id="ativa" name="ativa" defaultChecked={pasta.ativa} />
                   <label htmlFor="ativa">
@@ -261,11 +279,21 @@ export default async function ConfigurarPasta({
               <dl className="kv">
                 <dt>{t('textosPendentes')}</dt>
                 <dd>
-                  <span className={pendentes === 0 ? 'pill err' : pendentes < 5 ? 'pill warn' : 'pill ok'}>
+                  <span
+                    className={
+                      pendentes === 0
+                        ? 'pill err'
+                        : pasta.alertarAbaixoDe > 0 && pendentes < pasta.alertarAbaixoDe
+                          ? 'pill warn'
+                          : 'pill ok'
+                    }
+                  >
                     {pendentes}
                   </span>{' '}
-                  {pendentes < 5 ? (
-                    <span className="faint">{t('avisaAbaixoDeCinco')}</span>
+                  {pasta.alertarAbaixoDe > 0 && pendentes < pasta.alertarAbaixoDe ? (
+                    <span className="faint">
+                      {t('avisaAbaixoDe', { quantidade: pasta.alertarAbaixoDe })}
+                    </span>
                   ) : null}
                 </dd>
                 <dt>{t('jaPublicados')}</dt>
