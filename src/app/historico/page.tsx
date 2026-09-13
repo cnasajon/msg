@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -41,6 +41,7 @@ export default async function Historico({
   const textos = await getTranslations('textos');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const filtros = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -170,7 +171,7 @@ export default async function Historico({
                     </td>
                     <td>
                       {p.enviadaEm ? (
-                        formatarNoFuso(p.enviadaEm, p.folder.timezone)
+                        formatarNoFuso(p.enviadaEm, p.folder.timezone, idioma)
                       ) : (
                         <span className="faint">{comum('nenhum')}</span>
                       )}

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -27,6 +27,7 @@ export default async function Importacao({
   const textos = await getTranslations('textos');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const { pasta: pastaId, erro, ok } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -123,7 +124,7 @@ export default async function Importacao({
                   <td>
                     <code>{i.arquivoNome}</code>
                   </td>
-                  <td>{formatarNoFuso(i.criadoEm, pasta.timezone)}</td>
+                  <td>{formatarNoFuso(i.criadoEm, pasta.timezone, idioma)}</td>
                   <td>{i.autor?.nome ?? <span className="faint">{comum('nenhum')}</span>}</td>
                   <td className="num">{i.totalLinhas}</td>
                   <td className="num">{i.importadas}</td>
@@ -132,7 +133,7 @@ export default async function Importacao({
                   <td>
                     {i.desfeitoEm ? (
                       <span className="faint">
-                        {t('desfeitaEm', { quando: formatarNoFuso(i.desfeitoEm, pasta.timezone) })}
+                        {t('desfeitaEm', { quando: formatarNoFuso(i.desfeitoEm, pasta.timezone, idioma) })}
                       </span>
                     ) : i._count.textos === 0 ? (
                       <span className="faint">{t('semTextosRestantes')}</span>

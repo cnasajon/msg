@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -31,6 +31,7 @@ export default async function EditarTexto({
   const lista = await getTranslations('textos');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const { id } = await params;
   const { erro, ok } = await searchParams;
@@ -57,7 +58,7 @@ export default async function EditarTexto({
           <div>
             {t('arquivadoDesde', {
               quando: texto.arquivadoEm
-                ? formatarNoFuso(texto.arquivadoEm, pasta.timezone)
+                ? formatarNoFuso(texto.arquivadoEm, pasta.timezone, idioma)
                 : comum('nenhum'),
             })}
           </div>
@@ -172,7 +173,7 @@ export default async function EditarTexto({
                 <dt>{lista('publicadoEm')}</dt>
                 <dd>
                   {texto.publicadoEm ? (
-                    formatarNoFuso(texto.publicadoEm, pasta.timezone)
+                    formatarNoFuso(texto.publicadoEm, pasta.timezone, idioma)
                   ) : (
                     <span className="faint">{t('aindaNao')}</span>
                   )}

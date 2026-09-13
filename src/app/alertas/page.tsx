@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { sessaoAtual } from '@/lib/sessao';
 import { prisma } from '@/lib/db';
@@ -31,6 +31,7 @@ export default async function Alertas() {
   const textos = await getTranslations('textos');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const destino = await destinoDosAlertas(prisma);
 
@@ -220,7 +221,7 @@ export default async function Alertas() {
                 const tipo = detalhes.tipo ?? registro.entidadeId ?? '';
                 return (
                   <tr key={registro.id}>
-                    <td>{formatarNoFuso(registro.criadoEm, 'America/Sao_Paulo')}</td>
+                    <td>{formatarNoFuso(registro.criadoEm, 'America/Sao_Paulo', idioma)}</td>
                     <td>
                       <span className={CLASSE_DO_TIPO[tipo] ?? 'pill'}>
                         {tipo in TITULO_DO_ALERTA ? tipos(tipo) : (detalhes.titulo ?? tipo)}

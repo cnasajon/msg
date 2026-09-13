@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -37,6 +37,7 @@ export default async function ConfigurarPasta({
   const t = await getTranslations('pastas');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const { id } = await params;
   const { erro, ok } = await searchParams;
@@ -102,7 +103,7 @@ export default async function ConfigurarPasta({
                     <input type="text" name="timezone" defaultValue={pasta.timezone} required />
                     <span className="hint">
                       {t('agoraSao', {
-                        hora: new Date().toLocaleTimeString('pt-BR', {
+                        hora: new Date().toLocaleTimeString(idioma, {
                           timeZone: pasta.timezone,
                           hour: '2-digit',
                           minute: '2-digit',

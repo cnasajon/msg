@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { sessaoAtual } from '@/lib/sessao';
 import { podeFazer } from '@/lib/autorizacao';
@@ -70,6 +70,7 @@ export default async function Auditoria({
   const acoes = await getTranslations('acoesDaAuditoria');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const filtros = await searchParams;
   const porPagina = 50;
@@ -163,7 +164,7 @@ export default async function Auditoria({
             ) : (
               registros.map((r) => (
                 <tr key={r.id}>
-                  <td>{formatarNoFuso(r.criadoEm, 'America/Sao_Paulo')}</td>
+                  <td>{formatarNoFuso(r.criadoEm, 'America/Sao_Paulo', idioma)}</td>
                   <td>
                     {r.user?.nome ?? <span className="faint">{t('sistema')}</span>}
                   </td>

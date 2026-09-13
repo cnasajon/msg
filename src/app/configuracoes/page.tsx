@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -34,6 +34,7 @@ export default async function Configuracoes({
 
   const t = await getTranslations('configuracoes');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
   const { frase } = await tradutorDeAvisos();
 
   const { erro, ok } = await searchParams;
@@ -175,7 +176,7 @@ export default async function Configuracoes({
           {configuracao?.atualizadoEm ? (
             <span className="faint">
               {t('ultimaAlteracao', {
-                quando: formatarNoFuso(configuracao.atualizadoEm, 'America/Sao_Paulo'),
+                quando: formatarNoFuso(configuracao.atualizadoEm, 'America/Sao_Paulo', idioma),
               })}
               {configuracao.autor ? ` ${t('porAutor', { nome: configuracao.autor.nome })}` : ''}
             </span>

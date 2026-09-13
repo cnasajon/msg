@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { sessaoAtual } from '@/lib/sessao';
 import { prisma } from '@/lib/db';
@@ -38,6 +38,7 @@ export default async function Painel() {
   const historico = await getTranslations('historico');
   const dias = await getTranslations('dias');
   const agenda = await getTranslations('pastas');
+  const idioma = await getLocale();
 
   const agora = new Date();
   const orgEmVigor = organizacaoEmVigor(sessao);
@@ -308,7 +309,7 @@ export default async function Painel() {
                       <p>{resumir(p.conteudoPublicado ?? '', 120)}</p>
                       <div className="meta">
                         {p.folder.nome} ·{' '}
-                        {p.enviadaEm ? formatarNoFuso(p.enviadaEm, p.folder.timezone) : '—'}
+                        {p.enviadaEm ? formatarNoFuso(p.enviadaEm, p.folder.timezone, idioma) : '—'}
                         {p.origem === 'manual' ? ` · ${historico('publicadoAgora')}` : ''}
                         {p.origem === 'importacao' ? ` · ${historico('historicoImportado')}` : ''}
                       </div>

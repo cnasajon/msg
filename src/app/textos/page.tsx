@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -37,6 +37,7 @@ export default async function Textos({
   const t = await getTranslations('textos');
   const comum = await getTranslations('comum');
   const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const filtros = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -207,7 +208,7 @@ export default async function Textos({
                           <span style={{ color: 'var(--danger)' }}> · {texto.erroMensagem}</span>
                         ) : null}
                         {texto.arquivadoEm
-                          ? ` · ${t('arquivadoEm', { quando: formatarNoFuso(texto.arquivadoEm, pasta.timezone) })}`
+                          ? ` · ${t('arquivadoEm', { quando: formatarNoFuso(texto.arquivadoEm, pasta.timezone, idioma) })}`
                           : ''}
                       </div>
                     </div>
@@ -227,7 +228,7 @@ export default async function Textos({
                   </td>
                   <td>
                     {texto.publicadoEm ? (
-                      formatarNoFuso(texto.publicadoEm, pasta.timezone)
+                      formatarNoFuso(texto.publicadoEm, pasta.timezone, idioma)
                     ) : (
                       <span className="faint">{comum('nenhum')}</span>
                     )}
