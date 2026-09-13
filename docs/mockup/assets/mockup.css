@@ -284,6 +284,10 @@ input[disabled], textarea[disabled], select[disabled] { background: var(--surfac
 .check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; }
 .check input { width: auto; }
 
+.linha-edicao {
+  display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+  padding: 4px 0;
+}
 .days { display: flex; gap: 6px; flex-wrap: wrap; }
 .days span {
   width: 40px; height: 30px; display: grid; place-items: center;

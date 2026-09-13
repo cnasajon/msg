@@ -205,6 +205,8 @@ export async function testarConexao(dados: FormData) {
     detalhes: { sucesso: resultado.ok },
   });
 
-  if (!resultado.ok) voltar(destino, `Falhou: ${resultado.erro}`);
-  voltar(destino, 'Mensagem de teste enviada ao grupo.', 'ok');
+  // o chat_id vai na mensagem: quando o erro é "chat not found", ver o número
+  // que foi tentado costuma ser o bastante para achar o engano
+  if (!resultado.ok) voltar(destino, `Falhou com o chat_id ${pasta.telegramChatId}: ${resultado.erro}`);
+  voltar(destino, `Mensagem de teste enviada ao grupo ${pasta.telegramChatId}.`, 'ok');
 }

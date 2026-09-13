@@ -10,8 +10,13 @@ import { comEscopo } from '@/lib/escopo';
 import { prisma } from '@/lib/db';
 import { siglaDoFuso } from '@/lib/fuso';
 import { editarPasta, excluirPasta, salvarTokenDeSobreposicao, testarConexao } from '../acoes';
-import { alternarAgendamento, criarAgendamento, excluirAgendamento } from '../acoes-agenda';
-import { SeletorDeDias } from '@/components/editor-agendamento';
+import {
+  alternarAgendamento,
+  criarAgendamento,
+  editarAgendamento,
+  excluirAgendamento,
+} from '../acoes-agenda';
+import { TabelaDeAgendamentos } from '@/components/tabela-agendamentos';
 import { proximoSlot, resumirDias } from '@/lib/agenda';
 
 export const dynamic = 'force-dynamic';
@@ -266,84 +271,6 @@ export default async function ConfigurarPasta({
 
           <div className="card">
             <header>
-              <h2>Agendamentos</h2>
-              <span className="spacer" />
-              <span className="sub">horários no fuso da pasta</span>
-            </header>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: 90 }}>Hora</th>
-                  <th>Dias</th>
-                  <th style={{ width: 90 }}>Situação</th>
-                  <th style={{ width: 150 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {agendamentos.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="faint">
-                      Nenhum agendamento. Sem ao menos um, esta pasta nunca publica.
-                    </td>
-                  </tr>
-                ) : (
-                  agendamentos.map((a) => (
-                    <tr key={a.id}>
-                      <td className="num">
-                        <b>{a.horaLocal}</b>
-                      </td>
-                      <td>{resumirDias(a.diasSemana)}</td>
-                      <td>
-                        <span className={a.ativo ? 'pill ok' : 'pill'}>{a.ativo ? 'ativo' : 'pausado'}</span>
-                      </td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <form action={alternarAgendamento} style={{ display: 'inline' }}>
-                          <CampoCsrf token={csrf} />
-                          <input type="hidden" name="id" value={a.id} />
-                          <button className="btn sm" type="submit">
-                            {a.ativo ? 'Pausar' : 'Ativar'}
-                          </button>
-                        </form>{' '}
-                        <form action={excluirAgendamento} style={{ display: 'inline' }}>
-                          <CampoCsrf token={csrf} />
-                          <input type="hidden" name="id" value={a.id} />
-                          <button className="btn sm danger" type="submit">
-                            Excluir
-                          </button>
-                        </form>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-            <div className="body" style={{ borderTop: '1px solid var(--border)' }}>
-              <form action={criarAgendamento}>
-                <CampoCsrf token={csrf} />
-                <input type="hidden" name="folderId" value={pasta.id} />
-                <div className="row">
-                  <label className="field fixed" style={{ margin: 0, width: 120 }}>
-                    <span className="lbl">Hora</span>
-                    <input type="time" name="horaLocal" defaultValue="07:00" required />
-                  </label>
-                  <SeletorDeDias />
-                  <div className="fixed">
-                    <button className="btn primary" type="submit">
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-                <p className="faint" style={{ margin: '12px 0 0' }}>
-                  Uma pasta pode ter vários agendamentos. O worker acorda a cada cinco minutos e tem
-                  trinta de tolerância: passado isso, o slot é marcado como perdido e nunca publicado
-                  com atraso.
-                </p>
-              </form>
-            </div>
-          </div>
-
-          <div className="card">
-            <header>
               <h2>Quem tem acesso</h2>
             </header>
             <div className="body">
@@ -393,6 +320,31 @@ export default async function ConfigurarPasta({
           </div>
         </div>
       </div>
+
+          <div className="card">
+        <header>
+          <h2>Agendamentos</h2>
+          <span className="spacer" />
+          <span className="sub">horários no fuso da pasta</span>
+        </header>
+        <TabelaDeAgendamentos
+          folderId={pasta.id}
+          csrf={<CampoCsrf token={csrf} />}
+          agendamentos={agendamentos.map((a) => ({
+            id: a.id,
+            horaLocal: a.horaLocal,
+            diasSemana: a.diasSemana,
+            ativo: a.ativo,
+          }))}
+          acoes={{
+            criar: criarAgendamento,
+            editar: editarAgendamento,
+            alternar: alternarAgendamento,
+            excluir: excluirAgendamento,
+          }}
+        />
+      </div>
+
     </Casca>
   );
 }

@@ -1,5 +1,6 @@
 /** Limites de tamanho, tags aceitas e hash de duplicata. */
 import { describe, it, expect } from 'vitest';
+import { problemaNoChatId } from '@/lib/telegram';
 import {
   LIMITE_COM_IMAGEM,
   LIMITE_SEM_IMAGEM,
@@ -89,5 +90,29 @@ describe('resumo da lista', () => {
 
   it('corta no tamanho pedido', () => {
     expect(resumir('a'.repeat(200), 10)).toBe(`${'a'.repeat(10)}…`);
+  });
+});
+
+describe('chat_id do Telegram', () => {
+  it('aceita supergrupo e grupo comum, que são negativos', () => {
+    expect(problemaNoChatId('-1001492357816')).toBeNull();
+    expect(problemaNoChatId('-371133828')).toBeNull();
+  });
+
+  it('RECUSA o número sem o sinal de menos, e sugere a correção', () => {
+    // o engano mais comum: copiar o id do supergrupo sem o "-", que só aparece
+    // como "chat not found" na hora de publicar
+    const problema = problemaNoChatId('1001492357816');
+    expect(problema).toMatch(/sinal de menos/);
+    expect(problema).toContain('-1001492357816');
+  });
+
+  it('recusa positivo qualquer, explicando que ali é conversa privada', () => {
+    expect(problemaNoChatId('987654321')).toMatch(/conversa privada/);
+  });
+
+  it('recusa link e @nome', () => {
+    expect(problemaNoChatId('@uvpv')).toMatch(/numérico/);
+    expect(problemaNoChatId('https://t.me/uvpv')).toMatch(/numérico/);
   });
 });
