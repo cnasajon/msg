@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DIAS_DA_SEMANA, resumirDias } from '@/lib/agenda';
 
 type Agendamento = { id: string; horaLocal: string; diasSemana: number[]; ativo: boolean };
@@ -14,35 +15,36 @@ type Acoes = {
 
 /** Escolha de dias, usada tanto na linha em edicao quanto na linha nova. */
 function Dias({ iniciais }: { iniciais: number[] }) {
+  const dias = useTranslations('dias');
   const [escolhidos, setEscolhidos] = useState<number[]>(iniciais);
 
   return (
     <>
       <div className="days">
-        {DIAS_DA_SEMANA.map((dia) => {
-          const ligado = escolhidos.includes(dia.iso);
+        {DIAS_DA_SEMANA.map((iso) => {
+          const ligado = escolhidos.includes(iso);
           return (
             <span
-              key={dia.iso}
+              key={iso}
               className={ligado ? 'on' : undefined}
               role="checkbox"
               aria-checked={ligado}
               tabIndex={0}
               onClick={() =>
                 setEscolhidos((atuais) =>
-                  atuais.includes(dia.iso) ? atuais.filter((d) => d !== dia.iso) : [...atuais, dia.iso],
+                  atuais.includes(iso) ? atuais.filter((d) => d !== iso) : [...atuais, iso],
                 )
               }
               onKeyDown={(e) => {
                 if (e.key === ' ' || e.key === 'Enter') {
                   e.preventDefault();
                   setEscolhidos((atuais) =>
-                    atuais.includes(dia.iso) ? atuais.filter((d) => d !== dia.iso) : [...atuais, dia.iso],
+                    atuais.includes(iso) ? atuais.filter((d) => d !== iso) : [...atuais, iso],
                   );
                 }
               }}
             >
-              {dia.sigla}
+              {dias(String(iso))}
             </span>
           );
         })}
@@ -73,6 +75,9 @@ export function TabelaDeAgendamentos({
   csrf: React.ReactNode;
   acoes: Acoes;
 }) {
+  const t = useTranslations('agendamentos');
+  const dias = useTranslations('dias');
+  const comum = useTranslations('comum');
   const [emEdicao, setEmEdicao] = useState<string | null>(null);
   const [criando, setCriando] = useState(false);
 
@@ -81,9 +86,9 @@ export function TabelaDeAgendamentos({
       <table>
         <thead>
           <tr>
-            <th style={{ width: 92 }}>Hora</th>
-            <th>Dias</th>
-            <th style={{ width: 92 }}>Situação</th>
+            <th style={{ width: 92 }}>{t('hora')}</th>
+            <th>{t('dias')}</th>
+            <th style={{ width: 92 }}>{t('situacao')}</th>
             <th style={{ width: 128 }} />
           </tr>
         </thead>
@@ -91,7 +96,7 @@ export function TabelaDeAgendamentos({
           {agendamentos.length === 0 && !criando ? (
             <tr>
               <td colSpan={4} className="faint">
-                Nenhum agendamento. Sem ao menos um, esta pasta nunca publica.
+                {t('nenhum')}
               </td>
             </tr>
           ) : null}
@@ -105,21 +110,21 @@ export function TabelaDeAgendamentos({
                     <input type="hidden" name="id" value={a.id} />
                     <div className="linha-edicao">
                       <label className="field" style={{ margin: 0, width: 110, flex: 'none' }}>
-                        <span className="lbl">Hora</span>
+                        <span className="lbl">{t('hora')}</span>
                         <input type="time" name="horaLocal" defaultValue={a.horaLocal} required />
                       </label>
                       <div style={{ flex: 'none' }}>
                         <span className="lbl" style={{ display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 5 }}>
-                          Dias da semana
+                          {dias('diasDaSemana')}
                         </span>
                         <Dias iniciais={a.diasSemana} />
                       </div>
                       <div style={{ display: 'flex', gap: 8, flex: 'none' }}>
                         <button className="btn primary" type="submit">
-                          Salvar
+                          {comum('salvar')}
                         </button>
                         <button className="btn" type="button" onClick={() => setEmEdicao(null)}>
-                          Cancelar
+                          {comum('cancelar')}
                         </button>
                       </div>
                     </div>
@@ -131,16 +136,18 @@ export function TabelaDeAgendamentos({
                 <td className="num">
                   <b>{a.horaLocal}</b>
                 </td>
-                <td>{resumirDias(a.diasSemana)}</td>
+                <td>{resumirDias(a.diasSemana, dias)}</td>
                 <td>
-                  <span className={a.ativo ? 'pill ok' : 'pill'}>{a.ativo ? 'ativo' : 'pausado'}</span>
+                  <span className={a.ativo ? 'pill ok' : 'pill'}>
+                    {a.ativo ? t('ativo') : t('pausado')}
+                  </span>
                 </td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <button
                     className="iconbtn"
                     type="button"
-                    title="Editar hora e dias"
-                    aria-label="Editar agendamento"
+                    title={t('editarHoraEDias')}
+                    aria-label={t('editarAgendamento')}
                     onClick={() => {
                       setEmEdicao(a.id);
                       setCriando(false);
@@ -152,13 +159,13 @@ export function TabelaDeAgendamentos({
                     {csrf}
                     <input type="hidden" name="id" value={a.id} />
                     <button className="btn sm" type="submit">
-                      {a.ativo ? 'Pausar' : 'Ativar'}
+                      {a.ativo ? t('pausar') : t('ativar')}
                     </button>
                   </form>{' '}
                   <form action={acoes.excluir} style={{ display: 'inline' }}>
                     {csrf}
                     <input type="hidden" name="id" value={a.id} />
-                    <button className="btn sm danger" type="submit" title="Excluir agendamento">
+                    <button className="btn sm danger" type="submit" title={t('excluirAgendamento')}>
                       ✕
                     </button>
                   </form>
@@ -175,21 +182,21 @@ export function TabelaDeAgendamentos({
                   <input type="hidden" name="folderId" value={folderId} />
                   <div className="linha-edicao">
                     <label className="field" style={{ margin: 0, width: 110, flex: 'none' }}>
-                      <span className="lbl">Hora</span>
+                      <span className="lbl">{t('hora')}</span>
                       <input type="time" name="horaLocal" defaultValue="07:00" required autoFocus />
                     </label>
                     <div style={{ flex: 'none' }}>
                       <span className="lbl" style={{ display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 5 }}>
-                        Dias da semana
+                        {dias('diasDaSemana')}
                       </span>
                       <Dias iniciais={[1, 2, 3, 4, 5]} />
                     </div>
                     <div style={{ display: 'flex', gap: 8, flex: 'none' }}>
                       <button className="btn primary" type="submit">
-                        Adicionar
+                        {t('adicionar')}
                       </button>
                       <button className="btn" type="button" onClick={() => setCriando(false)}>
-                        Cancelar
+                        {comum('cancelar')}
                       </button>
                     </div>
                   </div>
@@ -210,12 +217,9 @@ export function TabelaDeAgendamentos({
               setEmEdicao(null);
             }}
           >
-            Novo agendamento
+            {t('novoAgendamento')}
           </button>
-          <span className="faint">
-            O worker acorda a cada cinco minutos e tem trinta de tolerância: passado isso, o slot é
-            marcado como perdido e nunca publicado com atraso.
-          </span>
+          <span className="faint">{t('tolerancia')}</span>
         </div>
       ) : null}
     </>

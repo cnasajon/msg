@@ -9,6 +9,8 @@ import { NaoAutorizado } from '@/lib/erros';
 import { comEscopo, organizacaoEmVigor, type Sessao } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos, type Tradutor } from '@/lib/avisos-servidor';
+import type { Problema } from '@/lib/avisos';
 import { fusoValido } from '@/lib/fuso';
 import { cifrar } from '@/lib/cifra';
 import { conferirBot, enviarTexto, problemaNoChatId, tokenDaPasta } from '@/lib/telegram';
@@ -17,9 +19,9 @@ function voltar(destino: string, mensagem: string, tipo: 'erro' | 'ok' = 'erro')
   redirect(comAviso(destino, tipo, mensagem));
 }
 
-function organizacaoDeDestino(sessao: Sessao): string {
+function organizacaoDeDestino(sessao: Sessao, t: Tradutor): string {
   const org = organizacaoEmVigor(sessao);
-  if (!org) voltar('/pastas', 'Escolha uma organização ativa antes de gerenciar pastas.');
+  if (!org) voltar('/pastas', t('escolhaOrganizacaoPastas'));
   return org;
 }
 
@@ -36,13 +38,18 @@ function lerCampos(dados: FormData) {
   return { nome, descricao, timezone, chatIdBruto, aoEsgotar, ativa };
 }
 
-function validar(campos: ReturnType<typeof lerCampos>, destino: string) {
-  if (campos.nome.length < 2) voltar(destino, 'Informe o nome da pasta.');
-  if (!fusoValido(campos.timezone)) voltar(destino, `Fuso horário desconhecido: ${campos.timezone}`);
-  if (!AO_ESGOTAR.includes(campos.aoEsgotar)) voltar(destino, 'Comportamento ao esgotar inválido.');
+function validar(
+  campos: ReturnType<typeof lerCampos>,
+  destino: string,
+  t: Tradutor,
+  frase: (problema: Problema) => string,
+) {
+  if (campos.nome.length < 2) voltar(destino, t('informeNomePasta'));
+  if (!fusoValido(campos.timezone)) voltar(destino, t('fusoDesconhecido', { fuso: campos.timezone }));
+  if (!AO_ESGOTAR.includes(campos.aoEsgotar)) voltar(destino, t('aoEsgotarInvalido'));
   if (campos.chatIdBruto) {
     const problema = problemaNoChatId(campos.chatIdBruto);
-    if (problema) voltar(destino, problema);
+    if (problema) voltar(destino, frase(problema));
   }
 }
 
@@ -50,15 +57,16 @@ export async function criarPasta(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.gerenciar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const campos = lerCampos(dados);
-  validar(campos, '/pastas');
-  const organizationId = organizacaoDeDestino(sessao);
+  validar(campos, '/pastas', t, frase);
+  const organizationId = organizacaoDeDestino(sessao, t);
 
   const repetida = await prisma.folder.findFirst({
     where: { organizationId, nome: campos.nome },
     select: { id: true },
   });
-  if (repetida) voltar('/pastas', `Já existe uma pasta chamada "${campos.nome}" nesta organização.`);
+  if (repetida) voltar('/pastas', t('pastaRepetida', { nome: campos.nome }));
 
   const criada = await prisma.folder.create({
     data: {
@@ -77,17 +85,18 @@ export async function criarPasta(dados: FormData) {
     entidadeId: criada.id,
     detalhes: { nome: campos.nome, timezone: campos.timezone, aoEsgotar: campos.aoEsgotar },
   });
-  voltar(`/pastas/${criada.id}`, `Pasta "${campos.nome}" criada.`, 'ok');
+  voltar(`/pastas/${criada.id}`, t('pastaCriada', { nome: campos.nome }), 'ok');
 }
 
 export async function editarPasta(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.gerenciar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('id') ?? ''));
   const destino = `/pastas/${pasta.id}`;
   const campos = lerCampos(dados);
-  validar(campos, destino);
+  validar(campos, destino, t, frase);
 
   await prisma.folder.update({
     where: { id: pasta.id },
@@ -112,22 +121,20 @@ export async function editarPasta(dados: FormData) {
       chatIdAlterado: campos.chatIdBruto !== (pasta.telegramChatId ?? ''),
     },
   });
-  voltar(destino, 'Pasta salva.', 'ok');
+  voltar(destino, t('pastaSalva'), 'ok');
 }
 
 export async function excluirPasta(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('id') ?? ''));
   const publicadas = await prisma.text.count({
     where: { folderId: pasta.id, status: { in: ['publicado', 'erro'] } },
   });
   if (publicadas > 0) {
-    voltar(
-      `/pastas/${pasta.id}`,
-      `Esta pasta tem ${publicadas} texto(s) já publicados — excluí-la apagaria o histórico. Desative-a em vez de excluir.`,
-    );
+    voltar(`/pastas/${pasta.id}`, t('pastaComPublicados', { quantidade: publicadas }));
   }
 
   await prisma.folder.delete({ where: { id: pasta.id } });
@@ -137,7 +144,7 @@ export async function excluirPasta(dados: FormData) {
     entidadeId: pasta.id,
     detalhes: { nome: pasta.nome },
   });
-  voltar('/pastas', `Pasta "${pasta.nome}" excluída.`, 'ok');
+  voltar('/pastas', t('pastaExcluida', { nome: pasta.nome }), 'ok');
 }
 
 /**
@@ -149,6 +156,7 @@ export async function salvarTokenDeSobreposicao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.configurarTokenSobreposicao')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('id') ?? ''));
   const destino = `/pastas/${pasta.id}`;
   const token = String(dados.get('token') ?? '').trim();
@@ -160,14 +168,21 @@ export async function salvarTokenDeSobreposicao(dados: FormData) {
       entidade: 'folder',
       entidadeId: pasta.id,
     });
-    voltar(destino, 'Sobreposição removida. A pasta volta a usar o bot global.', 'ok');
+    voltar(destino, t('sobreposicaoRemovida'), 'ok');
   }
 
   if (!/^\d{6,}:[\w-]{30,}$/.test(token)) {
-    voltar(destino, 'Formato de token inválido. Ele tem a forma 123456789:AA... , como o @BotFather devolve.');
+    voltar(destino, t('tokenFormatoInvalido'));
   }
   const conferencia = await conferirBot(token);
-  if (!conferencia.ok) voltar(destino, `O Telegram recusou este token: ${conferencia.erro}`);
+  if (!conferencia.ok) {
+    voltar(
+      destino,
+      t('tokenRecusado', {
+        erro: conferencia.problema ? frase(conferencia.problema) : t('erroDesconhecido'),
+      }),
+    );
+  }
 
   await prisma.folder.update({
     where: { id: pasta.id },
@@ -180,7 +195,7 @@ export async function salvarTokenDeSobreposicao(dados: FormData) {
     entidadeId: pasta.id,
     detalhes: { bot: conferencia.username ?? null },
   });
-  voltar(destino, `Sobreposição salva. Esta pasta passa a publicar pelo @${conferencia.username}.`, 'ok');
+  voltar(destino, t('sobreposicaoSalva', { bot: conferencia.username ?? '' }), 'ok');
 }
 
 /** Envia uma mensagem de teste e mostra o erro exato devolvido pela API. */
@@ -188,9 +203,10 @@ export async function testarConexao(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'pastas.configurarChatId')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('id') ?? ''));
   const destino = `/pastas/${pasta.id}`;
-  if (!pasta.telegramChatId) voltar(destino, 'Cadastre o chat_id da pasta antes de testar.');
+  if (!pasta.telegramChatId) voltar(destino, t('cadastreChatIdAntesDeTestar'));
 
   const resultado = await enviarTexto(
     tokenDaPasta(pasta),
@@ -207,6 +223,11 @@ export async function testarConexao(dados: FormData) {
 
   // o chat_id vai na mensagem: quando o erro é "chat not found", ver o número
   // que foi tentado costuma ser o bastante para achar o engano
-  if (!resultado.ok) voltar(destino, `Falhou com o chat_id ${pasta.telegramChatId}: ${resultado.erro}`);
-  voltar(destino, `Mensagem de teste enviada ao grupo ${pasta.telegramChatId}.`, 'ok');
+  if (!resultado.ok) {
+    voltar(
+      destino,
+      t('testeFalhou', { chatId: pasta.telegramChatId, erro: frase(resultado.problema) }),
+    );
+  }
+  voltar(destino, t('testeEnviado', { chatId: pasta.telegramChatId }), 'ok');
 }

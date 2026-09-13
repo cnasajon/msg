@@ -1,3 +1,4 @@
+import { problema, type Problema } from './avisos';
 import sharp from 'sharp';
 import { env } from './env';
 
@@ -20,14 +21,21 @@ export type ImagemProcessada = {
   altura: number;
 };
 
-export class ImagemInvalida extends Error {}
+/** Carrega a chave da mensagem; a tradução acontece na ação que chamou. */
+export class ImagemInvalida extends Error {
+  constructor(readonly problema: Problema) {
+    super(problema.chave);
+  }
+}
 
 export async function processarImagem(arquivo: File): Promise<ImagemProcessada> {
   const limiteBytes = env.maxImageMb * 1024 * 1024;
 
   // corta cedo o que é grande demais até para processar
   if (arquivo.size > limiteBytes * 8) {
-    throw new ImagemInvalida(`Arquivo grande demais: ${(arquivo.size / 1024 / 1024).toFixed(1)} MB.`);
+    throw new ImagemInvalida(
+      problema('arquivoGrandeDemais', { mb: (arquivo.size / 1024 / 1024).toFixed(1) }),
+    );
   }
 
   const original = Buffer.from(await arquivo.arrayBuffer());
@@ -38,13 +46,13 @@ export async function processarImagem(arquivo: File): Promise<ImagemProcessada> 
   try {
     metadados = await sharp(original).metadata();
   } catch {
-    throw new ImagemInvalida('O arquivo não é uma imagem que o sistema consiga ler.');
+    throw new ImagemInvalida(problema('naoEhImagem'));
   }
 
   const formato = metadados.format as keyof typeof FORMATOS_ACEITOS | undefined;
   if (!formato || !(formato in FORMATOS_ACEITOS)) {
     throw new ImagemInvalida(
-      `Formato ${metadados.format ?? 'desconhecido'} não é aceito. Use JPEG, PNG ou WebP.`,
+      problema('formatoNaoAceito', { formato: metadados.format ?? '' }),
     );
   }
 
@@ -74,8 +82,10 @@ export async function processarImagem(arquivo: File): Promise<ImagemProcessada> 
   }
   if (saida.length > limiteBytes) {
     throw new ImagemInvalida(
-      `Depois de processada a imagem ainda tem ${(saida.length / 1024 / 1024).toFixed(1)} MB, ` +
-        `acima do limite de ${env.maxImageMb} MB.`,
+      problema('aindaGrandeDepois', {
+        mb: (saida.length / 1024 / 1024).toFixed(1),
+        limite: env.maxImageMb,
+      }),
     );
   }
 

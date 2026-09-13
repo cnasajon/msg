@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Amostra = {
   numero: number;
@@ -46,6 +47,10 @@ export function AssistenteDeImportacao({
   csrf: React.ReactNode;
   acao: (dados: FormData) => void;
 }) {
+  const t = useTranslations('importacao');
+  const situacoes = useTranslations('situacoesDaLinha');
+  const rotulos = useTranslations('textos');
+  const comum = useTranslations('comum');
   const entradaDeArquivo = useRef<HTMLInputElement>(null);
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [colunaTexto, setColunaTexto] = useState(0);
@@ -74,13 +79,13 @@ export function AssistenteDeImportacao({
       const resposta = await fetch('/api/importacao/previa', { method: 'POST', body: dados });
       const corpo = await resposta.json();
       if (!resposta.ok) {
-        setErro(corpo.erro ?? 'Não foi possível ler o arquivo.');
+        setErro(corpo.erro ?? t('erroLerArquivo'));
         setPrevia(null);
       } else {
         setPrevia(corpo as Previa);
       }
     } catch {
-      setErro('Falha ao falar com o servidor.');
+      setErro(t('erroServidor'));
     } finally {
       setCarregando(false);
     }
@@ -90,13 +95,13 @@ export function AssistenteDeImportacao({
     <>
       <div className="card">
         <header>
-          <h2>1. Arquivo e mapeamento</h2>
-          {carregando ? <span className="sub">analisando…</span> : null}
+          <h2>{t('passoArquivo')}</h2>
+          {carregando ? <span className="sub">{t('analisando')}</span> : null}
         </header>
         <div className="body">
           <div className="row">
             <label className="field" style={{ margin: 0 }}>
-              <span className="lbl">Arquivo CSV ou XLSX</span>
+              <span className="lbl">{t('arquivo')}</span>
               <input
                 ref={entradaDeArquivo}
                 type="file"
@@ -108,14 +113,14 @@ export function AssistenteDeImportacao({
                   if (escolhido) void analisar({ arquivo: escolhido });
                 }}
               />
-              <span className="hint">A importação é somente texto — imagens entram pela edição de cada texto.</span>
+              <span className="hint">{t('somenteTexto')}</span>
             </label>
           </div>
 
           {previa ? (
             <div className="row" style={{ marginTop: 14 }}>
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">Coluna do texto</span>
+                <span className="lbl">{t('colunaTexto')}</span>
                 <select
                   value={colunaTexto}
                   onChange={(e) => {
@@ -134,7 +139,7 @@ export function AssistenteDeImportacao({
               </label>
 
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">Coluna da data de publicação (opcional)</span>
+                <span className="lbl">{t('colunaData')}</span>
                 <select
                   value={colunaData}
                   onChange={(e) => {
@@ -143,7 +148,7 @@ export function AssistenteDeImportacao({
                     void analisar({ colunaData: valor });
                   }}
                 >
-                  <option value={-1}>— nenhuma: tudo entra como pendente —</option>
+                  <option value={-1}>{t('nenhumaColunaData')}</option>
                   {previa.colunas.map((c, i) => (
                     <option key={c} value={i}>
                       {c}
@@ -152,13 +157,12 @@ export function AssistenteDeImportacao({
                   ))}
                 </select>
                 <span className="hint">
-                  Preenchida, a linha entra como <b>publicado</b> naquela data — é assim que se traz o
-                  histórico de outro aplicativo. O dispatcher nunca reenvia essas linhas.
+                  {t.rich('colunaDataExplicacao', { b: (partes) => <b>{partes}</b> })}
                 </span>
               </label>
 
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">Primeira linha</span>
+                <span className="lbl">{t('primeiraLinha')}</span>
                 <select
                   value={cabecalho ? 'sim' : 'nao'}
                   onChange={(e) => {
@@ -167,8 +171,8 @@ export function AssistenteDeImportacao({
                     void analisar({ cabecalho: valor });
                   }}
                 >
-                  <option value="sim">é cabeçalho</option>
-                  <option value="nao">já é dado</option>
+                  <option value="sim">{t('ehCabecalho')}</option>
+                  <option value="nao">{t('jaEhDado')}</option>
                 </select>
               </label>
             </div>
@@ -181,7 +185,7 @@ export function AssistenteDeImportacao({
           ) : null}
 
           <p className="faint" style={{ margin: '12px 0 0' }}>
-            Não há coluna de ordem para mapear: a ordem da fila é a ordem das linhas do arquivo.
+            {t('semColunaDeOrdem')}
           </p>
         </div>
       </div>
@@ -189,33 +193,43 @@ export function AssistenteDeImportacao({
       {previa ? (
         <div className="card">
           <header>
-            <h2>2. Conferência</h2>
+            <h2>{t('passoConferencia')}</h2>
             <span className="spacer" />
             <span className="sub">
-              {previa.total} linhas · {previa.importaveis} importáveis
-              {previa.comoHistorico > 0 ? ` (${previa.comoHistorico} como histórico)` : ''} ·{' '}
-              {previa.duplicadas} duplicadas · {previa.descartadas} descartadas
+              {t('resumo', {
+                total: previa.total,
+                importaveis: previa.importaveis,
+                duplicadas: previa.duplicadas,
+                descartadas: previa.descartadas,
+              })}
+              {previa.comoHistorico > 0
+                ? ` ${t('comoHistorico', { quantidade: previa.comoHistorico })}`
+                : ''}
             </span>
           </header>
           <table>
             <thead>
               <tr>
-                <th style={{ width: 60 }}>Linha</th>
-                <th>Texto</th>
-                <th style={{ width: 100 }}>Caracteres</th>
-                <th style={{ width: 130 }}>Publicada em</th>
-                <th style={{ width: 230 }}>Situação</th>
+                <th style={{ width: 60 }}>{t('linha')}</th>
+                <th>{rotulos('texto')}</th>
+                <th style={{ width: 100 }}>{t('caracteres')}</th>
+                <th style={{ width: 130 }}>{t('publicadaEm')}</th>
+                <th style={{ width: 230 }}>{rotulos('situacao')}</th>
               </tr>
             </thead>
             <tbody>
               {previa.amostra.map((linha) => (
                 <tr key={linha.numero}>
                   <td className="num">{linha.numero}</td>
-                  <td>{linha.resumo || <span className="faint">(vazia)</span>}</td>
+                  <td>{linha.resumo || <span className="faint">{t('vazia')}</span>}</td>
                   <td className="num">{linha.caracteres}</td>
-                  <td>{linha.publicadaEm ?? <span className="faint">—</span>}</td>
+                  <td>{linha.publicadaEm ?? <span className="faint">{comum('nenhum')}</span>}</td>
                   <td>
-                    <span className={CLASSE_DA_SITUACAO[linha.situacao] ?? 'pill'}>{linha.explicacao}</span>
+                    <span className={CLASSE_DA_SITUACAO[linha.situacao] ?? 'pill'}>
+                      {linha.situacao in CLASSE_DA_SITUACAO
+                        ? situacoes(linha.situacao)
+                        : linha.explicacao}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -224,8 +238,7 @@ export function AssistenteDeImportacao({
           {previa.total > previa.amostra.length ? (
             <div className="body" style={{ borderTop: '1px solid var(--border)' }}>
               <span className="faint">
-                Mostrando as {previa.amostra.length} primeiras linhas de {previa.total}. A importação
-                processa o arquivo inteiro.
+                {t('mostrandoPrimeiras', { mostradas: previa.amostra.length, total: previa.total })}
               </span>
             </div>
           ) : null}
@@ -246,12 +259,10 @@ export function AssistenteDeImportacao({
               <input type="hidden" name="colunaData" value={colunaData} />
               {cabecalho ? <input type="hidden" name="cabecalho" value="on" /> : null}
               <button className="btn primary" type="submit" disabled={previa.importaveis === 0}>
-                Importar {previa.importaveis} texto(s)
+                {t('importarBotao', { quantidade: previa.importaveis })}
               </button>
             </form>
-            <span className="faint">
-              As duplicatas e as linhas descartadas não são gravadas. Tudo entra numa transação só.
-            </span>
+            <span className="faint">{t('duplicatasNaoGravadas')}</span>
           </div>
         </div>
       ) : null}

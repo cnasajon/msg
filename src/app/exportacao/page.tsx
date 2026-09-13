@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { sessaoAtual } from '@/lib/sessao';
 import { prisma } from '@/lib/db';
@@ -17,6 +18,11 @@ export default async function Exportacao({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
 
+  const t = await getTranslations('exportacao');
+  const textos = await getTranslations('textos');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+
   const filtros = await searchParams;
   const pastas = await prisma.folder.findMany({
     where: escopoDePasta(sessao),
@@ -27,9 +33,9 @@ export default async function Exportacao({
 
   if (!pasta) {
     return (
-      <Casca sessao={sessao} titulo="Exportar textos" caminho="Textos" atual="/textos">
+      <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('textos')} atual="/textos">
         <div className="banner warn">
-          <div>Nenhuma pasta visível para você ainda.</div>
+          <div>{textos('semPasta')}</div>
         </div>
       </Casca>
     );
@@ -58,41 +64,46 @@ export default async function Exportacao({
   if (busca) parametros.set('busca', busca);
 
   return (
-    <Casca sessao={sessao} titulo="Exportar textos" caminho={`Textos · ${pasta.nome}`} atual="/textos">
+    <Casca
+      sessao={sessao}
+      titulo={t('titulo')}
+      caminho={`${menu('textos')} · ${pasta.nome}`}
+      atual="/textos"
+    >
       <div className="card">
         <form className="toolbar" method="get">
-          <select name="pasta" defaultValue={pasta.id} aria-label="Pasta">
+          <select name="pasta" defaultValue={pasta.id} aria-label={menu('pastas')}>
             {pastas.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.nome}
               </option>
             ))}
           </select>
-          <input type="text" name="busca" defaultValue={busca} placeholder="Buscar no conteúdo…" />
+          <input type="text" name="busca" defaultValue={busca} placeholder={comum('buscar')} />
           <select name="status" defaultValue={status}>
-            <option value="">Todas as situações</option>
-            <option value="pendente">Pendente</option>
-            <option value="publicado">Publicado</option>
-            <option value="erro">Erro</option>
-            <option value="arquivado">Arquivado</option>
+            <option value="">{textos('todasAsSituacoes')}</option>
+            <option value="pendente">{textos('pendente')}</option>
+            <option value="publicado">{textos('publicado')}</option>
+            <option value="erro">{textos('erro')}</option>
+            <option value="arquivado">{textos('arquivado')}</option>
           </select>
           <select name="imagem" defaultValue={imagem}>
-            <option value="">Com e sem imagem</option>
-            <option value="com">Só com imagem</option>
-            <option value="sem">Só sem imagem</option>
+            <option value="">{textos('comESemImagem')}</option>
+            <option value="com">{textos('soComImagem')}</option>
+            <option value="sem">{textos('soSemImagem')}</option>
           </select>
           <button className="btn" type="submit">
-            Aplicar filtros
+            {t('aplicarFiltros')}
           </button>
           <span className="spacer" />
           <Link className="btn" href={`/textos?pasta=${pasta.id}`}>
-            Voltar aos textos
+            {t('voltarAosTextos')}
           </Link>
         </form>
 
         <div className="body">
           <p style={{ marginTop: 0 }}>
-            <b>{quantidade}</b> texto(s) serão exportados com estes filtros.
+            {t.rich('seraoExportados', { quantidade, b: (partes) => <b>{partes}</b> })}
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {FORMATOS.map((f) => (
@@ -101,13 +112,12 @@ export default async function Exportacao({
                 className="btn primary"
                 href={`/api/exportacao?${parametros.toString()}&formato=${f.valor}`}
               >
-                Baixar {f.rotulo}
+                {t('baixar', { formato: f.rotulo })}
               </a>
             ))}
           </div>
           <p className="faint" style={{ marginBottom: 0, marginTop: 14 }}>
-            A exportação respeita o que você enxerga: um usuário com duas pastas atribuídas exporta
-            apenas essas duas. Datas saem no fuso da pasta, indicado no cabeçalho do arquivo.
+            {t('respeitaEscopo')}
           </p>
         </div>
       </div>

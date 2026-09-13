@@ -8,6 +8,7 @@ import { NaoAutorizado } from '@/lib/erros';
 import { comEscopo, escopoDeTexto } from '@/lib/escopo';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { hashDoConteudo, problemaNoHtml, problemaNoTamanho } from '@/lib/textos';
 import { ImagemInvalida, processarImagem } from '@/lib/imagem';
 
@@ -41,29 +42,30 @@ export async function criarTexto(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
   const destino = `/textos?pasta=${pasta.id}`;
   const conteudo = String(dados.get('conteudo') ?? '').trim();
   const imagem = lerImagem(dados);
 
   const problemaTamanho = problemaNoTamanho(conteudo, imagem.tipo === 'nova');
-  if (problemaTamanho) voltar(destino, problemaTamanho);
+  if (problemaTamanho) voltar(destino, frase(problemaTamanho));
   const problemaHtml = problemaNoHtml(conteudo);
-  if (problemaHtml) voltar(destino, problemaHtml);
+  if (problemaHtml) voltar(destino, frase(problemaHtml));
 
   const hash = hashDoConteudo(conteudo);
   const duplicado = await prisma.text.findFirst({
     where: { folderId: pasta.id, hashConteudo: hash },
     select: { id: true },
   });
-  if (duplicado) voltar(destino, 'Esta pasta já tem um texto com exatamente este conteúdo.');
+  if (duplicado) voltar(destino, t('textoDuplicado'));
 
   let processada = null;
   if (imagem.tipo === 'nova') {
     try {
       processada = await processarImagem(imagem.arquivo);
     } catch (erro) {
-      voltar(destino, erro instanceof ImagemInvalida ? erro.message : 'Não foi possível processar a imagem.');
+      voltar(destino, erro instanceof ImagemInvalida ? frase(erro.problema) : t('imagemNaoProcessada'));
     }
   }
 
@@ -91,13 +93,14 @@ export async function criarTexto(dados: FormData) {
     entidadeId: criado.id,
     detalhes: { pasta: pasta.nome, comImagem: !!processada },
   });
-  voltar(destino, 'Texto criado.', 'ok');
+  voltar(destino, t('textoCriado'), 'ok');
 }
 
 export async function editarTexto(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = `/textos/${texto.id}`;
   const conteudo = String(dados.get('conteudo') ?? '').trim();
@@ -107,9 +110,9 @@ export async function editarTexto(dados: FormData) {
     imagem.tipo === 'nova' ? true : imagem.tipo === 'remover' ? false : texto.imagem !== null;
 
   const problemaTamanho = problemaNoTamanho(conteudo, ficaComImagem);
-  if (problemaTamanho) voltar(destino, problemaTamanho);
+  if (problemaTamanho) voltar(destino, frase(problemaTamanho));
   const problemaHtml = problemaNoHtml(conteudo);
-  if (problemaHtml) voltar(destino, problemaHtml);
+  if (problemaHtml) voltar(destino, frase(problemaHtml));
 
   const hash = hashDoConteudo(conteudo);
   if (hash !== texto.hashConteudo) {
@@ -117,7 +120,7 @@ export async function editarTexto(dados: FormData) {
       where: { folderId: texto.folderId, hashConteudo: hash, id: { not: texto.id } },
       select: { id: true },
     });
-    if (duplicado) voltar(destino, 'Esta pasta já tem outro texto com exatamente este conteúdo.');
+    if (duplicado) voltar(destino, t('textoDuplicadoOutro'));
   }
 
   let camposDaImagem = {};
@@ -133,7 +136,7 @@ export async function editarTexto(dados: FormData) {
         imagemNomeOriginal: imagem.arquivo.name.slice(0, 200),
       };
     } catch (erro) {
-      voltar(destino, erro instanceof ImagemInvalida ? erro.message : 'Não foi possível processar a imagem.');
+      voltar(destino, erro instanceof ImagemInvalida ? frase(erro.problema) : t('imagemNaoProcessada'));
     }
   }
 
@@ -147,13 +150,14 @@ export async function editarTexto(dados: FormData) {
     entidadeId: texto.id,
     detalhes: { imagem: imagem.tipo },
   });
-  voltar(destino, 'Texto salvo.', 'ok');
+  voltar(destino, t('textoSalvo'), 'ok');
 }
 
 export async function arquivarTexto(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = String(dados.get('destino') ?? `/textos?pasta=${texto.folderId}`);
 
@@ -162,13 +166,14 @@ export async function arquivarTexto(dados: FormData) {
     data: { status: 'arquivado', arquivadoEm: new Date() },
   });
   await registrarAuditoria(sessao, { acao: 'arquivar', entidade: 'text', entidadeId: texto.id });
-  voltar(destino, 'Texto arquivado.', 'ok');
+  voltar(destino, t('textoArquivado'), 'ok');
 }
 
 export async function desarquivarTexto(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = String(dados.get('destino') ?? `/textos?pasta=${texto.folderId}`);
 
@@ -185,13 +190,14 @@ export async function desarquivarTexto(dados: FormData) {
     entidadeId: texto.id,
     detalhes: { voltouPara: status },
   });
-  voltar(destino, status === 'pendente' ? 'Texto devolvido ao fim da fila.' : 'Texto desarquivado.', 'ok');
+  voltar(destino, status === 'pendente' ? t('textoDevolvidoAoFim') : t('textoDesarquivado'), 'ok');
 }
 
 export async function excluirTexto(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
   const destino = `/textos?pasta=${texto.folderId}`;
 
@@ -203,7 +209,7 @@ export async function excluirTexto(dados: FormData) {
     entidadeId: texto.id,
     detalhes: { status: texto.status },
   });
-  voltar(destino, 'Texto excluído. O histórico das publicações foi preservado.', 'ok');
+  voltar(destino, t('textoExcluido'), 'ok');
 }
 
 /**
@@ -217,20 +223,21 @@ export async function reordenarFila(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'textos.reordenar')) throw new NaoAutorizado();
 
+  const { t } = await tradutorDeAvisos();
   const pasta = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
   const destino = `/textos?pasta=${pasta.id}`;
   const ids = String(dados.get('ordem') ?? '')
     .split(',')
     .map((i) => i.trim())
     .filter(Boolean);
-  if (ids.length === 0) voltar(destino, 'Nenhuma ordem recebida.');
+  if (ids.length === 0) voltar(destino, t('nenhumaOrdem'));
 
   const permitidos = await prisma.text.findMany({
     where: { AND: [{ id: { in: ids } }, { folderId: pasta.id }, { status: 'pendente' }, escopoDeTexto(sessao)] },
     select: { id: true },
   });
   if (permitidos.length !== ids.length) {
-    voltar(destino, 'A lista de ordenação não bate com os textos pendentes desta pasta.');
+    voltar(destino, t('ordemNaoBate'));
   }
 
   await prisma.$transaction(
@@ -244,5 +251,5 @@ export async function reordenarFila(dados: FormData) {
     entidadeId: pasta.id,
     detalhes: { textos: ids.length },
   });
-  voltar(destino, 'Ordem da fila salva.', 'ok');
+  voltar(destino, t('ordemSalva'), 'ok');
 }

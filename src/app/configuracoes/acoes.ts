@@ -7,9 +7,17 @@ import { podeFazer } from '@/lib/autorizacao';
 import { NaoAutorizado } from '@/lib/erros';
 import { registrarAuditoria } from '@/lib/auditoria';
 import { comAviso } from '@/lib/navegacao';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { destinoDosAlertas } from '@/lib/alertas';
 import { enviarTexto, problemaNoChatId } from '@/lib/telegram';
 import { env } from '@/lib/env';
+
+/** As três origens da precedência da seção 7.4, como chave de tradução. */
+const CHAVE_DA_ORIGEM = {
+  settings: 'origemSettings',
+  ambiente: 'origemAmbiente',
+  nenhum: 'origemNenhum',
+} as const;
 
 function voltar(mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
   redirect(comAviso('/configuracoes', tipo, mensagem));
@@ -24,15 +32,16 @@ export async function salvarDestinoDosAlertas(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'alertas.configurarDestino')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const chatId = String(dados.get('alertsChatId') ?? '').trim();
   const webhook = String(dados.get('googleChatWebhook') ?? '').trim();
 
   if (chatId) {
     const problema = problemaNoChatId(chatId);
-    if (problema) voltar(problema);
+    if (problema) voltar(frase(problema));
   }
   if (webhook && !/^https:\/\/chat\.googleapis\.com\//.test(webhook)) {
-    voltar('O webhook do Google Chat comeca com https://chat.googleapis.com/ — confira o endereco copiado.');
+    voltar(t('webhookInvalido'));
   }
 
   await prisma.settings.upsert({
@@ -57,19 +66,22 @@ export async function salvarDestinoDosAlertas(dados: FormData) {
     entidadeId: 'singleton',
     detalhes: { chatIdDefinido: chatId !== '', webhookDefinido: webhook !== '' },
   });
-  voltar('Destino dos alertas salvo.', 'ok');
+  voltar(t('destinoSalvo'), 'ok');
 }
 
 export async function testarCanalDeAlerta(dados: FormData) {
   const sessao = await exigirCsrf(dados);
   if (!podeFazer(sessao.perfil, 'alertas.configurarDestino')) throw new NaoAutorizado();
 
+  const { t, frase } = await tradutorDeAvisos();
   const canal = String(dados.get('canal') ?? 'telegram');
   const destino = await destinoDosAlertas(prisma);
+  const origemDoChat = t(CHAVE_DA_ORIGEM[destino.origemDoChat]);
+  const origemDoWebhook = t(CHAVE_DA_ORIGEM[destino.origemDoWebhook]);
 
   if (canal === 'telegram') {
     if (!destino.chatId) {
-      voltar('Sem destino no Telegram: nem o campo acima nem ALERTS_CHAT_ID estao preenchidos. Os alertas ficam no log e no painel.');
+      voltar(t('semDestinoTelegram'));
     }
     const resposta = await enviarTexto(
       env.telegramBotToken,
@@ -81,12 +93,12 @@ export async function testarCanalDeAlerta(dados: FormData) {
       entidade: 'settings',
       detalhes: { canal: 'telegram', sucesso: resposta.ok, origem: destino.origemDoChat },
     });
-    if (!resposta.ok) voltar(`Falhou: ${resposta.erro}`);
-    voltar(`Alerta de teste enviado ao Telegram (destino vindo de ${destino.origemDoChat}).`, 'ok');
+    if (!resposta.ok) voltar(t('publicacaoFalhou', { erro: frase(resposta.problema) }));
+    voltar(t('testeTelegramEnviado', { origem: origemDoChat }), 'ok');
   }
 
   if (!destino.webhook) {
-    voltar('Sem webhook do Google Chat configurado, nem no campo acima nem em GOOGLE_CHAT_WEBHOOK.');
+    voltar(t('semWebhook'));
   }
   try {
     const resposta = await fetch(destino.webhook, {
@@ -100,9 +112,11 @@ export async function testarCanalDeAlerta(dados: FormData) {
       entidade: 'settings',
       detalhes: { canal: 'google_chat', sucesso: resposta.ok, origem: destino.origemDoWebhook },
     });
-    if (!resposta.ok) voltar(`O Google Chat respondeu ${resposta.status}.`);
+    if (!resposta.ok) voltar(t('googleChatRespondeu', { status: resposta.status }));
   } catch (erro) {
-    voltar(`Falhou ao chamar o webhook: ${erro instanceof Error ? erro.message : 'erro desconhecido'}`);
+    voltar(
+      t('webhookFalhou', { erro: erro instanceof Error ? erro.message : t('erroDesconhecido') }),
+    );
   }
-  voltar(`Alerta de teste enviado ao Google Chat (destino vindo de ${destino.origemDoWebhook}).`, 'ok');
+  voltar(t('testeGoogleChatEnviado', { origem: origemDoWebhook }), 'ok');
 }

@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { SeletorDeOrganizacao } from '@/components/seletor-organizacao';
 import { ArtePainel, ArteTextos, ArteConfiguracao, ArteSistema } from '@/components/ilustracoes';
 import { BotaoSair } from '@/components/sair';
+import { SeletorDeIdioma } from '@/components/seletor-idioma';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -13,12 +15,15 @@ import { escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
 
 export const dynamic = 'force-dynamic';
 
-const ROTULO_DO_PERFIL = { superadmin: 'Superadmin', admin: 'Admin', usuario: 'Usuário' } as const;
-
 export default async function Inicio() {
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
+
+  const t = await getTranslations('inicio');
+  const menu = await getTranslations('menu');
+  const comum = await getTranslations('comum');
+  const perfis = await getTranslations('perfis');
 
   const organizacoes =
     sessao.perfil === 'superadmin'
@@ -43,46 +48,43 @@ export default async function Inicio() {
     {
       href: '/painel',
       arte: <ArtePainel />,
-      titulo: 'Painel de controle',
-      sub: 'O que já foi publicado e o que vem a seguir',
-      texto:
-        'Próxima publicação de cada pasta, próximo texto da fila, últimos publicados e os alertas de erro ou fila curta.',
-      atalhos: ['Painel', 'Alertas'],
+      titulo: menu('painelDeControle'),
+      sub: t('blocoPainelSub'),
+      texto: t('blocoPainelTexto'),
+      atalhos: [menu('painel'), menu('alertas')],
       visivel: true,
     },
     {
       href: '/textos',
       arte: <ArteTextos />,
-      titulo: 'Textos',
-      sub: 'Escrever, importar, exportar e conferir o histórico',
-      texto:
-        'A fila de cada pasta, com imagem opcional e reordenação. Importação de CSV e XLSX, exportação em cinco formatos e o histórico das publicações.',
-      atalhos: ['Lista de textos', 'Importação', 'Histórico'],
+      titulo: menu('textos'),
+      sub: t('blocoTextosSub'),
+      texto: t('blocoTextosTexto'),
+      atalhos: [menu('listaDeTextos'), menu('importacao'), menu('historico')],
       visivel: true,
     },
     {
       href: '/pastas',
       arte: <ArteConfiguracao />,
-      titulo: 'Configuração',
-      sub: 'Pastas, usuários e auditoria da organização',
-      texto:
-        'Grupos de destino no Telegram, fuso e agendamento de cada pasta, quem tem acesso a quê, e o registro de tudo que foi alterado.',
-      atalhos: ['Pastas', 'Usuários', 'Auditoria'],
+      titulo: menu('configuracao'),
+      sub: t('blocoConfiguracaoSub'),
+      texto: t('blocoConfiguracaoTexto'),
+      atalhos: [menu('pastas'), menu('usuarios'), menu('auditoria')],
       visivel: podeFazer(sessao.perfil, 'pastas.gerenciar'),
     },
     {
       href: '/organizacoes',
       arte: <ArteSistema />,
-      titulo: 'Sistema',
-      sub: 'Organizações e configurações globais',
-      texto:
-        'Criação e manutenção das organizações, destino dos alertas operacionais e o estado do bot e do dispatcher.',
-      atalhos: ['Organizações', 'Configurações globais'],
+      titulo: menu('sistema'),
+      sub: t('blocoSistemaSub'),
+      texto: t('blocoSistemaTexto'),
+      atalhos: [menu('organizacoes'), menu('configuracoesGlobais')],
       visivel: podeFazer(sessao.perfil, 'organizacoes.gerenciar'),
     },
   ].filter((b) => b.visivel);
 
-  const primeiroNome = sessao.nome.split(' ')[0];
+  // `split` pode devolver vazio para um nome só com espaços; o nome inteiro serve de reserva
+  const primeiroNome = sessao.nome.split(' ')[0] || sessao.nome;
 
   return (
     <div className="home">
@@ -100,22 +102,23 @@ export default async function Inicio() {
         ) : (
           <div className="orgpicker">
             <span className="dot" />
-            <span>{nomeDaOrganizacao ?? '—'}</span>
+            <span>{nomeDaOrganizacao ?? comum('nenhum')}</span>
           </div>
         )}
+        <SeletorDeIdioma />
         <BotaoTema />
       </div>
 
       <div className="home-hero">
-        <h1>Olá, {primeiroNome}.</h1>
+        <h1>{t('saudacao', { nome: primeiroNome })}</h1>
         {sessao.perfil === 'superadmin' && !orgEmVigor ? (
-          <p>
-            Escolha uma organização no seletor acima para operar pastas, textos e usuários. Enquanto
-            nenhuma estiver escolhida, você vê apenas as telas de sistema.
-          </p>
+          <p>{t('escolhaOrganizacao')}</p>
         ) : (
           <p>
-            Você está operando <b>{nomeDaOrganizacao ?? '—'}</b>. Escolha por onde começar.
+            {t.rich('operando', {
+              organizacao: nomeDaOrganizacao ?? comum('nenhum'),
+              b: (partes) => <b>{partes}</b>,
+            })}
           </p>
         )}
       </div>
@@ -140,7 +143,7 @@ export default async function Inicio() {
 
       <div className="home-foot">
         <span className="faint">
-          Entrou como <b>{sessao.nome}</b> · {ROTULO_DO_PERFIL[sessao.perfil]}
+          {comum('entrouComo')} <b>{sessao.nome}</b> · {perfis(sessao.perfil)}
         </span>
         <span className="spacer" />
         <BotaoSair token={tokenCsrfPara(sessao.sessaoId)} />

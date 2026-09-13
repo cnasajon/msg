@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { sessaoAtual } from '@/lib/sessao';
 import { prisma } from '@/lib/db';
 import { escopoDeAuditoria, escopoDePasta, escopoDePublicacao } from '@/lib/escopo';
-import { destinoDosAlertas, TITULO_DO_ALERTA, type TipoDeAlerta } from '@/lib/alertas';
+import { destinoDosAlertas, TITULO_DO_ALERTA } from '@/lib/alertas';
 import { formatarNoFuso, siglaDoFuso } from '@/lib/fuso';
 import { podeFazer } from '@/lib/autorizacao';
 
@@ -24,6 +25,13 @@ export default async function Alertas() {
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
+
+  const t = await getTranslations('alertas');
+  const tipos = await getTranslations('tiposDeAlerta');
+  const textos = await getTranslations('textos');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const destino = await destinoDosAlertas(prisma);
 
@@ -59,26 +67,31 @@ export default async function Alertas() {
   const filasCurtas = pastas.filter((p) => p.schedules.length > 0 && p.textos.length < 5);
 
   return (
-    <Casca sessao={sessao} titulo="Painel de alertas" caminho="Painel de controle" atual="/alertas">
+    <Casca
+      sessao={sessao}
+      titulo={t('titulo')}
+      caminho={menu('painelDeControle')}
+      atual="/alertas"
+    >
       <div className={destino.chatId ? 'banner info' : 'banner warn'}>
         <div>
-          <div className="ttl">Destino atual dos alertas</div>
+          <div className="ttl">{t('destinoAtual')}</div>
           {destino.chatId ? (
             <>
-              Telegram <code>{destino.chatId}</code>, vindo{' '}
-              {destino.origemDoChat === 'settings' ? 'das configurações globais' : 'da variável de ambiente'}.
-              {destino.webhook ? ' Google Chat também configurado.' : ''}
+              {t('destinoConfigurado', {
+                chatId: destino.chatId,
+                origem:
+                  destino.origemDoChat === 'settings' ? t('origemSettings') : t('origemAmbiente'),
+              })}
+              {destino.webhook ? ` ${t('googleChatTambem')}` : ''}
             </>
           ) : (
-            <>
-              Nenhum destino configurado: os alertas ficam <b>no log e neste painel</b>, que é o
-              terceiro nível da precedência da seção 7.4 — e é um estado válido, não uma falha.
-            </>
+            t.rich('semDestino', { b: (partes) => <b>{partes}</b> })
           )}
           {podeFazer(sessao.perfil, 'alertas.configurarDestino') ? (
             <>
               {' '}
-              <Link href="/configuracoes">Configurar destino</Link>
+              <Link href="/configuracoes">{t('configurarDestino')}</Link>
             </>
           ) : null}
         </div>
@@ -86,33 +99,33 @@ export default async function Alertas() {
 
       <div className="grid c3">
         <div className="card stat">
-          <div className="k">Publicações com erro</div>
+          <div className="k">{t('publicacoesComErro')}</div>
           <div className="v num">{comErro.length}</div>
-          <div className="d">a fila não avança enquanto não resolver</div>
+          <div className="d">{t('aFilaNaoAvanca')}</div>
         </div>
         <div className="card stat">
-          <div className="k">Slots perdidos</div>
+          <div className="k">{t('slotsPerdidos')}</div>
           <div className="v num">{perdidas}</div>
-          <div className="d">vencidos além da tolerância</div>
+          <div className="d">{t('vencidosAlemDaTolerancia')}</div>
         </div>
         <div className="card stat">
-          <div className="k">Pastas com fila curta</div>
+          <div className="k">{t('pastasComFilaCurta')}</div>
           <div className="v num">{filasCurtas.length}</div>
-          <div className="d">menos de cinco textos pendentes</div>
+          <div className="d">{t('menosDeCinco')}</div>
         </div>
       </div>
 
       {comErro.length > 0 ? (
         <div className="card">
           <header>
-            <h2>Publicações com erro</h2>
+            <h2>{t('publicacoesComErro')}</h2>
           </header>
           <table>
             <thead>
               <tr>
-                <th style={{ width: 160 }}>Slot</th>
-                <th style={{ width: 180 }}>Pasta</th>
-                <th>Erro</th>
+                <th style={{ width: 160 }}>{t('slot')}</th>
+                <th style={{ width: 180 }}>{t('pasta')}</th>
+                <th>{textos('erro')}</th>
                 <th style={{ width: 110 }} />
               </tr>
             </thead>
@@ -128,7 +141,7 @@ export default async function Alertas() {
                   <td style={{ color: 'var(--danger)' }}>{p.erroMensagem}</td>
                   <td>
                     <Link className="btn sm" href="/historico">
-                      Histórico
+                      {menu('historico')}
                     </Link>
                   </td>
                 </tr>
@@ -141,14 +154,14 @@ export default async function Alertas() {
       {filasCurtas.length > 0 ? (
         <div className="card">
           <header>
-            <h2>Filas curtas</h2>
+            <h2>{t('filasCurtas')}</h2>
           </header>
           <table>
             <thead>
               <tr>
-                <th>Pasta</th>
-                <th style={{ width: 130 }}>Pendentes</th>
-                <th style={{ width: 200 }}>Ao esgotar</th>
+                <th>{t('pasta')}</th>
+                <th style={{ width: 130 }}>{t('pendentes')}</th>
+                <th style={{ width: 200 }}>{t('aoEsgotar')}</th>
                 <th style={{ width: 160 }} />
               </tr>
             </thead>
@@ -159,13 +172,17 @@ export default async function Alertas() {
                   <td>
                     <span className={p.textos.length === 0 ? 'pill err' : 'pill warn'}>{p.textos.length}</span>
                   </td>
-                  <td>{p.aoEsgotar === 'reiniciar' ? 'reiniciar a fila' : 'parar e notificar'}</td>
+                  <td>
+                    {p.aoEsgotar === 'reiniciar'
+                      ? comum('reiniciarFila')
+                      : comum('pararNotificar')}
+                  </td>
                   <td>
                     <Link className="btn sm" href={`/textos?pasta=${p.id}`}>
-                      Abrir textos
+                      {t('abrirTextos')}
                     </Link>{' '}
                     <Link className="btn sm" href={`/importacao?pasta=${p.id}`}>
-                      Importar
+                      {t('importar')}
                     </Link>
                   </td>
                 </tr>
@@ -177,25 +194,25 @@ export default async function Alertas() {
 
       <div className="card">
         <header>
-          <h2>Alertas emitidos</h2>
+          <h2>{t('alertasEmitidos')}</h2>
           <span className="spacer" />
-          <span className="sub">últimos 100</span>
+          <span className="sub">{t('ultimos100')}</span>
         </header>
         <table>
           <thead>
             <tr>
-              <th style={{ width: 170 }}>Quando</th>
-              <th style={{ width: 210 }}>Tipo</th>
-              <th style={{ width: 170 }}>Pasta</th>
-              <th>Detalhe</th>
-              <th style={{ width: 120 }}>Envio</th>
+              <th style={{ width: 170 }}>{t('quando')}</th>
+              <th style={{ width: 210 }}>{t('tipo')}</th>
+              <th style={{ width: 170 }}>{t('pasta')}</th>
+              <th>{t('detalhe')}</th>
+              <th style={{ width: 120 }}>{t('envio')}</th>
             </tr>
           </thead>
           <tbody>
             {registros.length === 0 ? (
               <tr>
                 <td colSpan={5} className="faint">
-                  Nenhum alerta emitido ainda.
+                  {t('nenhumAlerta')}
                 </td>
               </tr>
             ) : (
@@ -204,17 +221,19 @@ export default async function Alertas() {
                 const tipo = detalhes.tipo ?? registro.entidadeId ?? '';
                 return (
                   <tr key={registro.id}>
-                    <td>{formatarNoFuso(registro.criadoEm, 'America/Sao_Paulo')}</td>
+                    <td>{formatarNoFuso(registro.criadoEm, 'America/Sao_Paulo', idioma)}</td>
                     <td>
                       <span className={CLASSE_DO_TIPO[tipo] ?? 'pill'}>
-                        {TITULO_DO_ALERTA[tipo as TipoDeAlerta] ?? detalhes.titulo ?? tipo}
+                        {tipo in TITULO_DO_ALERTA ? tipos(tipo) : (detalhes.titulo ?? tipo)}
                       </span>
                     </td>
-                    <td>{detalhes.pasta ?? <span className="faint">—</span>}</td>
+                    <td>{detalhes.pasta ?? <span className="faint">{comum('nenhum')}</span>}</td>
                     <td>{detalhes.mensagem}</td>
                     <td>
                       <span className="pill">
-                        {detalhes.destino === 'nenhum' ? 'só log' : `Telegram (${detalhes.destino})`}
+                        {detalhes.destino === 'nenhum'
+                          ? t('soLog')
+                          : `Telegram (${detalhes.destino})`}
                       </span>
                     </td>
                   </tr>
@@ -225,10 +244,7 @@ export default async function Alertas() {
         </table>
       </div>
 
-      <p className="faint">
-        A falha de um canal de alerta nunca interrompe a publicação nem gera novo alerta — só
-        registro no log.
-      </p>
+      <p className="faint">{t('falhaDeCanal')}</p>
     </Casca>
   );
 }

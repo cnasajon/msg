@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { trocarOrganizacaoAtiva } from '@/app/organizacoes/acoes';
 
 /**
@@ -15,11 +16,12 @@ export function SeletorDeOrganizacao({
   ativa: string | null;
 }) {
   const [pendente, iniciar] = useTransition();
+  const t = useTranslations('comum');
 
   return (
-    <div className="orgpicker" title="Organização que você está operando">
+    <div className="orgpicker" title={t('organizacaoAtiva')}>
       <span className="dot" />
-      <span className="faint">Organização ativa</span>
+      <span className="faint">{t('organizacaoAtiva')}</span>
       <select
         value={ativa ?? ''}
         disabled={pendente}
@@ -30,11 +32,11 @@ export function SeletorDeOrganizacao({
           });
         }}
       >
-        <option value="">— escolher —</option>
+        <option value="">{t('escolher')}</option>
         {organizacoes.map((o) => (
           <option key={o.id} value={o.id}>
             {o.nome}
-            {o.ativa ? '' : ' (inativa)'}
+            {o.ativa ? '' : ` (${t('inativa')})`}
           </option>
         ))}
       </select>

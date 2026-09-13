@@ -140,7 +140,7 @@ export async function alertar(
       enviadoAoTelegram = resposta.ok;
       if (!resposta.ok) {
         console.log(
-          JSON.stringify({ servico: 'alerta', em: new Date().toISOString(), canal: 'telegram', falhou: resposta.erro }),
+          JSON.stringify({ servico: 'alerta', em: new Date().toISOString(), canal: 'telegram', falhou: resposta.problema.chave }),
         );
       }
     } catch (erro) {

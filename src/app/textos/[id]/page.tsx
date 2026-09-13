@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -26,6 +27,12 @@ export default async function EditarTexto({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
 
+  const t = await getTranslations('editor');
+  const lista = await getTranslations('textos');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+  const idioma = await getLocale();
+
   const { id } = await params;
   const { erro, ok } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -38,22 +45,29 @@ export default async function EditarTexto({
   const temImagem = texto.imagem !== null;
 
   return (
-    <Casca sessao={sessao} titulo="Editar texto" caminho={`Textos · ${pasta.nome}`} atual="/textos">
+    <Casca
+      sessao={sessao}
+      titulo={t('editarTextoTitulo')}
+      caminho={`${menu('textos')} · ${pasta.nome}`}
+      atual="/textos"
+    >
       <Avisos erro={erro} ok={ok} />
 
       {texto.status === 'arquivado' ? (
         <div className="banner warn">
           <div>
-            Este texto está arquivado desde{' '}
-            {texto.arquivadoEm ? formatarNoFuso(texto.arquivadoEm, pasta.timezone) : '—'}. Ele não
-            entra na fila.
+            {t('arquivadoDesde', {
+              quando: texto.arquivadoEm
+                ? formatarNoFuso(texto.arquivadoEm, pasta.timezone, idioma)
+                : comum('nenhum'),
+            })}
           </div>
         </div>
       ) : null}
       {texto.erroMensagem ? (
         <div className="banner err">
           <div>
-            <div className="ttl">Última publicação falhou</div>
+            <div className="ttl">{t('ultimaFalhou')}</div>
             {texto.erroMensagem}
           </div>
         </div>
@@ -62,7 +76,7 @@ export default async function EditarTexto({
       <div className="grid c2">
         <div className="card">
           <header>
-            <h2>Conteúdo</h2>
+            <h2>{t('conteudo')}</h2>
           </header>
           <div className="body">
             <form action={editarTexto}>
@@ -75,10 +89,10 @@ export default async function EditarTexto({
               />
               <div style={{ display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' }}>
                 <button className="btn primary" type="submit">
-                  Salvar
+                  {comum('salvar')}
                 </button>
                 <Link className="btn" href={`/textos?pasta=${pasta.id}`}>
-                  Voltar
+                  {comum('voltar')}
                 </Link>
               </div>
             </form>
@@ -88,7 +102,7 @@ export default async function EditarTexto({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="card">
             <header>
-              <h2>Pré-visualização</h2>
+              <h2>{t('preVisualizacao')}</h2>
             </header>
             <div className="body">
               <div className="preview">
@@ -98,47 +112,55 @@ export default async function EditarTexto({
                 </div>
               </div>
               <p className="faint" style={{ margin: '12px 0 0' }}>
-                Com imagem, o envio usa <code>sendPhoto</code> com o texto como legenda. Sem imagem,{' '}
-                <code>sendMessage</code>.
+                {t('comoVaiSair')}
               </p>
             </div>
           </div>
 
           <div className="card">
             <header>
-              <h2>Situação</h2>
+              <h2>{lista('situacao')}</h2>
             </header>
             <div className="body">
               <dl className="kv">
-                <dt>Pasta</dt>
+                <dt>{menu('pastas')}</dt>
                 <dd>{pasta.nome}</dd>
-                <dt>Grupo de destino</dt>
+                <dt>{t('grupoDeDestino')}</dt>
                 <dd>
                   {pasta.telegramChatId ? (
                     <code>{pasta.telegramChatId}</code>
                   ) : (
-                    <span className="faint">não configurado</span>
+                    <span className="faint">{t('naoConfigurado')}</span>
                   )}
                 </dd>
-                <dt>Situação</dt>
+                <dt>{lista('situacao')}</dt>
                 <dd>
                   <span
                     className={
                       texto.status === 'publicado' ? 'pill ok' : texto.status === 'erro' ? 'pill err' : 'pill'
                     }
                   >
-                    {texto.status}
+                    {lista(texto.status)}
                   </span>
                 </dd>
-                <dt>Posição na fila</dt>
-                <dd>{texto.status === 'pendente' ? texto.ordem : <span className="faint">fora da fila</span>}</dd>
-                <dt>Tamanho</dt>
+                <dt>{t('posicaoNaFila')}</dt>
                 <dd>
-                  {tamanhoDoTexto(texto.conteudo)} caracteres · limite {temImagem ? 1024 : 4096}
+                  {texto.status === 'pendente' ? (
+                    texto.ordem
+                  ) : (
+                    <span className="faint">{t('foraDaFila')}</span>
+                  )}
+                </dd>
+                <dt>{t('tamanho')}</dt>
+                <dd>
+                  {t('tamanhoValor', {
+                    quantidade: tamanhoDoTexto(texto.conteudo),
+                    limite: temImagem ? 1024 : 4096,
+                  })}
                 </dd>
                 {texto.imagemBytes ? (
                   <>
-                    <dt>Imagem</dt>
+                    <dt>{t('imagem')}</dt>
                     <dd>
                       {texto.imagemBytes < 1024
                         ? `${texto.imagemBytes} B`
@@ -148,12 +170,12 @@ export default async function EditarTexto({
                     </dd>
                   </>
                 ) : null}
-                <dt>Publicado em</dt>
+                <dt>{lista('publicadoEm')}</dt>
                 <dd>
                   {texto.publicadoEm ? (
-                    formatarNoFuso(texto.publicadoEm, pasta.timezone)
+                    formatarNoFuso(texto.publicadoEm, pasta.timezone, idioma)
                   ) : (
-                    <span className="faint">ainda não</span>
+                    <span className="faint">{t('aindaNao')}</span>
                   )}
                 </dd>
               </dl>
@@ -162,7 +184,7 @@ export default async function EditarTexto({
 
           <div className="card">
             <header>
-              <h2>Publicar</h2>
+              <h2>{t('publicar')}</h2>
             </header>
             <div className="body" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
               {texto.status === 'erro' ? (
@@ -171,7 +193,7 @@ export default async function EditarTexto({
                   <input type="hidden" name="id" value={texto.id} />
                   <input type="hidden" name="destino" value={`/textos/${texto.id}`} />
                   <button className="btn primary" type="submit" disabled={!pasta.telegramChatId}>
-                    Reenviar agora
+                    {t('reenviarAgora')}
                   </button>
                 </form>
               ) : (
@@ -184,7 +206,7 @@ export default async function EditarTexto({
                     type="submit"
                     disabled={!pasta.telegramChatId || texto.status !== 'pendente'}
                   >
-                    Publicar agora
+                    {lista('publicarAgora')}
                   </button>
                 </form>
               )}
@@ -194,21 +216,19 @@ export default async function EditarTexto({
                   <input type="hidden" name="id" value={texto.id} />
                   <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
                   <button className="btn" type="submit">
-                    Pular
+                    {lista('pular')}
                   </button>
                 </form>
               ) : null}
               <span className="faint" style={{ flexBasis: '100%' }}>
-                {pasta.telegramChatId
-                  ? 'Publicar agora envia ao grupo na hora e registra a publicação como manual. Pular manda o texto para o fim da fila, sem publicar.'
-                  : 'Cadastre o chat_id da pasta para poder publicar.'}
+                {pasta.telegramChatId ? t('explicacaoPublicar') : t('semChatId')}
               </span>
             </div>
           </div>
 
           <div className="card">
             <header>
-              <h2>Tirar da lista</h2>
+              <h2>{t('tirarDaLista')}</h2>
             </header>
             <div className="body" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
               {texto.status === 'arquivado' ? (
@@ -217,7 +237,7 @@ export default async function EditarTexto({
                   <input type="hidden" name="id" value={texto.id} />
                   <input type="hidden" name="destino" value={`/textos/${texto.id}`} />
                   <button className="btn" type="submit">
-                    Desarquivar
+                    {lista('desarquivar')}
                   </button>
                 </form>
               ) : (
@@ -226,7 +246,7 @@ export default async function EditarTexto({
                   <input type="hidden" name="id" value={texto.id} />
                   <input type="hidden" name="destino" value={`/textos/${texto.id}`} />
                   <button className="btn" type="submit">
-                    Arquivar
+                    {lista('arquivar')}
                   </button>
                 </form>
               )}
@@ -234,12 +254,11 @@ export default async function EditarTexto({
                 <CampoCsrf token={csrf} />
                 <input type="hidden" name="id" value={texto.id} />
                 <button className="btn danger" type="submit">
-                  Excluir
+                  {t('excluir')}
                 </button>
               </form>
               <span className="faint" style={{ flexBasis: '100%' }}>
-                Arquivar preserva o registro e é o caminho normal. Excluir apaga o texto — o
-                histórico das publicações sobrevive, porque a publicação guarda o que foi ao ar.
+                {t('explicacaoTirar')}
               </span>
             </div>
           </div>

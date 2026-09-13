@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { LIMITE_COM_IMAGEM, LIMITE_SEM_IMAGEM } from '@/lib/textos';
 
 /**
@@ -21,6 +22,7 @@ export function EditorDeTexto({
   temImagemInicial?: boolean;
   urlDaImagem?: string | null;
 }) {
+  const t = useTranslations('editor');
   const [conteudo, setConteudo] = useState(valorInicial);
   const [temImagem, setTemImagem] = useState(temImagemInicial);
   const [removendo, setRemovendo] = useState(false);
@@ -35,7 +37,7 @@ export function EditorDeTexto({
     <>
       <label className="field">
         <span className="lbl">
-          Texto · <code>parse_mode: HTML</code>
+          {t('campoTexto')} · <code>parse_mode: HTML</code>
         </span>
         <textarea
           name={nome}
@@ -45,7 +47,7 @@ export function EditorDeTexto({
           required
         />
         <span className="hint">
-          Tags aceitas: <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code>{' '}
+          {t('tagsAceitas')} <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code>{' '}
           <code>&lt;s&gt;</code> <code>&lt;a href&gt;</code> <code>&lt;code&gt;</code>{' '}
           <code>&lt;pre&gt;</code> <code>&lt;blockquote&gt;</code> <code>&lt;tg-spoiler&gt;</code>
         </span>
@@ -55,18 +57,14 @@ export function EditorDeTexto({
         <div className="bar">
           <i style={{ width: `${Math.min(100, (usados / limite) * 100)}%` }} />
         </div>
-        <span className="n">
-          {usados} / {limite} caracteres
-        </span>
+        <span className="n">{t('contador', { usados, limite })}</span>
       </div>
 
       {excedeu && comImagem ? (
         <div className="banner err" style={{ marginTop: 12 }}>
           <div>
-            <div className="ttl">Acima do limite de legenda</div>
-            Com imagem anexada o limite é {LIMITE_COM_IMAGEM} caracteres, porque o texto vai como
-            legenda da foto. Reduza o texto ou remova a imagem para voltar ao limite de{' '}
-            {LIMITE_SEM_IMAGEM}.
+            <div className="ttl">{t('acimaDoLimiteTitulo')}</div>
+            {t('acimaDoLimiteTexto')}
           </div>
         </div>
       ) : null}
@@ -78,7 +76,7 @@ export function EditorDeTexto({
           {urlDaImagem ? <img className="thumb lg" src={urlDaImagem} alt="" /> : null}
           <div>
             <p className="faint" style={{ marginTop: 0 }}>
-              Imagem guardada no banco e servida por rota autenticada.
+              {t('imagemGuardada')}
             </p>
             <button
               type="button"
@@ -88,7 +86,7 @@ export function EditorDeTexto({
                 setTemImagem(false);
               }}
             >
-              Remover imagem
+              {t('removerImagem')}
             </button>
             <input type="hidden" name="removerImagem" value={removendo ? 'on' : ''} />
           </div>
@@ -98,7 +96,7 @@ export function EditorDeTexto({
           {removendo ? (
             <div className="banner warn" style={{ marginBottom: 12 }}>
               <div>
-                Imagem marcada para remoção — o limite volta a ser {LIMITE_SEM_IMAGEM} caracteres.{' '}
+                {t('marcadaParaRemocao')}{' '}
                 <button
                   type="button"
                   className="btn sm"
@@ -107,7 +105,7 @@ export function EditorDeTexto({
                     setTemImagem(true);
                   }}
                 >
-                  Desfazer
+                  {t('desfazer')}
                 </button>
               </div>
               <input type="hidden" name="removerImagem" value="on" />
@@ -115,7 +113,7 @@ export function EditorDeTexto({
           ) : null}
 
           <label className="field">
-            <span className="lbl">Imagem (opcional)</span>
+            <span className="lbl">{t('imagemOpcional')}</span>
             <input
               type="file"
               name="imagem"
@@ -128,9 +126,8 @@ export function EditorDeTexto({
               }}
             />
             <span className="hint">
-              JPEG, PNG ou WebP. A imagem é reduzida para no máximo 1600 px no lado maior,
-              recomprimida e tem os metadados EXIF removidos.{' '}
-              {nomeDoArquivo ? <b>Selecionado: {nomeDoArquivo}</b> : null}
+              {t('regraDaImagem')}{' '}
+              {nomeDoArquivo ? <b>{t('selecionado', { arquivo: nomeDoArquivo })}</b> : null}
             </span>
           </label>
         </>

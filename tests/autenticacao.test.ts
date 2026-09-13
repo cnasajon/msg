@@ -1,6 +1,7 @@
 /** Senha, senha provisória e limite de tentativas. */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { gerarHashDeSenha, senhaConfere, problemaNaSenha, gerarSenhaProvisoria } from '@/lib/senha';
+import { frase } from './helpers/frase';
 import { permiteTentativaDeLogin, limparTentativas, zerarContadores } from '@/lib/rate-limit';
 
 describe('senha', () => {
@@ -18,14 +19,14 @@ describe('senha', () => {
   it('exige 8 caracteres, maiúscula, número e especial', () => {
     expect(problemaNaSenha('Ab1!cdef')).toBeNull();
 
-    expect(problemaNaSenha('Ab1!cde')).toMatch(/8 caracteres/);
-    expect(problemaNaSenha('ab1!cdef')).toMatch(/maiúscula/);
-    expect(problemaNaSenha('Abc!defg')).toMatch(/número/);
-    expect(problemaNaSenha('Abc1defg')).toMatch(/especial/);
+    expect(frase(problemaNaSenha('Ab1!cde'))).toMatch(/8 caracteres/);
+    expect(frase(problemaNaSenha('ab1!cdef'))).toMatch(/maiúscula/);
+    expect(frase(problemaNaSenha('Abc!defg'))).toMatch(/número/);
+    expect(frase(problemaNaSenha('Abc1defg'))).toMatch(/especial/);
   });
 
   it('reúne tudo que falta numa mensagem só', () => {
-    const problema = problemaNaSenha('abc');
+    const problema = frase(problemaNaSenha('abc'));
     expect(problema).toMatch(/8 caracteres/);
     expect(problema).toMatch(/maiúscula/);
     expect(problema).toMatch(/número/);
@@ -34,17 +35,17 @@ describe('senha', () => {
 
   it('senha comprida sem os requisitos continua recusada', () => {
     // a regra antiga passava só pelo tamanho; esta não passa
-    expect(problemaNaSenha('uma senha longa o bastante')).toMatch(/maiúscula/);
+    expect(frase(problemaNaSenha('uma senha longa o bastante'))).toMatch(/maiúscula/);
   });
 
   it('acento não conta como caractere especial, e maiúscula acentuada conta', () => {
-    expect(problemaNaSenha('Senha123á')).toMatch(/especial/);
+    expect(frase(problemaNaSenha('Senha123á'))).toMatch(/especial/);
     expect(problemaNaSenha('Ática123!')).toBeNull();
   });
 
   it('espaço nas pontas e senha longa demais são recusados', () => {
-    expect(problemaNaSenha(' Ab1!cdef')).toMatch(/espaço/);
-    expect(problemaNaSenha('Ab1!cdef'.repeat(30))).toMatch(/longa demais/);
+    expect(frase(problemaNaSenha(' Ab1!cdef'))).toMatch(/espaço/);
+    expect(frase(problemaNaSenha('Ab1!cdef'.repeat(30)))).toMatch(/longa demais/);
   });
 
   it('senha provisória não usa caracteres ambíguos', () => {

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -10,14 +11,15 @@ import { destinoDosAlertas } from '@/lib/alertas';
 import { conferirBot } from '@/lib/telegram';
 import { env } from '@/lib/env';
 import { formatarNoFuso } from '@/lib/fuso';
+import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { salvarDestinoDosAlertas, testarCanalDeAlerta } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
-const EXPLICACAO_DA_ORIGEM = {
-  settings: 'o campo desta tela',
-  ambiente: 'a variável de ambiente',
-  nenhum: 'nenhum — só log e painel',
+const CHAVE_DA_ORIGEM = {
+  settings: 'origemSettings',
+  ambiente: 'origemAmbiente',
+  nenhum: 'origemNenhum',
 } as const;
 
 export default async function Configuracoes({
@@ -29,6 +31,11 @@ export default async function Configuracoes({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
   if (!podeFazer(sessao.perfil, 'alertas.configurarDestino')) redirect('/inicio');
+
+  const t = await getTranslations('configuracoes');
+  const menu = await getTranslations('menu');
+  const idioma = await getLocale();
+  const { frase } = await tradutorDeAvisos();
 
   const { erro, ok } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -42,18 +49,20 @@ export default async function Configuracoes({
   const sobreposicoes = await prisma.folder.count({ where: { telegramBotTokenCifrado: { not: null } } });
 
   return (
-    <Casca sessao={sessao} titulo="Configurações globais" caminho="Sistema · só superadmin" atual="/configuracoes">
+    <Casca
+      sessao={sessao}
+      titulo={t('titulo')}
+      caminho={`${menu('sistema')} · ${t('soSuperadmin')}`}
+      atual="/configuracoes"
+    >
       <Avisos erro={erro} ok={ok} />
 
       <div className="banner info">
         <div>
-          <div className="ttl">Precedência do destino dos alertas</div>
-          1. o campo desta tela · 2. senão a variável de ambiente · 3. senão apenas o log da aplicação
-          e o painel de alertas.
+          <div className="ttl">{t('precedenciaTitulo')}</div>
+          {t('precedenciaLinha')}
           <br />
-          A variável de ambiente é o destino garantido: continua funcionando quando o próprio banco
-          está inacessível — justamente quando o alerta é mais necessário. O campo daqui existe para
-          trocar o grupo sem redeploy. <b>Os dois podem ficar vazios</b> sem quebrar nada.
+          {t.rich('precedenciaExplicacao', { b: (partes) => <b>{partes}</b> })}
         </div>
       </div>
 
@@ -62,35 +71,49 @@ export default async function Configuracoes({
         <div className="grid c2">
           <div className="card">
             <header>
-              <h2>Telegram — grupo de alertas</h2>
+              <h2>{t('telegramTitulo')}</h2>
             </header>
             <div className="body">
               <label className="field">
-                <span className="lbl">chat_id do grupo de alertas</span>
+                <span className="lbl">{t('chatIdAlertas')}</span>
                 <input
                   type="text"
                   name="alertsChatId"
                   defaultValue={configuracao?.alertsChatId ?? ''}
-                  placeholder="(vazio — usando ALERTS_CHAT_ID, se houver)"
+                  placeholder={t('chatIdPlaceholder')}
                 />
-                <span className="hint">
-                  Grupo só com os superadmins. O bot precisa ser membro. Promova a supergroup antes
-                  de anotar o número.
-                </span>
+                <span className="hint">{t('chatIdHint')}</span>
               </label>
               <dl className="kv" style={{ gridTemplateColumns: '230px 1fr' }}>
-                <dt>Valor nesta tela</dt>
-                <dd>{configuracao?.alertsChatId ? <code>{configuracao.alertsChatId}</code> : <span className="faint">vazio</span>}</dd>
+                <dt>{t('valorNestaTela')}</dt>
+                <dd>
+                  {configuracao?.alertsChatId ? (
+                    <code>{configuracao.alertsChatId}</code>
+                  ) : (
+                    <span className="faint">{t('vazio')}</span>
+                  )}
+                </dd>
                 <dt>
-                  Variável <code>ALERTS_CHAT_ID</code>
+                  {t('variavel')} <code>ALERTS_CHAT_ID</code>
                 </dt>
-                <dd>{env.alertsChatId ? <code>{env.alertsChatId}</code> : <span className="faint">vazia</span>}</dd>
+                <dd>
+                  {env.alertsChatId ? (
+                    <code>{env.alertsChatId}</code>
+                  ) : (
+                    <span className="faint">{t('vazia')}</span>
+                  )}
+                </dd>
                 <dt>
-                  <b>Destino em vigor</b>
+                  <b>{t('destinoEmVigor')}</b>
                 </dt>
                 <dd>
                   <span className={destino.chatId ? 'pill ok' : 'pill warn'}>
-                    {destino.chatId ? `${destino.chatId} — de ${EXPLICACAO_DA_ORIGEM[destino.origemDoChat]}` : 'somente log e painel'}
+                    {destino.chatId
+                      ? t('vindoDe', {
+                          chatId: destino.chatId,
+                          origem: t(CHAVE_DA_ORIGEM[destino.origemDoChat]),
+                        })
+                      : t('somenteLogEPainel')}
                   </span>
                 </dd>
               </dl>
@@ -99,32 +122,46 @@ export default async function Configuracoes({
 
           <div className="card">
             <header>
-              <h2>Google Chat — webhook (opcional)</h2>
+              <h2>{t('googleChatTitulo')}</h2>
             </header>
             <div className="body">
               <label className="field">
-                <span className="lbl">URL do webhook</span>
+                <span className="lbl">{t('urlWebhook')}</span>
                 <input
                   type="text"
                   name="googleChatWebhook"
                   defaultValue={configuracao?.googleChatWebhook ?? ''}
-                  placeholder="(vazio — usando GOOGLE_CHAT_WEBHOOK, se houver)"
+                  placeholder={t('webhookPlaceholder')}
                 />
-                <span className="hint">Canal adicional, nunca substituto do Telegram.</span>
+                <span className="hint">{t('webhookHint')}</span>
               </label>
               <dl className="kv" style={{ gridTemplateColumns: '230px 1fr' }}>
-                <dt>Valor nesta tela</dt>
-                <dd>{configuracao?.googleChatWebhook ? 'definido' : <span className="faint">vazio</span>}</dd>
+                <dt>{t('valorNestaTela')}</dt>
+                <dd>
+                  {configuracao?.googleChatWebhook ? (
+                    t('definido')
+                  ) : (
+                    <span className="faint">{t('vazio')}</span>
+                  )}
+                </dd>
                 <dt>
-                  Variável <code>GOOGLE_CHAT_WEBHOOK</code>
+                  {t('variavel')} <code>GOOGLE_CHAT_WEBHOOK</code>
                 </dt>
-                <dd>{env.googleChatWebhook ? 'definida' : <span className="faint">vazia</span>}</dd>
+                <dd>
+                  {env.googleChatWebhook ? (
+                    t('definida')
+                  ) : (
+                    <span className="faint">{t('vazia')}</span>
+                  )}
+                </dd>
                 <dt>
-                  <b>Destino em vigor</b>
+                  <b>{t('destinoEmVigor')}</b>
                 </dt>
                 <dd>
                   <span className={destino.webhook ? 'pill ok' : 'pill'}>
-                    {destino.webhook ? `de ${EXPLICACAO_DA_ORIGEM[destino.origemDoWebhook]}` : 'desativado'}
+                    {destino.webhook
+                      ? t('webhookDe', { origem: t(CHAVE_DA_ORIGEM[destino.origemDoWebhook]) })
+                      : t('desativado')}
                   </span>
                 </dd>
               </dl>
@@ -134,12 +171,14 @@ export default async function Configuracoes({
 
         <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           <button className="btn primary" type="submit">
-            Salvar destino dos alertas
+            {t('salvarDestino')}
           </button>
           {configuracao?.atualizadoEm ? (
             <span className="faint">
-              Última alteração em {formatarNoFuso(configuracao.atualizadoEm, 'America/Sao_Paulo')}
-              {configuracao.autor ? ` por ${configuracao.autor.nome}` : ''}
+              {t('ultimaAlteracao', {
+                quando: formatarNoFuso(configuracao.atualizadoEm, 'America/Sao_Paulo', idioma),
+              })}
+              {configuracao.autor ? ` ${t('porAutor', { nome: configuracao.autor.nome })}` : ''}
             </span>
           ) : null}
         </div>
@@ -147,26 +186,25 @@ export default async function Configuracoes({
 
       <div className="card">
         <header>
-          <h2>Testar os canais</h2>
+          <h2>{t('testarCanais')}</h2>
         </header>
         <div className="body" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <form action={testarCanalDeAlerta}>
             <CampoCsrf token={csrf} />
             <input type="hidden" name="canal" value="telegram" />
             <button className="btn" type="submit">
-              Enviar alerta de teste no Telegram
+              {t('testarTelegram')}
             </button>
           </form>
           <form action={testarCanalDeAlerta}>
             <CampoCsrf token={csrf} />
             <input type="hidden" name="canal" value="google_chat" />
             <button className="btn" type="submit">
-              Enviar alerta de teste no Google Chat
+              {t('testarGoogleChat')}
             </button>
           </form>
           <span className="faint" style={{ flexBasis: '100%' }}>
-            O teste usa o destino em vigor, com a precedência acima. Salve antes de testar, se acabou
-            de mudar o campo.
+            {t('testeExplicacao')}
           </span>
         </div>
       </div>
@@ -174,39 +212,36 @@ export default async function Configuracoes({
       <div className="grid c2">
         <div className="card">
           <header>
-            <h2>Bot do Telegram</h2>
+            <h2>{t('botTitulo')}</h2>
             <span className="spacer" />
-            <span className="sub">somente leitura</span>
+            <span className="sub">{t('somenteLeitura')}</span>
           </header>
           <div className="body">
             <dl className="kv">
-              <dt>Bot em uso</dt>
+              <dt>{t('botEmUso')}</dt>
               <dd>
                 {bot.ok ? (
                   <>
-                    <b>@{bot.username}</b> <span className="pill ok">autenticando</span>
+                    <b>@{bot.username}</b> <span className="pill ok">{t('autenticando')}</span>
                   </>
                 ) : (
                   <>
-                    <span className="pill err">falha de autenticação</span>
-                    <div className="faint">{bot.erro}</div>
+                    <span className="pill err">{t('falhaDeAutenticacao')}</span>
+                    <div className="faint">{bot.problema ? frase(bot.problema) : null}</div>
                   </>
                 )}
               </dd>
-              <dt>Token</dt>
+              <dt>{t('token')}</dt>
               <dd>
-                variável compartilhada <code>TELEGRAM_BOT_TOKEN</code>
-                <div className="faint">
-                  O valor nunca é exibido, nem aqui nem em log ou mensagem de erro. Em caso de
-                  suspeita de vazamento, <code>/revoke</code> no @BotFather e atualização da variável.
-                </div>
+                {t('variavelCompartilhada')} <code>TELEGRAM_BOT_TOKEN</code>
+                <div className="faint">{t('tokenExplicacao')}</div>
               </dd>
-              <dt>Sobreposições por pasta</dt>
+              <dt>{t('sobreposicoes')}</dt>
               <dd>
                 {sobreposicoes === 0 ? (
-                  <span className="faint">nenhuma pasta com token próprio</span>
+                  <span className="faint">{t('nenhumaSobreposicao')}</span>
                 ) : (
-                  `${sobreposicoes} pasta(s) com token próprio`
+                  t('comTokenProprio', { quantidade: sobreposicoes })
                 )}
               </dd>
             </dl>
@@ -215,37 +250,31 @@ export default async function Configuracoes({
 
         <div className="card">
           <header>
-            <h2>Dispatcher</h2>
+            <h2>{t('dispatcherTitulo')}</h2>
             <span className="spacer" />
-            <span className="sub">
-              somente leitura · serviço <code>worker</code>
-            </span>
+            <span className="sub">{t('servicoWorker')}</span>
           </header>
           <div className="body">
             <dl className="kv">
-              <dt>Intervalo do ciclo</dt>
+              <dt>{t('intervalo')}</dt>
               <dd>
-                {env.dispatchIntervalMinutes} minutos{' '}
+                {t('minutos', { quantidade: env.dispatchIntervalMinutes })}{' '}
                 <span className="faint">
                   (<code>DISPATCH_INTERVAL_MINUTES</code>)
                 </span>
               </dd>
-              <dt>Tolerância</dt>
+              <dt>{t('tolerancia')}</dt>
               <dd>
-                {env.dispatchGraceMinutes} minutos{' '}
-                <span className="faint">
-                  (<code>DISPATCH_GRACE_MINUTES</code>) — passado isso o slot vira “perdido”, e nunca
-                  é publicado com atraso
-                </span>
+                {t('minutos', { quantidade: env.dispatchGraceMinutes })}{' '}
+                <span className="faint">{t('toleranciaExplicacao')}</span>
               </dd>
-              <dt>Fuso dos serviços</dt>
+              <dt>{t('fusoDosServicos')}</dt>
               <dd>
-                <code>TZ={process.env.TZ ?? 'não definido'}</code> — a conversão para o fuso da pasta
-                acontece na aplicação
+                <code>TZ={process.env.TZ ?? t('naoDefinido')}</code> {t('conversaoNaAplicacao')}
               </dd>
-              <dt>Réplicas</dt>
+              <dt>{t('replicas')}</dt>
               <dd>
-                1 <span className="faint">— fixa, configurada no painel do Railway</span>
+                1 <span className="faint">{t('replicaFixa')}</span>
               </dd>
             </dl>
           </div>

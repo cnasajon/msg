@@ -1,17 +1,21 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { sessaoAtual } from '@/lib/sessao';
 import { FormularioDeLogin } from './formulario';
+import { SeletorDeIdioma } from '@/components/seletor-idioma';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Entrar() {
   if (await sessaoAtual()) redirect('/inicio');
+  const t = await getTranslations('entrada');
 
   return (
     <>
       <div className="mockctl floating" style={{ position: 'fixed', top: 14, right: 16 }}>
+        <SeletorDeIdioma />
         <BotaoTema />
       </div>
       <div className="auth">
@@ -27,9 +31,9 @@ export default async function Entrar() {
             <div className="body">
               <FormularioDeLogin />
               <p className="faint" style={{ margin: '14px 0 0', textAlign: 'center' }}>
-                Esqueceu a senha? Um administrador da sua organização redefine para você.
+                {t('esqueceu')}
                 <br />
-                Não há cadastro público.
+                {t('semCadastro')}
               </p>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
@@ -7,17 +8,11 @@ import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer, perfisQuePodeGerenciar } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeUsuario, escopoDePasta, organizacaoEmVigor } from '@/lib/escopo';
+import { IDIOMAS, NOME_DO_IDIOMA } from '@/i18n/idiomas';
 import { criarUsuario, editarUsuario, redefinirSenha, atribuirPastas } from './acoes';
 
 export const dynamic = 'force-dynamic';
 
-const ROTULO_DO_PERFIL = { superadmin: 'superadmin', admin: 'admin', usuario: 'usuário' } as const;
-const IDIOMAS = [
-  { valor: '', rotulo: 'Padrão da organização' },
-  { valor: 'pt', rotulo: 'Português' },
-  { valor: 'es', rotulo: 'Español' },
-  { valor: 'en', rotulo: 'English' },
-];
 
 export default async function Usuarios({
   searchParams,
@@ -28,6 +23,12 @@ export default async function Usuarios({
   if (!sessao) redirect('/entrar');
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
   if (!podeFazer(sessao.perfil, 'usuarios.gerenciar')) redirect('/inicio');
+
+  const t = await getTranslations('usuarios');
+  const perfis = await getTranslations('perfis');
+  const comum = await getTranslations('comum');
+  const menu = await getTranslations('menu');
+  const idioma = await getLocale();
 
   const { erro, ok, editar } = await searchParams;
   const csrf = tokenCsrfPara(sessao.sessaoId);
@@ -50,42 +51,34 @@ export default async function Usuarios({
   const perfisDisponiveis = perfisQuePodeGerenciar(sessao.perfil);
 
   return (
-    <Casca sessao={sessao} titulo="Usuários" caminho="Configuração" atual="/usuarios">
+    <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('configuracao')} atual="/usuarios">
       <Avisos erro={erro} ok={ok} />
 
       <div className="banner info">
-        <div>
-          Não existe cadastro público. Cada conta é criada por quem está acima na hierarquia, com{' '}
-          <b>senha provisória</b> e troca obrigatória no primeiro acesso. O e-mail serve apenas como
-          identificador de login — o sistema não envia e-mail algum. <b>Telegram e telefone são
-          opcionais</b> e existem para localizar a pessoa.
-        </div>
+        <div>{t.rich('explicacao', { b: (partes) => <b>{partes}</b> })}</div>
       </div>
 
       {sessao.perfil === 'superadmin' && !orgEmVigor ? (
         <div className="banner warn">
-          <div>
-            Nenhuma organização ativa escolhida. Você está vendo apenas os superadmins; escolha uma
-            organização no seletor do topo para gerenciar os usuários dela.
-          </div>
+          <div>{t('semOrganizacao')}</div>
         </div>
       ) : null}
 
       <div className="card">
         <header>
-          <h2>Usuários</h2>
+          <h2>{t('titulo')}</h2>
           <span className="spacer" />
-          <span className="sub">{usuarios.length} no total</span>
+          <span className="sub">{t('noTotal', { quantidade: usuarios.length })}</span>
         </header>
         <table>
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Contato</th>
-              {sessao.perfil === 'superadmin' ? <th>Organização</th> : null}
-              <th>Perfil</th>
-              <th>Pastas atribuídas</th>
-              <th>Último acesso</th>
+              <th>{t('nome')}</th>
+              <th>{t('contato')}</th>
+              {sessao.perfil === 'superadmin' ? <th>{t('organizacao')}</th> : null}
+              <th>{t('perfil')}</th>
+              <th>{t('pastasAtribuidas')}</th>
+              <th>{t('ultimoAcesso')}</th>
               <th />
             </tr>
           </thead>
@@ -94,21 +87,30 @@ export default async function Usuarios({
               <tr key={u.id}>
                 <td>
                   <b>{u.nome}</b>
-                  {u.senhaProvisoria ? <span className="pill warn" style={{ marginLeft: 6 }}>senha provisória</span> : null}
-                  {!u.ativo ? <span className="pill" style={{ marginLeft: 6 }}>inativo</span> : null}
+                  {u.senhaProvisoria ? (
+                    <span className="pill warn" style={{ marginLeft: 6 }}>
+                      {t('senhaProvisoria')}
+                    </span>
+                  ) : null}
+                  {!u.ativo ? (
+                    <span className="pill" style={{ marginLeft: 6 }}>
+                      {t('inativo')}
+                    </span>
+                  ) : null}
                 </td>
                 <td className="mono">
                   {u.email}
                   <div className="faint">
-                    {[u.telegramUsername, u.telefone].filter(Boolean).join(' · ') || '—'}
+                    {[u.telegramUsername, u.telefone].filter(Boolean).join(' · ') ||
+                      comum('nenhum')}
                   </div>
                 </td>
                 {sessao.perfil === 'superadmin' ? (
-                  <td>{u.organization?.nome ?? <span className="faint">— (global)</span>}</td>
+                  <td>{u.organization?.nome ?? <span className="faint">{t('global')}</span>}</td>
                 ) : null}
                 <td>
                   <span className={u.perfil === 'superadmin' ? 'pill accent' : u.perfil === 'admin' ? 'pill info' : 'pill'}>
-                    {ROTULO_DO_PERFIL[u.perfil]}
+                    {perfis(u.perfil)}
                   </span>
                 </td>
                 <td>
@@ -116,22 +118,22 @@ export default async function Usuarios({
                     u.folders.length ? (
                       u.folders.map((f) => f.folder.nome).join(', ')
                     ) : (
-                      <span className="faint">nenhuma</span>
+                      <span className="faint">{t('nenhuma')}</span>
                     )
                   ) : (
-                    <span className="faint">toda a organização</span>
+                    <span className="faint">{t('todaOrganizacao')}</span>
                   )}
                 </td>
                 <td>
                   {u.ultimoLoginEm ? (
-                    u.ultimoLoginEm.toLocaleString('pt-BR')
+                    u.ultimoLoginEm.toLocaleString(idioma)
                   ) : (
-                    <span className="faint">nunca entrou</span>
+                    <span className="faint">{t('nuncaEntrou')}</span>
                   )}
                 </td>
                 <td>
                   <a className="btn sm" href={`/usuarios?editar=${u.id}`}>
-                    Editar
+                    {t('editar')}
                   </a>
                 </td>
               </tr>
@@ -143,10 +145,10 @@ export default async function Usuarios({
       {emEdicao ? (
         <div className="card">
           <header>
-            <h2>Editar usuário — {emEdicao.nome}</h2>
+            <h2>{t('editarUsuario', { nome: emEdicao.nome })}</h2>
             <span className="spacer" />
             <a className="btn sm" href="/usuarios">
-              Fechar
+              {t('fechar')}
             </a>
           </header>
           <div className="body">
@@ -155,42 +157,43 @@ export default async function Usuarios({
               <input type="hidden" name="id" value={emEdicao.id} />
               <div className="row">
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Nome</span>
+                  <span className="lbl">{t('nome')}</span>
                   <input type="text" name="nome" defaultValue={emEdicao.nome} required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">E-mail (login)</span>
+                  <span className="lbl">{t('emailLogin')}</span>
                   <input type="email" defaultValue={emEdicao.email} disabled />
-                  <span className="hint">É a credencial de entrada e não muda por aqui.</span>
+                  <span className="hint">{t('emailHint')}</span>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">
-                    Telegram <span className="faint">(opcional)</span>
+                    {t('telegram')} <span className="faint">{t('opcional')}</span>
                   </span>
                   <input type="text" name="telegramUsername" defaultValue={emEdicao.telegramUsername ?? ''} placeholder="@usuario" />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">
-                    Telefone <span className="faint">(opcional)</span>
+                    {t('telefone')} <span className="faint">{t('opcional')}</span>
                   </span>
                   <input type="text" name="telefone" defaultValue={emEdicao.telefone ?? ''} />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Perfil</span>
+                  <span className="lbl">{t('perfil')}</span>
                   <select name="perfil" defaultValue={emEdicao.perfil}>
                     {[...new Set([emEdicao.perfil, ...perfisDisponiveis])].map((p) => (
                       <option key={p} value={p}>
-                        {ROTULO_DO_PERFIL[p]}
+                        {perfis(p)}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Idioma da interface</span>
+                  <span className="lbl">{t('idiomaDaInterface')}</span>
                   <select name="idioma" defaultValue={emEdicao.idioma ?? ''}>
-                    {IDIOMAS.map((i) => (
-                      <option key={i.valor} value={i.valor}>
-                        {i.rotulo}
+                    <option value="">{t('idiomaPadrao')}</option>
+                    {IDIOMAS.map((codigo) => (
+                      <option key={codigo} value={codigo}>
+                        {NOME_DO_IDIOMA[codigo]}
                       </option>
                     ))}
                   </select>
@@ -199,12 +202,12 @@ export default async function Usuarios({
               <div className="check">
                 <input type="checkbox" id="ativo" name="ativo" defaultChecked={emEdicao.ativo} />
                 <label htmlFor="ativo">
-                  Conta ativa <span className="faint">— desativar encerra as sessões abertas na hora</span>
+                  {t('contaAtiva')} <span className="faint">{t('desativarEncerra')}</span>
                 </label>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
                 <button className="btn primary" type="submit">
-                  Salvar
+                  {comum('salvar')}
                 </button>
               </div>
             </form>
@@ -215,10 +218,10 @@ export default async function Usuarios({
               <CampoCsrf token={csrf} />
               <input type="hidden" name="id" value={emEdicao.id} />
               <button className="btn" type="submit">
-                Redefinir senha (gera provisória)
+                {t('redefinirSenha')}
               </button>
               <span className="faint" style={{ marginLeft: 10 }}>
-                Encerra todas as sessões abertas do usuário.
+                {t('redefinirExplicacao')}
               </span>
             </form>
 
@@ -228,10 +231,10 @@ export default async function Usuarios({
                 <form action={atribuirPastas}>
                   <CampoCsrf token={csrf} />
                   <input type="hidden" name="id" value={emEdicao.id} />
-                  <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>Pastas atribuídas</h3>
+                  <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>{t('pastasAtribuidas')}</h3>
                   {pastas.length === 0 ? (
                     <p className="faint" style={{ marginTop: 0 }}>
-                      Nenhuma pasta cadastrada nesta organização ainda.
+                      {t('semPastas')}
                     </p>
                   ) : (
                     pastas.map((p) => (
@@ -248,7 +251,7 @@ export default async function Usuarios({
                     ))
                   )}
                   <button className="btn" type="submit" style={{ marginTop: 10 }}>
-                    Salvar pastas
+                    {t('salvarPastas')}
                   </button>
                 </form>
               </>
@@ -258,48 +261,48 @@ export default async function Usuarios({
       ) : (
         <div className="card">
           <header>
-            <h2>Novo usuário</h2>
+            <h2>{t('novoUsuario')}</h2>
           </header>
           <div className="body">
             <form action={criarUsuario}>
               <CampoCsrf token={csrf} />
               <div className="row">
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Nome</span>
+                  <span className="lbl">{t('nome')}</span>
                   <input type="text" name="nome" required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">E-mail (login)</span>
+                  <span className="lbl">{t('emailLogin')}</span>
                   <input type="email" name="email" required />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">
-                    Telegram <span className="faint">(opcional)</span>
+                    {t('telegram')} <span className="faint">{t('opcional')}</span>
                   </span>
                   <input type="text" name="telegramUsername" placeholder="@usuario" />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
                   <span className="lbl">
-                    Telefone <span className="faint">(opcional)</span>
+                    {t('telefone')} <span className="faint">{t('opcional')}</span>
                   </span>
                   <input type="text" name="telefone" />
                 </label>
                 <label className="field" style={{ margin: 0 }}>
-                  <span className="lbl">Perfil</span>
+                  <span className="lbl">{t('perfil')}</span>
                   <select name="perfil" defaultValue="usuario">
                     {perfisDisponiveis.map((p) => (
                       <option key={p} value={p}>
-                        {ROTULO_DO_PERFIL[p]}
+                        {perfis(p)}
                       </option>
                     ))}
                   </select>
                 </label>
               </div>
               <button className="btn primary" type="submit" style={{ marginTop: 4 }}>
-                Criar usuário
+                {t('criarUsuario')}
               </button>
               <p className="faint" style={{ margin: '10px 0 0' }}>
-                A senha provisória aparece uma única vez, aqui na tela, para você repassar à pessoa.
+                {t('senhaApareceUmaVez')}
               </p>
             </form>
           </div>

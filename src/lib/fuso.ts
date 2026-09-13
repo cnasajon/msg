@@ -16,6 +16,7 @@ export function fusoValido(timezone: string): boolean {
 
 /** Sigla do fuso naquele instante (BRT, CEST…), para mostrar ao lado da hora. */
 export function siglaDoFuso(timezone: string, quando = new Date()): string {
+  // a sigla é a mesma em qualquer idioma; o formato em volta é que muda
   const partes = new Intl.DateTimeFormat('pt-BR', {
     timeZone: timezone,
     timeZoneName: 'short',
@@ -23,9 +24,15 @@ export function siglaDoFuso(timezone: string, quando = new Date()): string {
   return partes.find((p) => p.type === 'timeZoneName')?.value ?? timezone;
 }
 
-/** Data e hora no fuso da pasta, com o fuso dito explicitamente. */
-export function formatarNoFuso(quando: Date, timezone: string): string {
-  const texto = new Intl.DateTimeFormat('pt-BR', {
+/**
+ * Data e hora no fuso da pasta, com o fuso dito explicitamente.
+ *
+ * A ordem dos campos segue o idioma de quem está olhando — 14/09 em português
+ * e espanhol, 9/14 em inglês —, porque uma data como 09/14 lida na ordem errada
+ * não parece errada, só parece outra data.
+ */
+export function formatarNoFuso(quando: Date, timezone: string, idioma = 'pt'): string {
+  const texto = new Intl.DateTimeFormat(idioma, {
     timeZone: timezone,
     dateStyle: 'short',
     timeStyle: 'short',
