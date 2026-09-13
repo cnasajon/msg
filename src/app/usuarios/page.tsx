@@ -4,6 +4,7 @@ import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
 import { Ajuda } from '@/components/ajuda';
+import { Sanfona } from '@/components/sanfona';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer, perfisQuePodeGerenciar } from '@/lib/autorizacao';
@@ -142,7 +143,9 @@ export default async function Usuarios({
                     u.folders.length ? (
                       u.folders.map((f) => f.folder.nome).join(', ')
                     ) : (
-                      <span className="faint">{t('nenhuma')}</span>
+                      // sem pasta, o perfil `usuario` não enxerga nada — merece
+                      // destaque de problema, não a cor de "campo vazio"
+                      <span className="pill err">{t('semPastaAtribuidaAlerta')}</span>
                     )
                   ) : (
                     <span className="faint">{t('todaOrganizacao')}</span>
@@ -252,6 +255,45 @@ export default async function Usuarios({
               </div>
             </form>
 
+            {/* Logo abaixo dos dados, e não no fim da página: era lá que estava,
+                e quem editava um usuário não chegava a ver — a pessoa ficava sem
+                pasta nenhuma, sem enxergar nada e sem saber por quê. Fora do
+                formulário acima de propósito: formulário dentro de formulário é
+                inválido em HTML, e o navegador descarta o de dentro. */}
+              {emEdicao.perfil === 'usuario' ? (
+                <Sanfona
+                  titulo={t('pastasAtribuidas')}
+                  quantidade={emEdicao.folders.length}
+                  alerta={t('semPastaAtribuidaAlerta')}
+                >
+                  <form action={atribuirPastas}>
+                    <CampoCsrf token={csrf} />
+                    <input type="hidden" name="id" value={emEdicao.id} />
+                    {pastas.length === 0 ? (
+                      <p className="faint" style={{ marginTop: 0 }}>
+                        {t('semPastas')}
+                      </p>
+                    ) : (
+                      pastas.map((p) => (
+                        <div className="check" key={p.id}>
+                          <input
+                            type="checkbox"
+                            id={`pasta-${p.id}`}
+                            name="pastas"
+                            value={p.id}
+                            defaultChecked={emEdicao.folders.some((f) => f.folderId === p.id)}
+                          />
+                          <label htmlFor={`pasta-${p.id}`}>{p.nome}</label>
+                        </div>
+                      ))
+                    )}
+                    <button className="btn" type="submit" style={{ marginTop: 10 }}>
+                      {t('salvarPastas')}
+                    </button>
+                  </form>
+                </Sanfona>
+              ) : null}
+
             <hr style={{ border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' }} />
 
             <form action={redefinirSenha}>
@@ -338,37 +380,6 @@ export default async function Usuarios({
               </>
             ) : null}
 
-            {emEdicao.perfil === 'usuario' ? (
-              <>
-                <hr style={{ border: 0, borderTop: '1px solid var(--border)', margin: '18px 0' }} />
-                <form action={atribuirPastas}>
-                  <CampoCsrf token={csrf} />
-                  <input type="hidden" name="id" value={emEdicao.id} />
-                  <h3 style={{ fontSize: 13, margin: '0 0 8px' }}>{t('pastasAtribuidas')}</h3>
-                  {pastas.length === 0 ? (
-                    <p className="faint" style={{ marginTop: 0 }}>
-                      {t('semPastas')}
-                    </p>
-                  ) : (
-                    pastas.map((p) => (
-                      <div className="check" key={p.id}>
-                        <input
-                          type="checkbox"
-                          id={`pasta-${p.id}`}
-                          name="pastas"
-                          value={p.id}
-                          defaultChecked={emEdicao.folders.some((f) => f.folderId === p.id)}
-                        />
-                        <label htmlFor={`pasta-${p.id}`}>{p.nome}</label>
-                      </div>
-                    ))
-                  )}
-                  <button className="btn" type="submit" style={{ marginTop: 10 }}>
-                    {t('salvarPastas')}
-                  </button>
-                </form>
-              </>
-            ) : null}
           </div>
         </div>
       ) : (

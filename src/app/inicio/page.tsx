@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { SeletorDeOrganizacao } from '@/components/seletor-organizacao';
@@ -9,6 +9,7 @@ import { BotaoSair } from '@/components/sair';
 import { SeletorDeIdioma } from '@/components/seletor-idioma';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
+import { VERSAO, dataDaPublicacao } from '@/lib/versao';
 import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
@@ -21,6 +22,7 @@ export default async function Inicio() {
   if (sessao.senhaProvisoria) redirect('/primeiro-acesso');
 
   const t = await getTranslations('inicio');
+  const idioma = await getLocale();
   const menu = await getTranslations('menu');
   const comum = await getTranslations('comum');
   const perfis = await getTranslations('perfis');
@@ -146,6 +148,9 @@ export default async function Inicio() {
           {comum('entrouComo')} <b>{sessao.nome}</b> · {perfis(sessao.perfil)}
         </span>
         <span className="spacer" />
+        <span className="faint">
+          {comum('versaoEData', { versao: VERSAO, data: dataDaPublicacao(idioma) })}
+        </span>
         <BotaoSair token={tokenCsrfPara(sessao.sessaoId)} />
       </div>
     </div>

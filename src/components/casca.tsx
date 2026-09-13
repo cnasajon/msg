@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Marca } from './marca';
 import { BotaoTema } from './tema';
 import { SeletorDeOrganizacao } from './seletor-organizacao';
@@ -10,6 +10,7 @@ import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
 import { tokenCsrfPara } from '@/lib/csrf';
+import { VERSAO, dataDaPublicacao } from '@/lib/versao';
 
 type ItemDeMenu = { href: string; ico: string; label: string };
 type GrupoDeMenu = { titulo: string; itens: ItemDeMenu[] };
@@ -72,6 +73,7 @@ export async function Casca({
   const menu = await getTranslations('menu');
   const comum = await getTranslations('comum');
   const perfis = await getTranslations('perfis');
+  const idioma = await getLocale();
 
   // O seletor vale para quem tem mais de uma organização — o superadmin sempre,
   // porque alcança todas, e agora também quem participa de várias.
@@ -161,6 +163,9 @@ export async function Casca({
           <BotaoTema />
         </div>
         <div className="content">{children}</div>
+        <footer className="rodape">
+          {comum('versaoEData', { versao: VERSAO, data: dataDaPublicacao(idioma) })}
+        </footer>
       </div>
     </div>
   );

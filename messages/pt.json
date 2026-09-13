@@ -26,7 +26,8 @@
     "ajudaSobre": "Ajuda sobre {campo}",
     "fechar": "Fechar",
     "semPastaTitulo": "Você ainda não tem nenhuma pasta atribuída",
-    "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui."
+    "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui.",
+    "versaoEData": "Versão {versao} · publicada em {data}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -512,7 +513,8 @@
     "organizacoesDoUsuario": "Organizações",
     "organizacoesExplicacao": "De quais organizações esta pessoa participa. Com mais de uma, ela escolhe no cabeçalho qual está operando. Só o superadmin muda isto.",
     "salvarOrganizacoes": "Salvar organizações",
-    "tirarOrganizacaoAviso": "Tirar uma organização também remove as pastas dela que estavam atribuídas a esta pessoa."
+    "tirarOrganizacaoAviso": "Tirar uma organização também remove as pastas dela que estavam atribuídas a esta pessoa.",
+    "semPastaAtribuidaAlerta": "Usuário não tem pastas atribuídas"
   },
   "organizacoes": {
     "titulo": "Organizações",

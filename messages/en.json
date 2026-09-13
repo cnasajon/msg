@@ -26,7 +26,8 @@
     "ajudaSobre": "Help about {campo}",
     "fechar": "Close",
     "semPastaTitulo": "No folder has been assigned to you yet",
-    "semPastaExplicacao": "The system is not empty: your role only sees the folders an administrator assigns to you. Ask an administrator in your organization to do it under Configuration → Users. Once a folder is assigned, its texts and publications show up here."
+    "semPastaExplicacao": "The system is not empty: your role only sees the folders an administrator assigns to you. Ask an administrator in your organization to do it under Configuration → Users. Once a folder is assigned, its texts and publications show up here.",
+    "versaoEData": "Version {versao} · published {data}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -512,7 +513,8 @@
     "organizacoesDoUsuario": "Organizations",
     "organizacoesExplicacao": "Which organizations this person belongs to. With more than one, they pick in the header which one they are working in. Only the superadmin changes this.",
     "salvarOrganizacoes": "Save organizations",
-    "tirarOrganizacaoAviso": "Removing an organization also drops the folders of that organization assigned to this person."
+    "tirarOrganizacaoAviso": "Removing an organization also drops the folders of that organization assigned to this person.",
+    "semPastaAtribuidaAlerta": "This user has no folders assigned"
   },
   "organizacoes": {
     "titulo": "Organisations",

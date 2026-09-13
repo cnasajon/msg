@@ -26,7 +26,8 @@
     "ajudaSobre": "Ayuda sobre {campo}",
     "fechar": "Cerrar",
     "semPastaTitulo": "Todavía no tiene ninguna carpeta asignada",
-    "semPastaExplicacao": "No es que el sistema esté vacío: su perfil solo ve las carpetas que un administrador le asigna. Pida a un administrador de su organización que lo haga en Configuración → Usuarios. En cuanto le asignen la carpeta, sus textos y publicaciones aparecen aquí."
+    "semPastaExplicacao": "No es que el sistema esté vacío: su perfil solo ve las carpetas que un administrador le asigna. Pida a un administrador de su organización que lo haga en Configuración → Usuarios. En cuanto le asignen la carpeta, sus textos y publicaciones aparecen aquí.",
+    "versaoEData": "Versión {versao} · publicada el {data}"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -512,7 +513,8 @@
     "organizacoesDoUsuario": "Organizaciones",
     "organizacoesExplicacao": "De qué organizaciones participa esta persona. Con más de una, elige en el encabezado cuál está operando. Solo el superadmin cambia esto.",
     "salvarOrganizacoes": "Guardar organizaciones",
-    "tirarOrganizacaoAviso": "Quitar una organización también elimina las carpetas de ella que estaban asignadas a esta persona."
+    "tirarOrganizacaoAviso": "Quitar una organización también elimina las carpetas de ella que estaban asignadas a esta persona.",
+    "semPastaAtribuidaAlerta": "El usuario no tiene carpetas asignadas"
   },
   "organizacoes": {
     "titulo": "Organizaciones",

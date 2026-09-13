@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Marca } from '@/components/marca';
 import { BotaoTema } from '@/components/tema';
 import { sessaoAtual } from '@/lib/sessao';
+import { VERSAO, dataDaPublicacao } from '@/lib/versao';
 import { FormularioDeLogin } from './formulario';
 import { SeletorDeIdioma } from '@/components/seletor-idioma';
 
@@ -12,6 +13,8 @@ export const dynamic = 'force-dynamic';
 export default async function Entrar() {
   if (await sessaoAtual()) redirect('/inicio');
   const t = await getTranslations('entrada');
+  const comum = await getTranslations('comum');
+  const idioma = await getLocale();
 
   return (
     <>
@@ -36,6 +39,9 @@ export default async function Entrar() {
               </p>
               <p className="faint" style={{ margin: '6px 0 0', textAlign: 'center' }}>
                 {t('semCadastro')}
+              </p>
+              <p className="faint" style={{ margin: '12px 0 0', textAlign: 'center', fontSize: 11.5 }}>
+                {comum('versaoEData', { versao: VERSAO, data: dataDaPublicacao(idioma) })}
               </p>
             </div>
           </div>

@@ -283,6 +283,28 @@
   @media (max-width: 560px) {
     .ajuda-balao { left: auto; right: -8px; transform: none; max-width: min(264px, 78vw); }
   }
+  /* Rodapé discreto: versão e data de publicação, em toda tela interna. */
+  .rodape {
+    margin-top: auto; padding: 12px 22px 16px;
+    color: var(--text-faint); font-size: 11.5px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Bloco que abre e fecha, com contagem ao lado do título. */
+  .sanfona { border: 1px solid var(--border); border-radius: var(--radius); margin: 14px 0; }
+  .sanfona-topo {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: 10px 12px; background: var(--surface-2); border: 0;
+    border-radius: var(--radius); color: var(--text); font: inherit;
+    text-align: left; cursor: pointer;
+  }
+  .sanfona-topo:hover { background: var(--surface); }
+  .sanfona-topo:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .sanfona-seta { width: 12px; color: var(--text-faint); }
+  .sanfona-titulo { font-size: 13px; font-weight: 600; }
+  .sanfona-alerta { color: var(--danger); font-size: 12.5px; }
+  .sanfona-corpo { padding: 12px; border-top: 1px solid var(--border); }
+
   /* Chave liga/desliga. A caixa de seleção real fica escondida atrás do
      trilho — escondida do olho, não do teclado nem do leitor de tela, que é
      por que ela continua sendo um <input type=checkbox> de verdade. */
