@@ -831,5 +831,49 @@
     "regraDaSenha": "At least {minimo} characters, with an uppercase letter, a digit and a special character.",
     "derrubaSessoes": "Changing the password ends sessions open on other devices. This one stays.",
     "organizacoes": "Organizations"
+  },
+  "rodape": {
+    "direitos": "Built by OA12 — All rights reserved",
+    "versao": "Version {versao} ({data})",
+    "privacidade": "Privacy policy",
+    "termos": "Terms of service"
+  },
+  "privacidade": {
+    "titulo": "Privacy policy",
+    "resumo": "How msg handles the data of the people who use it: what is kept, what for, for how long, and what your rights are.",
+    "atualizadoEm": "Last updated {data}.",
+    "queDadosTitulo": "What is kept",
+    "queDadosCorpo": "From your account: name, username and — when you fill them in — email, phone and Telegram handle. Those last three are optional and exist only so an administrator can reach you. Of your password we keep only the result of an irreversible computation (argon2id); the password itself is stored nowhere. From use: the date of your last sign-in, the IP address and browser of the session, and an audit trail of the actions taken. From content: the texts and images you enter for publication.",
+    "paraQueTitulo": "What it is used for",
+    "paraQueCorpo": "To run the system and nothing else: to identify who signs in, to publish texts to the configured Telegram groups, to alert administrators when something fails, and to make it possible to audit who did what. There is no advertising, no profiling and no sale of data.",
+    "comQuemTitulo": "Who it is shared with",
+    "comQuemCorpo": "The content you schedule is sent to Telegram, since that is the purpose of the system — from the moment it is sent, Telegram’s rules apply. Hosting is provided by Railway, which operates the infrastructure the application and database run on. Beyond that, data is not passed to third parties.",
+    "cookiesTitulo": "Cookies",
+    "cookiesCorpo": "We use two, both required for the system to work and neither of them for tracking: one holds your session identifier, so you need not sign in on every page; the other remembers the language you chose before signing in. There are no advertising or analytics cookies.",
+    "porQuantoTempoTitulo": "How long it is kept",
+    "porQuantoTempoCorpo": "Sessions expire after twelve hours of inactivity and are deleted. Account data remains for as long as the account exists. Audit records and publication history remain so that what was published, and by whom, can be reconstructed.",
+    "seusDireitosTitulo": "Your rights",
+    "seusDireitosCorpo": "You can see and change your contact details and your password on the Profile screen at any time. To correct your name, change your role or close the account, talk to an administrator in your organization — there is no self-service for that, because those details define your access and changing them alone would open a door.",
+    "contatoTitulo": "Contact",
+    "contatoCorpo": "Questions about this policy, or requests concerning your data, should go to the administrator of the organization that created your account. This document describes how the system works; the organization responsible for the data is the one operating this installation."
+  },
+  "termos": {
+    "titulo": "Terms of service",
+    "resumo": "The rules for using msg: what it is for, who may use it, what is your responsibility, and how an account can be closed.",
+    "atualizadoEm": "Last updated {data}.",
+    "oQueETitulo": "What msg is",
+    "oQueECorpo": "An application for publishing texts and images to Telegram groups on a scheduled day and time. Each organization operates independently, with its own folders, groups and users.",
+    "quemUsaTitulo": "Who may use it",
+    "quemUsaCorpo": "There is no public sign-up. Every account is created by an administrator, who sets the role and the folders the person can see. Access exists for as long as that authorization does.",
+    "suasContasTitulo": "Your account is yours",
+    "suasContasCorpo": "Your password is personal and must not be shared. Every action taken with your account is recorded as yours in the audit trail. If you suspect someone knows it, change it on the Profile screen — the change ends sessions open on other devices.",
+    "oQuePublicaTitulo": "What you publish",
+    "oQuePublicaCorpo": "Content entered is the responsibility of whoever enters it and of the organization it belongs to. The system delivers what was scheduled to Telegram without judging the content. Do not publish what you would have no right to publish, nor anything that breaks Telegram’s rules.",
+    "disponibilidadeTitulo": "Availability",
+    "disponibilidadeCorpo": "The system depends on services we do not control, among them the Telegram API and the hosting platform. A publication may fail or be delayed because of them. When that happens the failure is recorded and administrators are alerted, but publication at an exact time is not guaranteed.",
+    "encerramentoTitulo": "Closing an account",
+    "encerramentoCorpo": "An administrator may deactivate an account at any time, and open sessions end immediately. Texts and publication history stay with the organization, because they belong to it and not to the account that entered them.",
+    "mudancasTitulo": "Changes to these terms",
+    "mudancasCorpo": "These terms may change as the system evolves. The date at the top of this page marks the latest revision, and the published version appears in the footer of every screen."
   }
 }

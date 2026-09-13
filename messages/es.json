@@ -831,5 +831,49 @@
     "regraDaSenha": "Al menos {minimo} caracteres, con una mayúscula, un número y un carácter especial.",
     "derrubaSessoes": "Cambiar la contraseña cierra las sesiones abiertas en otros dispositivos. Esta sigue.",
     "organizacoes": "Organizaciones"
+  },
+  "rodape": {
+    "direitos": "Desarrollado por OA12 — Todos los derechos reservados",
+    "versao": "Versión {versao} ({data})",
+    "privacidade": "Política de privacidad",
+    "termos": "Términos de servicio"
+  },
+  "privacidade": {
+    "titulo": "Política de privacidad",
+    "resumo": "Cómo msg trata los datos de quien usa el sistema: qué se guarda, para qué, por cuánto tiempo y cuáles son sus derechos.",
+    "atualizadoEm": "Actualizada el {data}.",
+    "queDadosTitulo": "Qué datos se guardan",
+    "queDadosCorpo": "Del registro: nombre, nombre de usuario y, cuando usted los completa, correo, teléfono y usuario de Telegram — los tres últimos son opcionales y sirven solo para que un administrador pueda comunicarse con usted. De la contraseña guardamos únicamente el resultado de un cálculo irreversible (argon2id); la contraseña en sí no queda registrada en ningún lugar. Del uso: la fecha del último acceso, la dirección IP y el navegador de la sesión, y un registro de auditoría con las acciones realizadas. De los contenidos: los textos y las imágenes que usted registra para publicación.",
+    "paraQueTitulo": "Para qué sirven",
+    "paraQueCorpo": "Para operar el sistema y nada más: identificar a quien entra, publicar los textos en los grupos de Telegram configurados, avisar a los administradores cuando algo falla y permitir auditar quién hizo qué. No hay publicidad, perfilado ni venta de datos.",
+    "comQuemTitulo": "Con quién se comparten",
+    "comQuemCorpo": "El contenido que usted programa se envía a Telegram, porque esa es la finalidad del sistema — a partir del envío rigen las reglas de Telegram. El alojamiento lo realiza Railway, que opera la infraestructura donde corren la aplicación y la base de datos. Fuera de eso, los datos no se ceden a terceros.",
+    "cookiesTitulo": "Cookies",
+    "cookiesCorpo": "Usamos dos, ambas necesarias para el funcionamiento y ninguna de rastreo: una guarda el identificador de su sesión, para que no tenga que entrar en cada página; la otra guarda el idioma elegido antes de entrar. No hay cookies de publicidad ni de análisis de comportamiento.",
+    "porQuantoTempoTitulo": "Por cuánto tiempo permanecen",
+    "porQuantoTempoCorpo": "Las sesiones caducan a las doce horas de inactividad y se borran. Los datos de registro permanecen mientras exista la cuenta. Los registros de auditoría y el historial de publicaciones permanecen para que sea posible reconstruir qué se publicó y por quién.",
+    "seusDireitosTitulo": "Sus derechos",
+    "seusDireitosCorpo": "Puede ver y modificar sus datos de contacto y su contraseña en la pantalla Perfil, en cualquier momento. Para corregir el nombre, cambiar el perfil de acceso o cerrar la cuenta, hable con un administrador de su organización — no hay autoservicio para eso porque esa información define su acceso, y cambiarla por cuenta propia abriría una puerta.",
+    "contatoTitulo": "Contacto",
+    "contatoCorpo": "Las dudas sobre esta política, o los pedidos relativos a sus datos, deben dirigirse al administrador de la organización que creó su cuenta. Este documento describe el funcionamiento del sistema; la organización responsable del tratamiento de los datos es la que opera esta instalación."
+  },
+  "termos": {
+    "titulo": "Términos de servicio",
+    "resumo": "Las reglas de uso de msg: para qué sirve, quién puede usarlo, qué es su responsabilidad y cómo puede cerrarse la cuenta.",
+    "atualizadoEm": "Actualizados el {data}.",
+    "oQueETitulo": "Qué es msg",
+    "oQueECorpo": "Una aplicación para publicar textos e imágenes, en día y hora programados, en grupos de Telegram. Cada organización opera de forma independiente, con sus propias carpetas, sus grupos y sus usuarios.",
+    "quemUsaTitulo": "Quién puede usarlo",
+    "quemUsaCorpo": "No hay registro público. Cada cuenta la crea un administrador, que define el perfil de acceso y las carpetas que la persona ve. El acceso existe mientras exista esa autorización.",
+    "suasContasTitulo": "Su cuenta es suya",
+    "suasContasCorpo": "La contraseña es personal y no debe compartirse. Toda acción hecha con su cuenta queda registrada como suya en la auditoría. Si sospecha que alguien la conoce, cámbiela en la pantalla Perfil — el cambio cierra las sesiones abiertas en otros dispositivos.",
+    "oQuePublicaTitulo": "Lo que usted publica",
+    "oQuePublicaCorpo": "El contenido registrado es responsabilidad de quien lo registra y de la organización a la que pertenece. El sistema entrega a Telegram lo que fue programado, sin juzgar el contenido. No publique lo que no tendría derecho a publicar, ni lo que contravenga las reglas de Telegram.",
+    "disponibilidadeTitulo": "Disponibilidad",
+    "disponibilidadeCorpo": "El sistema depende de servicios que no controlamos, entre ellos la API de Telegram y el alojamiento. Una publicación puede fallar o retrasarse por su causa. Cuando eso ocurre, la falla queda registrada y se avisa a los administradores, pero no hay garantía de publicación en horario exacto.",
+    "encerramentoTitulo": "Cierre",
+    "encerramentoCorpo": "Un administrador puede desactivar una cuenta en cualquier momento, y las sesiones abiertas caen de inmediato. Los textos y el historial de publicaciones permanecen con la organización, porque le pertenecen a ella y no a la cuenta que los registró.",
+    "mudancasTitulo": "Cambios en estos términos",
+    "mudancasCorpo": "Estos términos pueden cambiar conforme el sistema evoluciona. La fecha en el encabezado de esta página indica la última revisión, y la versión publicada aparece en el pie de todas las pantallas."
   }
 }

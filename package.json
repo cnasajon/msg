@@ -16,6 +16,8 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:dev": "prisma migrate dev",
     "criar-superadmin": "tsx scripts/criar-superadmin.ts",
+    "versao": "node scripts/versao.mjs",
+    "versao:maior": "node scripts/versao.mjs --maior",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",

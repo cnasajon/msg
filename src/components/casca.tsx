@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { Marca } from './marca';
 import { BotaoTema } from './tema';
 import { SeletorDeOrganizacao } from './seletor-organizacao';
@@ -10,7 +10,7 @@ import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
 import { tokenCsrfPara } from '@/lib/csrf';
-import { VERSAO, dataDaPublicacao } from '@/lib/versao';
+import { Rodape } from './rodape';
 
 type ItemDeMenu = { href: string; ico: string; label: string };
 type GrupoDeMenu = { titulo: string; itens: ItemDeMenu[] };
@@ -73,7 +73,6 @@ export async function Casca({
   const menu = await getTranslations('menu');
   const comum = await getTranslations('comum');
   const perfis = await getTranslations('perfis');
-  const idioma = await getLocale();
 
   // O seletor vale para quem tem mais de uma organização — o superadmin sempre,
   // porque alcança todas, e agora também quem participa de várias.
@@ -126,12 +125,15 @@ export async function Casca({
           </div>
         ))}
 
-        <div className="foot">
+        {/* Logo depois do menu, e não colado no fim da barra: com muitos itens
+            a barra rolava, e Perfil e Sair ficavam abaixo da dobra — quem quer
+            sair não deveria ter de procurar. */}
+        <div className="quem-sou">
           <div className="who">{sessao.nome}</div>
           <div className="role">
             {perfis(sessao.perfil)} · {sessao.username}
           </div>
-          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link href="/perfil" style={{ fontSize: '12.5px' }}>
               {menu('perfil')}
             </Link>
@@ -164,7 +166,7 @@ export async function Casca({
         </div>
         <div className="content">{children}</div>
         <footer className="rodape">
-          {comum('versaoEData', { versao: VERSAO, data: dataDaPublicacao(idioma) })}
+          <Rodape />
         </footer>
       </div>
     </div>

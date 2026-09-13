@@ -37,6 +37,11 @@ lateral segue a mesma divisão.
   instalação e deploy, espelhando a seção 3 da especificação.
 - Nenhum identificador de modelo de IA em commits, PRs, comentários de código
   ou qualquer artefato do repositório.
+- **Subir a versão a cada commit**, com `npm run versao` antes de commitar: o
+  dígito depois do ponto sobe sozinho e a data vira a de hoje. O dígito antes do
+  ponto é `npm run versao:maior` e **só com confirmação explícita do usuário** —
+  alteração maior é decisão dele, não contagem de commits. A versão aparece no
+  rodapé de todas as telas e vive em `src/lib/versao.ts`.
 
 ## Pontos não negociáveis
 
