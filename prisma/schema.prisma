@@ -78,8 +78,11 @@ model User {
   // nulo apenas para superadmin — superadmin não pertence a organização
   organizationId  String?   @map("organization_id") @db.Uuid
   nome            String
-  // Identificador de login — obrigatório. Telefone e Telegram são cadastrais.
-  email           String    @unique
+  // Credencial de entrada. Minúsculas, sem espaço — ver problemaNoUsername.
+  username        String    @unique
+  // Opcional: o sistema não envia e-mail, então ele é apenas cadastral. Único
+  // quando preenchido; o Postgres não considera dois nulos iguais.
+  email           String?   @unique
   telefone        String?
   telegramUsername String?  @map("telegram_username")
   senhaHash       String    @map("senha_hash")

@@ -69,6 +69,7 @@ export async function criarCenario() {
     const admin = await db.user.create({
       data: {
         nome: `Admin ${nome}`,
+        username: `admin-${randomUUID().slice(0, 8)}`,
         email: `admin-${randomUUID()}@exemplo.org`,
         senhaHash: 'x',
         perfil: 'admin',
@@ -79,6 +80,7 @@ export async function criarCenario() {
     const usuario = await db.user.create({
       data: {
         nome: `Usuário ${nome}`,
+        username: `usuario-${randomUUID().slice(0, 8)}`,
         email: `usuario-${randomUUID()}@exemplo.org`,
         senhaHash: 'x',
         perfil: 'usuario',
@@ -126,6 +128,7 @@ export async function criarCenario() {
   const superadmin = await db.user.create({
     data: {
       nome: 'Superadmin',
+      username: `super-${randomUUID().slice(0, 8)}`,
       email: `super-${randomUUID()}@exemplo.org`,
       senhaHash: 'x',
       perfil: 'superadmin',

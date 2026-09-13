@@ -18,8 +18,16 @@ export function FormularioDeLogin() {
       ) : null}
 
       <label className="field">
-        <span className="lbl">{t('email')}</span>
-        <input type="email" name="email" autoComplete="username" required autoFocus />
+        <span className="lbl">{t('usuario')}</span>
+        <input
+          type="text"
+          name="username"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          required
+          autoFocus
+        />
       </label>
       <label className="field">
         <span className="lbl">{t('senha')}</span>

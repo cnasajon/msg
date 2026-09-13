@@ -24,6 +24,7 @@ export type Acao =
   | 'textos.importar'
   | 'textos.exportar'
   | 'textos.reordenar'
+  | 'textos.mover'
   | 'textos.publicarAgora'
   | 'imagens.ver'
   | 'painel.ver'
@@ -52,6 +53,9 @@ const MATRIZ: Record<Acao, Record<Perfil, boolean>> = {
   'textos.importar': { superadmin: true, admin: true, usuario: true },
   'textos.exportar': { superadmin: true, admin: true, usuario: true },
   'textos.reordenar': { superadmin: true, admin: true, usuario: true },
+  // Mover entre pastas é de quem enxerga mais de uma: o perfil `usuario` só vê
+  // as atribuídas a ele, e mover dali seria tirar o texto do próprio alcance.
+  'textos.mover': { superadmin: true, admin: true, usuario: false },
   'textos.publicarAgora': { superadmin: true, admin: true, usuario: true },
   'imagens.ver': { superadmin: true, admin: true, usuario: true },
   'painel.ver': { superadmin: true, admin: true, usuario: true },

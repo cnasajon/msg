@@ -2,7 +2,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { gerarHashDeSenha, senhaConfere, problemaNaSenha, gerarSenhaProvisoria } from '@/lib/senha';
 import { frase } from './helpers/frase';
-import { permiteTentativaDeLogin, limparTentativas, zerarContadores } from '@/lib/rate-limit';
+import { normalizarUsername, problemaNoUsername } from '@/lib/usuario';
+import {
+  permiteTentativaDeLogin,
+  permitePedidoDeSenha,
+  limparTentativas,
+  zerarContadores,
+} from '@/lib/rate-limit';
 
 describe('senha', () => {
   it('guarda com argon2id e confere', async () => {
@@ -92,5 +98,60 @@ describe('limite de tentativas de login', () => {
   it('o e-mail é normalizado: maiúsculas não driblam o limite', () => {
     for (let i = 0; i < 8; i++) permiteTentativaDeLogin('10.0.0.1', 'alvo@exemplo.org');
     expect(permiteTentativaDeLogin('10.0.0.1', 'ALVO@Exemplo.ORG')).toBe(false);
+  });
+});
+
+describe('nome de usuário', () => {
+  it('aceita o que se digita sem pensar', () => {
+    for (const bom of ['ana', 'ana.silva', 'joao_2', 'maria-jose', 'oa12', 'a1b']) {
+      expect(problemaNoUsername(bom), bom).toBeNull();
+    }
+  });
+
+  it('recusa espaço, acento e maiúscula — duas contas para o banco, uma pessoa para quem olha', () => {
+    expect(frase(problemaNoUsername('ana silva'))).toMatch(/sem espaço|Sem espaço/);
+    expect(problemaNoUsername('josé')).not.toBeNull();
+    expect(problemaNoUsername('Ana')).not.toBeNull();
+    expect(problemaNoUsername('ana@oa12.org')).not.toBeNull();
+  });
+
+  it('exige começar e terminar em letra ou número', () => {
+    expect(problemaNoUsername('.ana')).not.toBeNull();
+    expect(problemaNoUsername('ana.')).not.toBeNull();
+    expect(problemaNoUsername('-ana-')).not.toBeNull();
+  });
+
+  it('recusa o curto demais e o longo demais', () => {
+    expect(frase(problemaNoUsername('ab'))).toMatch(/3 a 32/);
+    expect(frase(problemaNoUsername('a'.repeat(33)))).toMatch(/3 a 32/);
+    expect(problemaNoUsername('a'.repeat(32))).toBeNull();
+  });
+
+  it('normaliza caixa e espaço das pontas antes de comparar', () => {
+    expect(normalizarUsername('  Ana.Silva ')).toBe('ana.silva');
+    expect(problemaNoUsername(normalizarUsername('  Ana.Silva '))).toBeNull();
+  });
+});
+
+describe('limite dos pedidos de redefinição', () => {
+  beforeEach(() => zerarContadores());
+
+  it('é mais apertado que o do login e não interfere nele', () => {
+    // três pedidos passam; o quarto, não
+    for (let i = 0; i < 3; i++) {
+      expect(permitePedidoDeSenha('10.0.0.9', 'ana')).toBe(true);
+    }
+    expect(permitePedidoDeSenha('10.0.0.9', 'ana')).toBe(false);
+
+    // O ponto: pedir a senha de alguém repetidamente NÃO pode trancar essa
+    // pessoa do lado de fora. Os contadores são separados.
+    expect(permiteTentativaDeLogin('10.0.0.9', 'ana')).toBe(true);
+  });
+
+  it('o login esgotado também não bloqueia o pedido de redefinição', () => {
+    for (let i = 0; i < 8; i++) permiteTentativaDeLogin('10.0.0.8', 'joao');
+    expect(permiteTentativaDeLogin('10.0.0.8', 'joao')).toBe(false);
+
+    expect(permitePedidoDeSenha('10.0.0.8', 'joao')).toBe(true);
   });
 });

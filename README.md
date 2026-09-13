@@ -25,6 +25,8 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | `docs/FASE0.md` | Entrega da fase 0 e as decisões aprovadas |
 | `prisma/schema.prisma` | Modelo de dados com índices e restrições únicas |
 | `src/lib/escopo.ts` | **Isolamento entre organizações** — o filtro por onde passa toda consulta |
+| `src/lib/usuario.ts` | Regras do nome de usuário, a credencial de entrada |
+| `src/lib/mover.ts` | Mover textos entre pastas, com o escopo dos dois lados |
 | `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
 | `src/app/` | Interface e server actions (Next.js App Router) |
 | `src/lib/textos.ts` | Os dois limites (4096/1024), tags aceitas e hash de duplicata |
@@ -97,10 +99,11 @@ vez** — não é lida de variável de ambiente nem de argumento, para não fica
 histórico do shell:
 
 ```bash
-npm run criar-superadmin -- "Seu Nome" voce@exemplo.org
+npm run criar-superadmin -- "Seu Nome" seuusuario
 ```
 
-Entre com ela; a troca é obrigatória no primeiro acesso. A partir daí: crie a
+O terceiro argumento é o e-mail e é opcional — a entrada é pelo nome de usuário.
+Entre com ele e com a senha; a troca é obrigatória no primeiro acesso. A partir daí: crie a
 organização em **Sistema → Organizações**, escolha-a no seletor do topo e crie
 os usuários dela em **Configuração → Usuários**.
 
@@ -253,7 +256,9 @@ linha, senha com argon2id e limite de tentativas, **os dois limites de 4096 e
 da importação, a cifra do token de sobreposição, os cinco formatos de exportação,
 **a idempotência do dispatcher** (dois e quatro ciclos em paralelo publicam uma
 vez só) e **a precedência do destino dos alertas**, inclusive com o banco fora do
-ar.
+ar. O **mover entre pastas** tem teste nas duas direções — não deixar sair para
+outra organização e não deixar entrar de outra — e no caso do conteúdo repetido
+no destino.
 
 O cálculo dos slots é testado nas duas viradas de horário de verão: a hora que
 não existe resolve para depois da virada, e a que acontece duas vezes resolve
@@ -296,6 +301,43 @@ usado no navegador fora da lista que vai para o cliente.
 Ao esgotar a fila, vale o que estiver configurado na pasta: *parar e notificar*
 registra a publicação sem texto e alerta; *reiniciar* devolve todos os textos a
 pendente, preservando a ordem, e publica o primeiro, com o evento na auditoria.
+
+## Entrada e senha esquecida
+
+A credencial de entrada é o **nome de usuário**, não o e-mail: minúsculas, de 3
+a 32 caracteres, com números, ponto, hífen e sublinhado, começando e terminando
+por letra ou número. Sem espaço e sem acento, porque `josé` e `jose` seriam duas
+contas para o banco e a mesma pessoa para quem olha.
+
+O e-mail deixou de ser o login justamente porque o sistema não envia e-mail
+nenhum — ele não provava nada sobre quem entrava. Virou um campo cadastral como
+o telefone e o Telegram: opcional, único quando preenchido, e serve para
+localizar a pessoa.
+
+**Quem esquece a senha** clica em *Esqueci a senha* na tela de entrada e informa
+o usuário. O pedido não entrega nada a quem o fez: ele avisa os administradores
+pelo grupo de alertas do Telegram e pelo painel, e um deles redefine em
+**Configuração → Usuários** e repassa a provisória. A resposta da tela é sempre a
+mesma, exista a conta ou não — um formulário público que responde "este usuário
+não existe" é um descobridor de contas cadastradas. O limite de pedidos é
+separado do limite de tentativas de login, senão bastaria pedir a senha de
+alguém repetidamente para trancar essa pessoa do lado de fora.
+
+## Mover textos entre pastas
+
+Admin e superadmin escolhem um ou mais textos na lista e movem para outra pasta;
+eles entram no fim da fila do destino, preservando a ordem relativa. O perfil
+`usuario` não move: ele só enxerga as pastas atribuídas a ele, e mover dali seria
+tirar o texto do próprio alcance.
+
+Duas coisas passam pelo escopo, não uma: a pasta de destino e cada texto
+escolhido. A lista de identificadores vem do navegador, e sem o segundo filtro
+bastaria injetar o id de um texto de outra organização no formulário para
+arrastá-lo para dentro da sua — há teste para as duas direções.
+
+Como o par (pasta, conteúdo) é único no banco, um texto idêntico a algum que o
+destino já tenha é **pulado**, e a faixa diz quantos foram — em vez de o lote
+inteiro falhar por causa de um repetido.
 
 ## Idiomas
 

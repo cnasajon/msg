@@ -14,9 +14,16 @@ type Janela = { tentativas: number; expiraEm: number };
 const JANELA_MS = 15 * 60_000;
 const MAX_POR_IP = 30;
 const MAX_POR_CONTA = 8;
+const MAX_DE_PEDIDOS_POR_IP = 10;
+const MAX_DE_PEDIDOS_POR_CONTA = 3;
 
 const porIp = new Map<string, Janela>();
 const porConta = new Map<string, Janela>();
+// Contadores proprios para o pedido de redefinicao: se ele dividisse a contagem
+// com o login, bastaria pedir a senha de alguem varias vezes para trancar a
+// pessoa do lado de fora.
+const pedidosPorIp = new Map<string, Janela>();
+const pedidosPorConta = new Map<string, Janela>();
 
 function registrar(mapa: Map<string, Janela>, chave: string, maximo: number): boolean {
   const agora = Date.now();
@@ -31,20 +38,33 @@ function registrar(mapa: Map<string, Janela>, chave: string, maximo: number): bo
 }
 
 /** `false` quando a tentativa deve ser recusada sem nem olhar a senha. */
-export function permiteTentativaDeLogin(ip: string | null, email: string): boolean {
+export function permiteTentativaDeLogin(ip: string | null, conta: string): boolean {
   const ipOk = ip ? registrar(porIp, ip, MAX_POR_IP) : true;
-  const contaOk = registrar(porConta, email.toLowerCase(), MAX_POR_CONTA);
+  const contaOk = registrar(porConta, conta.toLowerCase(), MAX_POR_CONTA);
   return ipOk && contaOk;
 }
 
 /** Login bem-sucedido zera o contador daquela conta. */
-export function limparTentativas(ip: string | null, email: string) {
+export function limparTentativas(ip: string | null, conta: string) {
   if (ip) porIp.delete(ip);
-  porConta.delete(email.toLowerCase());
+  porConta.delete(conta.toLowerCase());
+}
+
+/**
+ * Pedidos de redefinicao de senha. O limite e mais apertado que o do login: um
+ * pedido legitimo acontece uma vez, e cada repeticao vira mensagem no grupo de
+ * alertas dos administradores.
+ */
+export function permitePedidoDeSenha(ip: string | null, conta: string): boolean {
+  const ipOk = ip ? registrar(pedidosPorIp, ip, MAX_DE_PEDIDOS_POR_IP) : true;
+  const contaOk = registrar(pedidosPorConta, conta.toLowerCase(), MAX_DE_PEDIDOS_POR_CONTA);
+  return ipOk && contaOk;
 }
 
 /** Só para os testes. */
 export function zerarContadores() {
   porIp.clear();
   porConta.clear();
+  pedidosPorIp.clear();
+  pedidosPorConta.clear();
 }

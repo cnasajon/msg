@@ -11,6 +11,7 @@ import { comAviso } from '@/lib/navegacao';
 import { tradutorDeAvisos } from '@/lib/avisos-servidor';
 import { hashDoConteudo, problemaNoHtml, problemaNoTamanho } from '@/lib/textos';
 import { ImagemInvalida, processarImagem } from '@/lib/imagem';
+import { moverTextosParaPasta } from '@/lib/mover';
 
 function voltar(destino: string, mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
   redirect(comAviso(destino, tipo, mensagem));
@@ -252,4 +253,65 @@ export async function reordenarFila(dados: FormData) {
     detalhes: { textos: ids.length },
   });
   voltar(destino, t('ordemSalva'), 'ok');
+}
+
+/**
+ * Move textos escolhidos para outra pasta.
+ *
+ * A regra — escopo do destino, escopo de cada texto, duplicata pulada — está em
+ * `lib/mover.ts`, que é o que os testes exercitam. Aqui ficam só o formulário,
+ * a permissão e as mensagens.
+ */
+export async function moverTextos(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'textos.mover')) throw new NaoAutorizado();
+
+  const { t } = await tradutorDeAvisos();
+  const origem = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
+  const destinoDaTela = `/textos?pasta=${origem.id}`;
+
+  const destinoId = String(dados.get('destinoId') ?? '');
+  if (destinoId === origem.id) voltar(destinoDaTela, t('moverMesmaPasta'));
+
+  const ids = dados.getAll('textos').map(String).filter(Boolean);
+  if (ids.length === 0) voltar(destinoDaTela, t('moverNenhumEscolhido'));
+
+  const resultado = await moverTextosParaPasta(prisma, sessao, {
+    origemId: origem.id,
+    destinoId,
+    ids,
+  });
+
+  if (resultado.movidos === 0) {
+    voltar(
+      destinoDaTela,
+      resultado.pulados > 0
+        ? t('moverTodosRepetidos', { quantidade: resultado.pulados })
+        : t('moverNenhumEscolhido'),
+    );
+  }
+
+  await registrarAuditoria(sessao, {
+    acao: 'mover',
+    entidade: 'text',
+    entidadeId: resultado.destino.id,
+    detalhes: {
+      de: origem.nome,
+      para: resultado.destino.nome,
+      movidos: resultado.movidos,
+      pulados: resultado.pulados,
+    },
+  });
+
+  voltar(
+    destinoDaTela,
+    resultado.pulados > 0
+      ? t('moverParcial', {
+          movidos: resultado.movidos,
+          pulados: resultado.pulados,
+          pasta: resultado.destino.nome,
+        })
+      : t('moverFeito', { quantidade: resultado.movidos, pasta: resultado.destino.nome }),
+    'ok',
+  );
 }

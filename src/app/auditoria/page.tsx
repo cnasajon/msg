@@ -33,6 +33,7 @@ const ACOES = [
   'arquivar',
   'desarquivar',
   'reordenar',
+  'mover',
   'pular',
   'publicar_agora',
   'reiniciar_fila',

@@ -19,6 +19,7 @@ const TABELA: [Acao, boolean, boolean, boolean][] = [
   ['textos.importar', true, true, true],
   ['textos.exportar', true, true, true],
   ['textos.reordenar', true, true, true],
+  ['textos.mover', true, true, false],
   ['textos.publicarAgora', true, true, true],
   ['imagens.ver', true, true, true],
   ['painel.ver', true, true, true],

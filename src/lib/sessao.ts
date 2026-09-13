@@ -71,7 +71,7 @@ export async function encerrarSessoesDoUsuario(usuarioId: string) {
 export type SessaoAtual = Sessao & {
   sessaoId: string;
   nome: string;
-  email: string;
+  username: string;
   senhaProvisoria: boolean;
   idioma: string | null;
 };
@@ -109,7 +109,7 @@ export async function sessaoAtual(): Promise<SessaoAtual | null> {
     organizationAtivaId: perfil === 'superadmin' ? registro.organizationAtivaId : null,
     pastasAtribuidas: registro.user.folders.map((f) => f.folderId),
     nome: registro.user.nome,
-    email: registro.user.email,
+    username: registro.user.username,
     senhaProvisoria: registro.user.senhaProvisoria,
     idioma: registro.user.idioma,
   };

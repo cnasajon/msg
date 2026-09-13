@@ -47,14 +47,14 @@
     "configuracoesGlobais": "Configuración global"
   },
   "entrada": {
-    "email": "Correo electrónico",
     "senha": "Contraseña",
     "entrando": "Entrando…",
-    "credenciaisInvalidas": "Correo o contraseña incorrectos.",
-    "informeOsDois": "Introduce el correo y la contraseña.",
+    "credenciaisInvalidas": "Usuario o contraseña incorrectos.",
+    "informeOsDois": "Indique usuario y contraseña.",
     "tentativasDemais": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
-    "esqueceu": "¿Olvidaste la contraseña? Un administrador de tu organización la restablece por ti.",
-    "semCadastro": "No hay registro público."
+    "esqueceu": "Olvidé la contraseña",
+    "semCadastro": "No hay registro público.",
+    "usuario": "Usuario"
   },
   "primeiroAcesso": {
     "titulo": "Primer acceso",
@@ -163,7 +163,12 @@
     "arquivadoEm": "archivado el {quando}",
     "arrasteParaReordenar": "Arrastre para reordenar",
     "moverParaCima": "Mover hacia arriba",
-    "moverParaBaixo": "Mover hacia abajo"
+    "moverParaBaixo": "Mover hacia abajo",
+    "moverPara": "Mover a",
+    "mover": "Mover",
+    "escolhidos": "{quantidade} elegido(s)",
+    "escolherTodos": "Elegir todos",
+    "semOutraPasta": "No hay otra carpeta a la que mover."
   },
   "editor": {
     "conteudo": "Contenido",
@@ -310,7 +315,8 @@
     "slot_perdido": "Slot perdido",
     "fila_esgotada": "Cola agotada",
     "fila_curta": "Cola corta",
-    "autenticacao_bot": "Fallo de autenticación del bot"
+    "autenticacao_bot": "Fallo de autenticación del bot",
+    "senha_esquecida": "Pedido de restablecimiento de contraseña"
   },
   "situacoesDaLinha": {
     "importar": "entra como pendiente",
@@ -425,11 +431,10 @@
   },
   "usuarios": {
     "titulo": "Usuarios",
-    "explicacao": "No existe registro público. Cada cuenta la crea quien está por encima en la jerarquía, con <b>contraseña provisional</b> y cambio obligatorio en el primer acceso. El correo sirve solo como identificador de inicio de sesión — el sistema no envía ningún correo. <b>Telegram y teléfono son opcionales</b> y existen para localizar a la persona.",
+    "explicacao": "No existe registro público. Cada cuenta la crea quien está por encima en la jerarquía, con <b>contraseña provisional</b> y cambio obligatorio en el primer acceso. La entrada es por el <b>usuario</b>, no por el correo — <b>correo, teléfono y Telegram son opcionales</b> y existen para localizar a la persona.",
     "semOrganizacao": "Ninguna organización activa elegida. Está viendo solo los superadmins; elija una organización en el selector superior para gestionar sus usuarios.",
     "noTotal": "{quantidade} en total",
     "nome": "Nombre",
-    "contato": "Contacto",
     "organizacao": "Organización",
     "perfil": "Perfil",
     "pastasAtribuidas": "Carpetas asignadas",
@@ -443,8 +448,7 @@
     "editar": "Editar",
     "editarUsuario": "Editar usuario — {nome}",
     "fechar": "Cerrar",
-    "emailLogin": "Correo (inicio de sesión)",
-    "emailHint": "Es la credencial de entrada y no cambia por aquí.",
+    "emailHint": "Cadastral: el sistema no envía correo. Sirve para localizar a la persona.",
     "telegram": "Telegram",
     "telefone": "Teléfono",
     "opcional": "(opcional)",
@@ -458,7 +462,10 @@
     "salvarPastas": "Guardar carpetas",
     "novoUsuario": "Nuevo usuario",
     "criarUsuario": "Crear usuario",
-    "senhaApareceUmaVez": "La contraseña provisional aparece una sola vez, aquí en la pantalla, para que la pase a la persona."
+    "senhaApareceUmaVez": "La contraseña provisional aparece una sola vez, aquí en la pantalla, para que la pase a la persona.",
+    "usuario": "Usuario",
+    "usuarioHint": "Es con él que la persona entra. Minúsculas, sin espacios y sin acentos.",
+    "email": "Correo"
   },
   "organizacoes": {
     "titulo": "Organizaciones",
@@ -586,7 +593,8 @@
     "testar_alerta": "probar alerta",
     "definir_token_sobreposicao": "definir token de sobrescritura",
     "remover_token_sobreposicao": "quitar token de sobrescritura",
-    "alerta": "alerta"
+    "alerta": "alerta",
+    "mover": "mover a otra carpeta"
   },
   "avisos": {
     "textoDuplicado": "Esta carpeta ya tiene un texto con exactamente este contenido.",
@@ -715,6 +723,28 @@
     "alertaFilaCurta": "La carpeta tiene solo {quantidade} texto(s) pendiente(s).",
     "alertaFilaEsgotada": "La cola se agotó y la carpeta está configurada para parar y notificar. No se publicó nada.",
     "alertaFalhaDefinitiva": "Fallo definitivo tras {tentativas} intentos: {erro}",
-    "filaEsgotadaPublicacao": "Cola agotada: no había texto pendiente para publicar."
+    "filaEsgotadaPublicacao": "Cola agotada: no había texto pendiente para publicar.",
+    "usernameTamanho": "El usuario tiene que tener de {minimo} a {maximo} caracteres.",
+    "usernameFormato": "El usuario acepta letras minúsculas, números, punto, guion y guion bajo, empezando y terminando por letra o número. Sin espacios y sin acentos.",
+    "usernameJaExiste": "Ya existe una cuenta con este usuario.",
+    "informeUsuario": "Indique el usuario.",
+    "alertaSenhaEsquecida": "{nome} ({usuario}), de {organizacao}, pidió restablecer la contraseña. Restablézcala en Configuración → Usuarios y pásele la provisional.",
+    "moverMesmaPasta": "Elija una carpeta distinta de la actual.",
+    "moverNenhumEscolhido": "Elija al menos un texto para mover.",
+    "moverTodosRepetidos": "Nada movido: la carpeta de destino ya tiene los {quantidade} texto(s) elegido(s), con el mismo contenido.",
+    "moverFeito": "{quantidade} texto(s) movido(s) a {pasta}, al final de la cola.",
+    "moverParcial": "{movidos} texto(s) movido(s) a {pasta}. {pulados} saltado(s): la carpeta de destino ya tenía el mismo contenido."
+  },
+  "esqueci": {
+    "titulo": "Olvidé la contraseña",
+    "explicacao": "Indique su usuario. Los administradores de su organización son avisados por Telegram y uno de ellos restablece su contraseña.",
+    "usuario": "Usuario",
+    "pedir": "Pedir restablecimiento",
+    "enviando": "Enviando…",
+    "pronto": "Pedido registrado.",
+    "prontoDetalhe": "Si este usuario existe, los administradores de la organización fueron avisados. Busque a uno de ellos para recibir la contraseña provisional — el sistema no le envía correo ni mensaje.",
+    "voltar": "Volver a la entrada",
+    "informeOUsuario": "Indique el usuario.",
+    "tentativasDemais": "Demasiados pedidos. Espere unos minutos e inténtelo de nuevo."
   }
 }

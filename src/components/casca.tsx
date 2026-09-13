@@ -125,7 +125,7 @@ export async function Casca({
         <div className="foot">
           <div className="who">{sessao.nome}</div>
           <div className="role">
-            {perfis(sessao.perfil)} · {sessao.email}
+            {perfis(sessao.perfil)} · {sessao.username}
           </div>
           <div style={{ marginTop: 8 }}>
             <BotaoSair token={tokenCsrfPara(sessao.sessaoId)} />

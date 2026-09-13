@@ -25,7 +25,8 @@ export type TipoDeAlerta =
   | 'slot_perdido'
   | 'fila_esgotada'
   | 'fila_curta'
-  | 'autenticacao_bot';
+  | 'autenticacao_bot'
+  | 'senha_esquecida';
 
 export const TITULO_DO_ALERTA: Record<TipoDeAlerta, string> = {
   falha_publicacao: 'Falha definitiva de publicacao',
@@ -33,6 +34,7 @@ export const TITULO_DO_ALERTA: Record<TipoDeAlerta, string> = {
   fila_esgotada: 'Fila esgotada',
   fila_curta: 'Fila curta',
   autenticacao_bot: 'Falha de autenticacao do bot',
+  senha_esquecida: 'Pedido de redefinicao de senha',
 };
 
 export type OrigemDoDestino = 'settings' | 'ambiente' | 'nenhum';
@@ -86,7 +88,13 @@ export type PedidoDeAlerta = {
   mensagem: string;
   organizationId?: string | null;
   pasta?: string | null;
-  /** Nao repetir o mesmo alerta desta pasta antes deste intervalo. */
+  /**
+   * O que se repete, para o intervalo de `repetirAposHoras`. Sem isto vale a
+   * pasta — que serve para os alertas de publicacao, mas nao para os que nao
+   * tem pasta nenhuma, como o pedido de redefinicao de senha.
+   */
+  chave?: string | null;
+  /** Nao repetir o mesmo alerta antes deste intervalo. */
   repetirAposHoras?: number;
 };
 
@@ -192,6 +200,7 @@ export async function alertar(
             tipo: pedido.tipo,
             titulo,
             pasta: pedido.pasta ?? null,
+            chave: pedido.chave ?? null,
             mensagem: pedido.mensagem,
             destino: destino.origemDoChat,
             enviadoAoTelegram,
@@ -216,7 +225,11 @@ async function alertadoRecentemente(prisma: PrismaClient, pedido: PedidoDeAlerta
         acao: 'alerta',
         entidadeId: pedido.tipo,
         criadoEm: { gte: desde },
-        ...(pedido.pasta ? { detalhes: { path: ['pasta'], equals: pedido.pasta } } : {}),
+        ...(pedido.chave
+          ? { detalhes: { path: ['chave'], equals: pedido.chave } }
+          : pedido.pasta
+            ? { detalhes: { path: ['pasta'], equals: pedido.pasta } }
+            : {}),
       },
       select: { id: true },
     });
