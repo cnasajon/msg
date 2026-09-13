@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CampoDeData } from './campo-de-data';
+import { Ajuda } from './ajuda';
 import { LIMITE_COM_IMAGEM, LIMITE_SEM_IMAGEM } from '@/lib/textos';
 
 /**
@@ -27,6 +28,7 @@ export function EditorDeTexto({
   dataInicial?: string;
 }) {
   const t = useTranslations('editor');
+  const comum = useTranslations('comum');
   const [conteudo, setConteudo] = useState(valorInicial);
   const [temImagem, setTemImagem] = useState(temImagemInicial);
   const [removendo, setRemovendo] = useState(false);
@@ -42,6 +44,16 @@ export function EditorDeTexto({
       <label className="field">
         <span className="lbl">
           {t('campoTexto')} · <code>parse_mode: HTML</code>
+          <Ajuda
+            rotulo={comum('ajudaSobre', { campo: t('campoTexto') })}
+            texto={
+              <>
+                {t('tagsAceitas')} <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code>{' '}
+                <code>&lt;s&gt;</code> <code>&lt;a href&gt;</code> <code>&lt;code&gt;</code>{' '}
+                <code>&lt;pre&gt;</code> <code>&lt;blockquote&gt;</code> <code>&lt;tg-spoiler&gt;</code>
+              </>
+            }
+          />
         </span>
         <textarea
           name={nome}
@@ -50,11 +62,6 @@ export function EditorDeTexto({
           rows={10}
           required
         />
-        <span className="hint">
-          {t('tagsAceitas')} <code>&lt;b&gt;</code> <code>&lt;i&gt;</code> <code>&lt;u&gt;</code>{' '}
-          <code>&lt;s&gt;</code> <code>&lt;a href&gt;</code> <code>&lt;code&gt;</code>{' '}
-          <code>&lt;pre&gt;</code> <code>&lt;blockquote&gt;</code> <code>&lt;tg-spoiler&gt;</code>
-        </span>
       </label>
 
       <div className={excedeu ? 'counter over' : 'counter'}>
@@ -119,7 +126,10 @@ export function EditorDeTexto({
           ) : null}
 
           <label className="field">
-            <span className="lbl">{t('imagemOpcional')}</span>
+            <span className="lbl">
+              {t('imagemOpcional')}
+              <Ajuda texto={t('regraDaImagem')} rotulo={comum('ajudaSobre', { campo: t('imagemOpcional') })} />
+            </span>
             <input
               type="file"
               name="imagem"
@@ -131,10 +141,11 @@ export function EditorDeTexto({
                 if (arquivo) setRemovendo(false);
               }}
             />
-            <span className="hint">
-              {t('regraDaImagem')}{' '}
-              {nomeDoArquivo ? <b>{t('selecionado', { arquivo: nomeDoArquivo })}</b> : null}
-            </span>
+            {nomeDoArquivo ? (
+              <span className="hint">
+                <b>{t('selecionado', { arquivo: nomeDoArquivo })}</b>
+              </span>
+            ) : null}
           </label>
         </>
       )}

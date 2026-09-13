@@ -114,8 +114,21 @@ export default async function Painel() {
     .filter((l) => l.proximo)
     .sort((a, b) => a.proximo!.instante.getTime() - b.proximo!.instante.getTime())[0];
 
+  // O perfil `usuario` só enxerga as pastas atribuídas a ele. Sem nenhuma, a
+  // tela fica de zeros — e zero parece sistema vazio, não falta de acesso.
+  const semPastaAtribuida = sessao.perfil === 'usuario' && pastas.length === 0;
+
   return (
     <Casca sessao={sessao} titulo={t('titulo')} caminho={menu('painelDeControle')} atual="/painel">
+      {semPastaAtribuida ? (
+        <div className="banner warn">
+          <div>
+            <div className="ttl">{comum('semPastaTitulo')}</div>
+            {comum('semPastaExplicacao')}
+          </div>
+        </div>
+      ) : null}
+
       {sessao.perfil === 'superadmin' && !orgEmVigor ? (
         <div className="banner warn">
           <div>

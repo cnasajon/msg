@@ -11,8 +11,11 @@ import { useEffect, useId, useRef, useState } from 'react';
  *
  * Abre no passar do mouse e também no clique — só o hover deixaria a explicação
  * inalcançável em telefone e por teclado.
+ *
+ * `texto` aceita conteúdo rico, e não apenas string, porque boa parte das
+ * explicações traz trecho em destaque ou nome de tag em `<code>`.
  */
-export function Ajuda({ texto, rotulo }: { texto: string; rotulo: string }) {
+export function Ajuda({ texto, rotulo }: { texto: React.ReactNode; rotulo: string }) {
   const id = useId();
   const area = useRef<HTMLSpanElement>(null);
   const [aberto, setAberto] = useState(false);

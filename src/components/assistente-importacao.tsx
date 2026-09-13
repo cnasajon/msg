@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Ajuda } from './ajuda';
 
 type Amostra = {
   numero: number;
@@ -101,7 +102,10 @@ export function AssistenteDeImportacao({
         <div className="body">
           <div className="row">
             <label className="field" style={{ margin: 0 }}>
-              <span className="lbl">{t('arquivo')}</span>
+              <span className="lbl">
+                {t('arquivo')}
+                <Ajuda texto={t('somenteTexto')} rotulo={comum('ajudaSobre', { campo: t('arquivo') })} />
+              </span>
               <input
                 ref={entradaDeArquivo}
                 type="file"
@@ -113,7 +117,6 @@ export function AssistenteDeImportacao({
                   if (escolhido) void analisar({ arquivo: escolhido });
                 }}
               />
-              <span className="hint">{t('somenteTexto')}</span>
             </label>
           </div>
 
@@ -139,7 +142,13 @@ export function AssistenteDeImportacao({
               </label>
 
               <label className="field" style={{ margin: 0 }}>
-                <span className="lbl">{t('colunaData')}</span>
+                <span className="lbl">
+                  {t('colunaData')}
+                  <Ajuda
+                    texto={t.rich('colunaDataExplicacao', { b: (partes) => <b>{partes}</b> })}
+                    rotulo={comum('ajudaSobre', { campo: t('colunaData') })}
+                  />
+                </span>
                 <select
                   value={colunaData}
                   onChange={(e) => {
@@ -156,9 +165,6 @@ export function AssistenteDeImportacao({
                     </option>
                   ))}
                 </select>
-                <span className="hint">
-                  {t.rich('colunaDataExplicacao', { b: (partes) => <b>{partes}</b> })}
-                </span>
               </label>
 
               <label className="field" style={{ margin: 0 }}>
