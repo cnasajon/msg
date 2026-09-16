@@ -15,6 +15,7 @@ import { escopoDePasta, escopoDeTexto } from '@/lib/escopo';
 import { resumir, tamanhoDoTexto } from '@/lib/textos';
 import { formatarNoFuso } from '@/lib/fuso';
 import { formatarPadraoDeData } from '@/lib/data-da-publicacao';
+import { SITUACOES, lembrarLista, listaLembrada, pastaDaVez } from '@/lib/lista-lembrada';
 import {
   arquivarSelecionados,
   arquivarTexto,
@@ -33,8 +34,6 @@ function tamanhoLegivel(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
-
-const SITUACOES = ['', 'pendente', 'publicado', 'erro', 'arquivado'] as const;
 
 /**
  * Quanto do texto aparece na lista.
@@ -68,9 +67,8 @@ export default async function Textos({
     orderBy: { nome: 'asc' },
     select: { id: true, nome: true, timezone: true, aoEsgotar: true, tipoDeLista: true },
   });
-  // A pasta escolhida na URL só vale se estiver no escopo — caso contrário, a
-  // primeira que a pessoa realmente enxerga.
-  const pasta = pastas.find((p) => p.id === filtros.pasta) ?? pastas[0] ?? null;
+  const lembrado = await listaLembrada(sessao.usuarioId);
+  const pasta = pastaDaVez(pastas, filtros.pasta, lembrado.pastaId);
 
   if (!pasta) {
     return (
@@ -89,9 +87,23 @@ export default async function Textos({
   }
 
   const busca = (filtros.busca ?? '').trim();
-  const status = SITUACOES.some((s) => s === filtros.status) ? filtros.status : '';
+  // A situação vem da URL quando ela traz uma, mesmo vazia — `?status=` é a
+  // escolha explícita de "todas". Só a ausência do parâmetro cai no lembrado;
+  // um valor desconhecido cai em "todas", sem sobrescrever o que estava guardado
+  // por causa de uma URL malformada.
+  const daUrl = SITUACOES.find((s) => s === filtros.status);
+  const status = daUrl ?? (filtros.status === undefined ? lembrado.status : '');
   const rotuloDaSituacao = (valor: string) =>
     valor === '' ? t('todasAsSituacoes') : t(valor);
+
+  // A escolha desta visita passa a ser a lembrada da próxima. Escreve durante a
+  // renderização de um GET, o que normalmente não se faz — mas a barra de
+  // filtros é um formulário GET de propósito: é o que mantém a tela marcável nos
+  // favoritos, compartilhável por link e reversível pelo botão de voltar, e
+  // trocá-la por uma ação de servidor só para poder gravar custaria as três.
+  // `lembrarLista` só escreve quando a escolha mudou, então abrir a lista sem
+  // mexer em nada não gera escrita nenhuma.
+  await lembrarLista(sessao.usuarioId, lembrado, { pastaId: pasta.id, status });
 
   const textos = await prisma.text.findMany({
     where: {
@@ -175,13 +187,13 @@ export default async function Textos({
             ))}
           </SelectQueFiltra>
           <input type="text" name="busca" defaultValue={busca} placeholder={comum('buscar')} />
-          <select name="status" defaultValue={status}>
+          <SelectQueFiltra name="status" defaultValue={status} aria-label={t('situacao')}>
             {SITUACOES.map((s) => (
               <option key={s} value={s}>
                 {rotuloDaSituacao(s)}
               </option>
             ))}
-          </select>
+          </SelectQueFiltra>
           <select name="imagem" defaultValue={filtros.imagem ?? ''}>
             <option value="">{t('comESemImagem')}</option>
             <option value="com">{t('soComImagem')}</option>

@@ -110,6 +110,14 @@ model User {
   // cada troca de domínio, porque o cookie é por domínio), mas a preferência é
   // da pessoa e sobrevive. Nula para os demais perfis, que têm organização fixa.
   ultimaOrganizacaoId String? @map("ultima_organizacao_id") @db.Uuid
+  // Como a lista de textos estava quando a pessoa saiu dela. Mesma razão da
+  // organização acima: é preferência de quem usa, não estado da sessão. Quem
+  // trabalha numa pasta passa o dia voltando a ela, e recomeçar sempre na
+  // primeira em ordem alfabética obriga a reescolher a cada visita.
+  // Nulo em `ultimaPastaId` é "nunca escolheu"; nulo no status é "todas as
+  // situações", que é também o padrão — os dois casos caem no mesmo lugar.
+  ultimaPastaId   String?   @map("ultima_pasta_id") @db.Uuid
+  ultimoStatusDeTexto StatusTexto? @map("ultimo_status_de_texto")
   criadoEm        DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
 
   // De quais organizações a pessoa participa. Substitui o antigo campo único:
@@ -117,6 +125,7 @@ model User {
   // está operando. Superadmin não tem nenhuma — ele alcança todas por perfil.
   organizacoes UserOrganization[]
   ultimaOrganizacao Organization? @relation("UltimaOrganizacaoDoUsuario", fields: [ultimaOrganizacaoId], references: [id], onDelete: SetNull)
+  ultimaPasta   Folder?       @relation("UltimaPastaDoUsuario", fields: [ultimaPastaId], references: [id], onDelete: SetNull)
   folders      UserFolder[]
   sessions     Session[]
   textos       Text[]        @relation("TextoCriadoPor")
@@ -201,6 +210,7 @@ model Folder {
 
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   usuarios     UserFolder[]
+  usuariosQueVoltamAqui User[]  @relation("UltimaPastaDoUsuario")
   textos       Text[]
   schedules    Schedule[]
   publications Publication[]
