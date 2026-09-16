@@ -29,6 +29,16 @@ function tamanhoLegivel(bytes: number): string {
 
 const SITUACOES = ['', 'pendente', 'publicado', 'erro', 'arquivado'] as const;
 
+/**
+ * Quanto do texto aparece na lista.
+ *
+ * Três vezes o resumo de antes, que era o que de fato limitava a leitura: sem
+ * mexer aqui, alargar a coluna só deixaria espaço em branco depois das
+ * reticências. O corte continua existindo — a lista é para reconhecer o texto,
+ * não para lê-lo inteiro; para isso existe a tela do texto.
+ */
+const RESUMO_NA_LISTA = 480;
+
 export default async function Textos({
   searchParams,
 }: {
@@ -125,6 +135,7 @@ export default async function Textos({
       titulo={t('titulo')}
       caminho={`${menu('textos')} · ${pasta.nome}`}
       atual="/textos"
+      largo
     >
       <Avisos erro={filtros.erro} ok={filtros.ok} />
 
@@ -188,6 +199,7 @@ export default async function Textos({
           acao={moverTextos}
           csrf={<CampoCsrf token={csrf} />}
         >
+        <div className="rolagem">
         <table>
           <thead>
             <tr>
@@ -196,13 +208,13 @@ export default async function Textos({
                   <CaixaDeTodos rotulo={t('escolherTodos')} />
                 </th>
               ) : null}
-              <th style={{ width: porData ? 110 : 60 }}>
+              <th style={{ width: porData ? 96 : 52 }}>
                 {porData ? t('dataDaPublicacao') : t('ordem')}
               </th>
               <th>{t('texto')}</th>
-              <th style={{ width: 110 }}>{t('situacao')}</th>
-              <th style={{ width: 170 }}>{t('publicadoEm')}</th>
-              <th style={{ width: 210 }} />
+              <th style={{ width: 92 }}>{t('situacao')}</th>
+              <th style={{ width: 128 }}>{t('publicadoEm')}</th>
+              <th style={{ width: 168 }} />
             </tr>
           </thead>
           <tbody>
@@ -240,7 +252,7 @@ export default async function Textos({
                       <div className="thumb empty">{comum('nenhum')}</div>
                     )}
                     <div className="t">
-                      <p>{resumir(texto.conteudo)}</p>
+                      <p>{resumir(texto.conteudo, RESUMO_NA_LISTA)}</p>
                       <div className="meta">
                         {t('caracteres', { quantidade: tamanhoDoTexto(texto.conteudo) })}
                         {texto.imagemBytes
@@ -337,6 +349,7 @@ export default async function Textos({
             )}
           </tbody>
         </table>
+        </div>
         </MoverTextos>
       </div>
 

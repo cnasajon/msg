@@ -40,6 +40,16 @@ const CHAT = '-1001492357816';
 const FUSO = 'America/Sao_Paulo';
 /** 10:05 UTC = 07:05 em Sao Paulo: cinco minutos depois do slot das 07:00. */
 const AGORA = new Date('2026-09-14T10:05:00Z');
+/**
+ * As pastas nascem antes dos slots que os testes exercitam.
+ *
+ * O dispatcher ignora slot perdido anterior à criação da pasta — alertar que
+ * uma pasta recém-criada "perdeu" a publicação de ontem seria barulho. Sem
+ * fixar isto, `criadaEm` seria o instante real do teste, e o slot de 14/09
+ * passaria a ser anterior à pasta assim que o relógio da máquina passasse
+ * daquela data: o teste vinha passando por coincidência de calendário.
+ */
+const CRIADA_EM = new Date('2026-09-01T00:00:00Z');
 
 async function montarPasta(opcoes: {
   textos: number;
@@ -57,6 +67,7 @@ async function montarPasta(opcoes: {
       nome: 'Pasta de teste',
       timezone: FUSO,
       telegramChatId: CHAT,
+      criadaEm: CRIADA_EM,
       aoEsgotar: opcoes.aoEsgotar ?? 'parar_notificar',
       ...(opcoes.alertarAbaixoDe === undefined
         ? {}

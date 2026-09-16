@@ -10,10 +10,10 @@
  * maior sobe o de antes, e essa é decisão do dono do produto. A data é a do
  * commit que publica.
  */
-export const VERSAO = '1.1';
+export const VERSAO = '1.2';
 
 /** Data da publicação desta versão, em ISO — a exibição segue o idioma de quem olha. */
-export const PUBLICADA_EM = '2026-09-13';
+export const PUBLICADA_EM = '2026-09-16';
 
 /** `13/09/2026` em pt, `13/09/2026` em es, `09/13/2026` em en. */
 export function dataDaPublicacao(idioma: string): string {
