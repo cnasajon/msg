@@ -17,6 +17,26 @@ export const NOME_DO_IDIOMA: Record<Idioma, string> = {
   en: 'English',
 };
 
+/**
+ * Bandeira de cada idioma, para achar a opção certa sem ler.
+ *
+ * São pares de indicadores regionais, não imagens: o navegador é quem desenha.
+ * O Windows não traz a fonte de bandeiras, e ali aparecem as duas letras do país
+ * — "🇧🇷" vira "BR". Fica legível de qualquer forma, que é o que importa; trocar
+ * por ícones em arquivo custaria três imagens e uma requisição por tela para
+ * resolver só a estética em um sistema.
+ */
+export const BANDEIRA_DO_IDIOMA: Record<Idioma, string> = {
+  pt: '🇧🇷',
+  es: '🇪🇸',
+  en: '🇬🇧',
+};
+
+/** Rótulo do idioma como ele aparece em qualquer seletor da aplicação. */
+export function nomeComBandeira(codigo: Idioma): string {
+  return `${BANDEIRA_DO_IDIOMA[codigo]} ${NOME_DO_IDIOMA[codigo]}`;
+}
+
 export function idiomaValido(valor: string | null | undefined): Idioma | null {
   return valor && IDIOMAS.includes(valor as Idioma) ? (valor as Idioma) : null;
 }

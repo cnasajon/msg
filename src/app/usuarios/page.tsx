@@ -10,7 +10,7 @@ import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer, perfisQuePodeGerenciar } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeUsuario, escopoDePasta, escopoDeOrganizacao, organizacaoEmVigor } from '@/lib/escopo';
-import { IDIOMAS, NOME_DO_IDIOMA } from '@/i18n/idiomas';
+import { IDIOMAS, nomeComBandeira } from '@/i18n/idiomas';
 import { TAMANHO_MINIMO_DA_SENHA } from '@/lib/senha';
 import {
   criarUsuario,
@@ -236,7 +236,7 @@ export default async function Usuarios({
                     <option value="">{t('idiomaPadrao')}</option>
                     {IDIOMAS.map((codigo) => (
                       <option key={codigo} value={codigo}>
-                        {NOME_DO_IDIOMA[codigo]}
+                        {nomeComBandeira(codigo)}
                       </option>
                     ))}
                   </select>

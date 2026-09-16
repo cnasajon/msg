@@ -3,7 +3,7 @@
 import { useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { trocarIdiomaDaSessao } from '@/app/acoes-idioma';
-import { IDIOMAS, NOME_DO_IDIOMA } from '@/i18n/idiomas';
+import { IDIOMAS, nomeComBandeira } from '@/i18n/idiomas';
 
 /**
  * Troca de idioma. Para quem está autenticado, grava a preferência no próprio
@@ -30,7 +30,7 @@ export function SeletorDeIdioma() {
     >
       {IDIOMAS.map((codigo) => (
         <option key={codigo} value={codigo}>
-          {NOME_DO_IDIOMA[codigo]}
+          {nomeComBandeira(codigo)}
         </option>
       ))}
     </select>
