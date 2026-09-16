@@ -9,6 +9,8 @@ o username de um bot não se troca sem criar outro no BotFather.
 
 Especificação completa: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) (v1.5).
 Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
+Onde o projeto está hoje, para abrir uma conversa nova sem reler o histórico:
+[`docs/ESTADO-ATUAL.md`](docs/ESTADO-ATUAL.md).
 
 > **Situação: fase 4 entregue — o sistema está completo.** Painel inicial com a
 > próxima publicação e as últimas que saíram, interface em português, espanhol e
@@ -22,11 +24,13 @@ Regras de trabalho para sessões do Claude Code: [`CLAUDE.md`](CLAUDE.md).
 | Caminho | Conteúdo |
 | :-- | :-- |
 | `docs/ESPECIFICACAO.md` | Especificação funcional e técnica |
+| `docs/ESTADO-ATUAL.md` | Onde o projeto está, o que foi decidido e o que segue aberto |
 | `docs/FASE0.md` | Entrega da fase 0 e as decisões aprovadas |
 | `prisma/schema.prisma` | Modelo de dados com índices e restrições únicas |
 | `src/lib/escopo.ts` | **Isolamento entre organizações** — o filtro por onde passa toda consulta |
 | `src/lib/usuario.ts` | Regras do nome de usuário, a credencial de entrada |
 | `src/lib/mover.ts` | Mover textos entre pastas, com o escopo dos dois lados |
+| `src/lib/selecao.ts` | Ações em lote a partir da seleção da lista, tudo ou nada |
 | `src/lib/data-da-publicacao.ts` | O padrão `dia/mês/ano` das listas por data |
 | `src/lib/proximo-texto.ts` | Qual texto sai em cada slot, por fila ou por data |
 | `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
@@ -425,7 +429,32 @@ não existe" é um descobridor de contas cadastradas. O limite de pedidos é
 separado do limite de tentativas de login, senão bastaria pedir a senha de
 alguém repetidamente para trancar essa pessoa do lado de fora.
 
-## Mover textos entre pastas
+## Ações a partir da seleção na lista
+
+Marcar uma ou mais linhas na lista de textos abre uma barra com cinco ações:
+
+| Ação | O que faz | Quem |
+| :-- | :-- | :-- |
+| **Incluir texto aqui** | Abre o editor já posicionado logo depois da última linha marcada | admin, superadmin e `usuario` nas pastas atribuídas |
+| **Exportar escolhidos** | Leva a seleção à tela de exportação, onde só falta o formato | idem |
+| **Arquivar** | Arquiva o lote inteiro | idem |
+| **Excluir** | Apaga o lote, com confirmação dizendo quantos são | idem |
+| **Mover para** | Manda o lote para outra pasta | só admin e superadmin |
+
+**Incluir** é um texto por vez, e nada é gravado antes de salvar — não se cria
+linha em branco no banco. `abrirEspacoDepoisDe` empurra em +1 a ordem de quem
+vem depois e devolve a posição livre, tudo na mesma transação: dois textos
+criados ao mesmo tempo na mesma pasta pegariam a mesma ordem se cada um lesse
+antes de o outro deslocar.
+
+Os identificadores vêm do navegador, então o lote é **tudo ou nada**: se um só
+estiver fora do escopo, nada acontece. Recusar o lote inteiro em vez de agir
+sobre os permitidos evita o "3 arquivados" depois de escolher 4, e fecha o efeito
+parcial silencioso de um id forjado. Na exportação, que é leitura, o intruso
+apenas some do resultado. A regra vive em `src/lib/selecao.ts`, para que os
+testes exercitem esse caminho e não uma cópia dele.
+
+### Mover textos entre pastas
 
 Admin e superadmin escolhem um ou mais textos na lista e movem para outra pasta;
 eles entram no fim da fila do destino, preservando a ordem relativa. O perfil
@@ -454,6 +483,12 @@ olhando, não do endereço: não há `/pt/` nem `/en/` na URL. A ordem é
 
 Assim um link enviado por um admin brasileiro abre em espanhol para quem é da OA
 España, sem ninguém trocar nada.
+
+Cada idioma aparece com a bandeira antes do nome — 🇧🇷 Português, 🇪🇸 Español,
+🇬🇧 English — no seletor do cabeçalho e também nos campos de idioma padrão da
+organização e do usuário. São pares de indicadores regionais, não imagens: o
+navegador é quem desenha, e o Windows, que não traz a fonte de bandeiras, mostra
+no lugar as duas letras do país. Continua legível, que é o que importa.
 
 Os textos ficam em `messages/pt.json`, `es.json` e `en.json`, um grupo por tela.
 Três testes cuidam da integridade: as três línguas têm exatamente as mesmas

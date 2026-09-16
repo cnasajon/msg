@@ -9,7 +9,7 @@ import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
 import { prisma } from '@/lib/db';
 import { escopoDeOrganizacao } from '@/lib/escopo';
-import { IDIOMAS, NOME_DO_IDIOMA, type Idioma } from '@/i18n/idiomas';
+import { IDIOMAS, idiomaValido, nomeComBandeira, type Idioma } from '@/i18n/idiomas';
 import { criarOrganizacao, editarOrganizacao } from './acoes';
 
 export const dynamic = 'force-dynamic';
@@ -87,7 +87,7 @@ export default async function Organizacoes({
                       {t('criadaEm', { quando: o.criadaEm.toLocaleDateString(idioma) })}
                     </div>
                   </td>
-                  <td>{NOME_DO_IDIOMA[o.idiomaPadrao as Idioma] ?? o.idiomaPadrao}</td>
+                  <td>{idiomaValido(o.idiomaPadrao) ? nomeComBandeira(o.idiomaPadrao as Idioma) : o.idiomaPadrao}</td>
                   <td>{o.timezonePadrao}</td>
                   <td className="num">{o._count.folders}</td>
                   <td className="num">{o._count.usuarios}</td>
@@ -129,7 +129,7 @@ export default async function Organizacoes({
                 <select name="idiomaPadrao" defaultValue={emEdicao?.idiomaPadrao ?? 'pt'}>
                   {IDIOMAS.map((codigo) => (
                     <option key={codigo} value={codigo}>
-                      {NOME_DO_IDIOMA[codigo]}
+                      {nomeComBandeira(codigo)}
                     </option>
                   ))}
                 </select>
