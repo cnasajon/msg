@@ -197,6 +197,10 @@
   }
 
   .content { padding: 22px; display: flex; flex-direction: column; gap: 18px; max-width: 1180px; width: 100%; }
+  /* Telas cujo miolo é uma tabela de leitura usam a largura toda: o teto acima
+     existe para o texto de formulário não virar linha longa demais, e numa
+     tabela ele só deixa a tela vazia à direita. */
+  .content.largo { max-width: none; }
 
   /* ---------- componentes ---------- */
   .card {
@@ -240,6 +244,9 @@
   .btn[disabled] { opacity: .5; cursor: not-allowed; }
 
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  /* Rolagem só quando a tabela não cabe — a coluna de texto tem piso próprio,
+     e espremer o conteúdo até a ilegibilidade é pior do que rolar. */
+  .rolagem { overflow-x: auto; }
   th {
     text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
     color: var(--text-faint); font-weight: 600; padding: 10px 16px;
@@ -413,8 +420,16 @@
   .thumb.lg { width: 132px; height: 132px; border-radius: 10px; }
 
   .textcell { display: flex; gap: 12px; align-items: center; }
+  /* A coluna de texto não desce de um mínimo legível: as colunas de ação têm
+     botões que não comprimem, e sem este piso elas espremiam o texto a pouco
+     mais de cem pixels em telas estreitas. Passando disso a tabela rola. */
+  .textcell { min-width: 300px; }
   .textcell .t { min-width: 0; }
-  .textcell .t p { margin: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .textcell .t p {
+    margin: 0; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    line-height: 1.5;
+  }
   .textcell .t .meta { font-size: 12px; color: var(--text-faint); margin-top: 3px; }
 
   .drag { color: var(--text-faint); cursor: grab; user-select: none; }

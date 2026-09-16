@@ -62,12 +62,19 @@ export async function Casca({
   titulo,
   caminho,
   atual,
+  largo = false,
   children,
 }: {
   sessao: SessaoAtual;
   titulo: string;
   caminho?: string;
   atual?: string;
+  /**
+   * Solta o limite de largura do conteúdo. Para telas cujo miolo é uma tabela
+   * de leitura: o teto de 1180px existe para o texto corrido de formulário não
+   * virar linha longa demais, e numa tabela ele só desperdiça a tela.
+   */
+  largo?: boolean;
   children: React.ReactNode;
 }) {
   const menu = await getTranslations('menu');
@@ -164,7 +171,7 @@ export async function Casca({
           <SeletorDeIdioma />
           <BotaoTema />
         </div>
-        <div className="content">{children}</div>
+        <div className={largo ? 'content largo' : 'content'}>{children}</div>
         <footer className="rodape">
           <Rodape />
         </footer>
