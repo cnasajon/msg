@@ -5,7 +5,7 @@ projeto está**, **o que já foi decidido** e **o que continua aberto** — não
 repete a especificação (`docs/ESPECIFICACAO.md`, v1.5) nem as regras de trabalho
 (`CLAUDE.md`), que seguem sendo a fonte da verdade de cada assunto.
 
-**Última atualização:** 16/09/2026 · versão **1.3**
+**Última atualização:** 16/09/2026 · versão **1.5**
 
 ---
 
@@ -108,6 +108,8 @@ Tudo isto nasceu de pedidos feitos com o sistema já rodando:
 - **Ações a partir da seleção de linhas**: incluir texto na posição escolhida,
   exportar escolhidos, arquivar e excluir em lote, além de mover.
 - **Bandeiras antes do nome de cada idioma** no seletor.
+- **A lista de textos volta como estava**: pasta e situação filtram no ato e
+  ficam guardadas no usuário.
 
 ## 6. Onde as coisas estão
 
@@ -117,12 +119,13 @@ Tudo isto nasceu de pedidos feitos com o sistema já rodando:
 | `src/lib/autorizacao.ts` | Matriz de permissões |
 | `src/lib/dispatcher.ts` | Reivindicação do slot antes do envio |
 | `src/lib/selecao.ts` | Ações em lote a partir da seleção da lista |
+| `src/lib/lista-lembrada.ts` | Pasta e situação lembradas da última visita |
 | `src/lib/mover.ts` | Mover textos entre pastas |
 | `src/lib/versao.ts` | Versão e data que aparecem no rodapé |
 | `src/i18n/idiomas.ts` | Idiomas, bandeiras e os grupos que vão ao navegador |
 | `messages/` | `pt.json`, `es.json`, `en.json` |
 | `src/worker/` | Serviço `worker` |
-| `tests/` | 18 arquivos, **207 testes** |
+| `tests/` | 19 arquivos, **218 testes** |
 | `docs/ESPECIFICACAO.md` | Especificação funcional e técnica (v1.5) |
 | `CLAUDE.md` | Regras de trabalho e pontos não negociáveis |
 

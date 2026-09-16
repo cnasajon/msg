@@ -429,6 +429,30 @@ não existe" é um descobridor de contas cadastradas. O limite de pedidos é
 separado do limite de tentativas de login, senão bastaria pedir a senha de
 alguém repetidamente para trancar essa pessoa do lado de fora.
 
+## A lista de textos volta como estava
+
+Os seletores de **pasta** e de **situação** filtram assim que mudam, sem passar
+pelo botão "Filtrar" — que continua ali, porque é ele que faz a busca digitada
+valer. E as duas escolhas ficam guardadas: abrir *Textos* pelo menu retoma a
+pasta e o filtro da última visita.
+
+A preferência vive **no usuário** (`users.ultima_pasta_id` e
+`users.ultimo_status_de_texto`), não na sessão nem num cookie, pela mesma razão
+da organização ativa: sessão morre a cada logout e a cada troca de domínio,
+cookie morre a cada limpeza do navegador e não acompanha quem troca de máquina.
+Quem nunca escolheu nada abre na primeira pasta, com todas as situações — que é
+também o que fica guardado quando se escolhe "todas", já que os dois casos abrem
+a tela do mesmo jeito.
+
+A pasta lembrada é procurada **dentro** da lista que o escopo devolveu, nunca
+consultada por fora dele — é o que impede que a memória vire uma segunda porta
+de entrada para dado de outra organização. Se ela sumiu, foi desativada ou ficou
+numa organização que a pessoa não opera mais, a tela abre na primeira
+disponível. Apagar uma pasta não derruba nada: a coluna é `ON DELETE SET NULL`.
+
+A **busca digitada não é lembrada**, de propósito: uma caixa de busca preenchida
+de ontem esconde textos sem dizer por quê.
+
 ## Ações a partir da seleção na lista
 
 Marcar uma ou mais linhas na lista de textos abre uma barra com cinco ações:
