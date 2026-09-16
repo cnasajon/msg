@@ -20,7 +20,6 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
   folderId: string;
 }) {
   const t = useTranslations('textos');
-  const comum = useTranslations('comum');
   const [lista, setLista] = useState(itens);
   const [arrastando, setArrastando] = useState<number | null>(null);
   const [mudou, setMudou] = useState(false);
@@ -69,11 +68,11 @@ export function FilaOrdenavel({ itens, acao, csrf, folderId }: {
                 <span className="num">{posicao + 1}</span>
               </td>
               <td className="textcell">
+                {/* Sem imagem, nada ocupa o lugar dela — como na lista de
+                    textos, logo acima, na mesma tela. */}
                 {item.miniatura ? (
                   <img className="thumb" src={item.miniatura} alt="" />
-                ) : (
-                  <div className="thumb empty">{comum('nenhum')}</div>
-                )}
+                ) : null}
                 <div className="t">
                   <p>{item.resumo}</p>
                   <div className="meta">{t('caracteres', { quantidade: item.caracteres })}</div>

@@ -7,6 +7,14 @@ import { Avisos } from '@/components/avisos';
 import { FilaOrdenavel } from '@/components/fila-ordenavel';
 import { MoverTextos, CaixaDeTexto, CaixaDeTodos } from '@/components/mover-textos';
 import { SelectQueFiltra } from '@/components/filtro-imediato';
+import {
+  IconeAbrir,
+  IconeArquivar,
+  IconeDaSituacao,
+  IconeDesarquivar,
+  IconePublicar,
+  IconeReenviar,
+} from '@/components/icones';
 import { sessaoAtual } from '@/lib/sessao';
 import { tokenCsrfPara } from '@/lib/csrf';
 import { podeFazer } from '@/lib/autorizacao';
@@ -24,7 +32,7 @@ import {
   moverTextos,
   reordenarFila,
 } from './acoes';
-import { publicarAgora, pularTexto, reenviarTexto } from '../pastas/acoes-agenda';
+import { publicarAgora, reenviarTexto } from '../pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
 
@@ -237,9 +245,13 @@ export default async function Textos({
                 {porData ? t('dataDaPublicacao') : t('ordem')}
               </th>
               <th>{t('texto')}</th>
-              <th style={{ width: 92 }}>{t('situacao')}</th>
+              {/* Sem rótulo escrito: era ele, e não o conteúdo, que segurava a
+                  coluna em noventa e cinco pixels. O nome continua chegando a
+                  quem usa leitor de tela pelo `aria-label`, e ao mouse pelo
+                  `title` — como já acontece na coluna das ações. */}
+              <th style={{ width: 40 }} title={t('situacao')} aria-label={t('situacao')} />
               <th style={{ width: 128 }}>{t('publicadoEm')}</th>
-              <th style={{ width: 168 }} />
+              <th style={{ width: 104 }} />
             </tr>
           </thead>
           <tbody>
@@ -271,11 +283,12 @@ export default async function Textos({
                     )}
                   </td>
                   <td className="textcell">
+                    {/* Sem imagem, nada ocupa o lugar dela: o quadrado vazio
+                        custava cinquenta e oito pixels de leitura por linha para
+                        dizer o que a legenda abaixo do texto já diz. */}
                     {texto.imagemMime ? (
                       <img className="thumb" src={`/api/textos/${texto.id}/imagem`} alt="" />
-                    ) : (
-                      <div className="thumb empty">{comum('nenhum')}</div>
-                    )}
+                    ) : null}
                     <div className="t">
                       <p>{resumir(texto.conteudo, RESUMO_NA_LISTA)}</p>
                       <div className="meta">
@@ -297,13 +310,16 @@ export default async function Textos({
                     <span
                       className={
                         texto.status === 'publicado'
-                          ? 'pill ok'
+                          ? 'selo ok'
                           : texto.status === 'erro'
-                            ? 'pill err'
-                            : 'pill'
+                            ? 'selo err'
+                            : 'selo'
                       }
+                      title={`${t('situacao')}: ${t(texto.status)}`}
+                      aria-label={`${t('situacao')}: ${t(texto.status)}`}
+                      role="img"
                     >
-                      {t(texto.status)}
+                      <IconeDaSituacao situacao={texto.status} />
                     </span>
                   </td>
                   <td>
@@ -313,61 +329,80 @@ export default async function Textos({
                       <span className="faint">{comum('nenhum')}</span>
                     )}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
-                    <Link className="btn sm" href={`/textos/${texto.id}`}>
-                      {comum('abrir')}
-                    </Link>{' '}
+                  {/* Só ícones: cada rótulo aqui era largura tirada da coluna do
+                      texto. O nome de cada ação vai no `title`, que aparece ao
+                      passar o mouse, e no `aria-label`, que o leitor de tela
+                      anuncia — o botão não fica anônimo, só fica estreito. */}
+                  <td>
+                   <div className="acoes">
+                    <Link
+                      className="btn sm icone"
+                      href={`/textos/${texto.id}`}
+                      title={comum('abrir')}
+                      aria-label={comum('abrir')}
+                    >
+                      <IconeAbrir />
+                    </Link>
                     {texto.status === 'pendente' ? (
-                      <>
-                        <form action={publicarAgora} style={{ display: 'inline' }}>
-                          <CampoCsrf token={csrf} />
-                          <input type="hidden" name="id" value={texto.id} />
-                          <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
-                          <button className="btn sm" type="submit">
-                            {t('publicarAgora')}
-                          </button>
-                        </form>{' '}
-                        <form action={pularTexto} style={{ display: 'inline' }}>
-                          <CampoCsrf token={csrf} />
-                          <input type="hidden" name="id" value={texto.id} />
-                          <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
-                          <button className="btn sm" type="submit" title={t('pularTitulo')}>
-                            {t('pular')}
-                          </button>
-                        </form>{' '}
-                      </>
-                    ) : null}
-                    {texto.status === 'erro' ? (
-                      <>
-                        <form action={reenviarTexto} style={{ display: 'inline' }}>
-                          <CampoCsrf token={csrf} />
-                          <input type="hidden" name="id" value={texto.id} />
-                          <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
-                          <button className="btn sm" type="submit">
-                            {t('reenviar')}
-                          </button>
-                        </form>{' '}
-                      </>
-                    ) : null}
-                    {texto.status === 'arquivado' ? (
-                      <form action={desarquivarTexto} style={{ display: 'inline' }}>
+                      <form action={publicarAgora}>
                         <CampoCsrf token={csrf} />
                         <input type="hidden" name="id" value={texto.id} />
                         <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
-                        <button className="btn sm" type="submit">
-                          {t('desarquivar')}
+                        <button
+                          className="btn sm icone"
+                          type="submit"
+                          title={t('publicarAgora')}
+                          aria-label={t('publicarAgora')}
+                        >
+                          <IconePublicar />
+                        </button>
+                      </form>
+                    ) : null}
+                    {texto.status === 'erro' ? (
+                      <form action={reenviarTexto}>
+                        <CampoCsrf token={csrf} />
+                        <input type="hidden" name="id" value={texto.id} />
+                        <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
+                        <button
+                          className="btn sm icone"
+                          type="submit"
+                          title={t('reenviar')}
+                          aria-label={t('reenviar')}
+                        >
+                          <IconeReenviar />
+                        </button>
+                      </form>
+                    ) : null}
+                    {texto.status === 'arquivado' ? (
+                      <form action={desarquivarTexto}>
+                        <CampoCsrf token={csrf} />
+                        <input type="hidden" name="id" value={texto.id} />
+                        <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
+                        <button
+                          className="btn sm icone"
+                          type="submit"
+                          title={t('desarquivar')}
+                          aria-label={t('desarquivar')}
+                        >
+                          <IconeDesarquivar />
                         </button>
                       </form>
                     ) : (
-                      <form action={arquivarTexto} style={{ display: 'inline' }}>
+                      <form action={arquivarTexto}>
                         <CampoCsrf token={csrf} />
                         <input type="hidden" name="id" value={texto.id} />
                         <input type="hidden" name="destino" value={`/textos?pasta=${pasta.id}`} />
-                        <button className="btn sm" type="submit">
-                          {t('arquivar')}
+                        <button
+                          className="btn sm icone"
+                          type="submit"
+                          title={t('arquivar')}
+                          aria-label={t('arquivar')}
+                        >
+                          <IconeArquivar />
                         </button>
                       </form>
                     )}
+                   </div>
                   </td>
                 </tr>
               ))

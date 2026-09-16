@@ -31,6 +31,7 @@ Onde o projeto está hoje, para abrir uma conversa nova sem reler o histórico:
 | `src/lib/usuario.ts` | Regras do nome de usuário, a credencial de entrada |
 | `src/lib/mover.ts` | Mover textos entre pastas, com o escopo dos dois lados |
 | `src/lib/selecao.ts` | Ações em lote a partir da seleção da lista, tudo ou nada |
+| `src/components/icones.tsx` | Os ícones da lista de textos, em SVG embutido |
 | `src/lib/data-da-publicacao.ts` | O padrão `dia/mês/ano` das listas por data |
 | `src/lib/proximo-texto.ts` | Qual texto sai em cada slot, por fila ou por data |
 | `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
@@ -452,6 +453,38 @@ disponível. Apagar uma pasta não derruba nada: a coluna é `ON DELETE SET NULL
 
 A **busca digitada não é lembrada**, de propósito: uma caixa de busca preenchida
 de ontem esconde textos sem dizer por quê.
+
+## A largura é do conteúdo
+
+A lista de textos existe para ler o texto, então tudo o mais cede espaço a ele:
+
+- **Sem imagem, nada ocupa o lugar dela.** O quadrado vazio com um travessão
+  custava 58 pixels de leitura por linha para dizer o que a legenda abaixo do
+  texto já diz.
+- **A situação é um ícone**, não a palavra escrita: relógio para pendente, visto
+  para publicado, exclamação para erro, caixa para arquivado. O erro continua
+  escrito por extenso na legenda, porque é a única situação que a data de
+  publicação não denuncia sozinha.
+- **As ações são ícones**: abrir, publicar agora, arquivar, desarquivar,
+  reenviar.
+
+Cada ícone leva o nome no `title`, que o navegador mostra ao passar o mouse, e no
+`aria-label`, que o leitor de tela anuncia — o botão fica estreito, não anônimo.
+Em tela sensível ao toque não há "passar o mouse": ali o ícone se explica pelo
+desenho e pelo que acontece ao tocá-lo.
+
+Medido a 1450px de largura: a coluna do texto passou de **505 para 737 pixels**,
+e o texto em si de 415 para 705 — 70% a mais de leitura por linha. A 1000px a
+tabela deixou de precisar de rolagem horizontal.
+
+Os ícones são SVG embutido em `src/components/icones.tsx`, herdando
+`currentColor` para acompanhar os dois temas. Não vieram de biblioteca: são seis
+traços, e uma dependência de ícones custaria quilobytes e uma superfície de
+atualização para isso.
+
+**Pular saiu da lista** — continua na tela do próprio texto. Ele não é o mesmo
+que arquivar: manda o texto para o **fim da fila**, onde ele segue pendente e
+publica mais tarde; arquivar tira o texto da fila.
 
 ## Ações a partir da seleção na lista
 

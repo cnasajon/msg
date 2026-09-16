@@ -241,6 +241,21 @@
   .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
   .btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
   .btn.sm { padding: 3px 8px; font-size: 12px; }
+  /* Botão que é só ícone. Quadrado e sem texto, para devolver à coluna do
+     conteúdo a largura que três rótulos ocupavam. O nome não some: vive no
+     `title`, que o navegador mostra ao passar o mouse, e no `aria-label`, que o
+     leitor de tela anuncia. */
+  .btn.icone {
+    padding: 0; width: 28px; height: 28px;
+    display: inline-grid; place-items: center;
+  }
+  /* As ações de cada linha, lado a lado e sem quebrar. Cada uma é um formulário
+     próprio — publicar e arquivar escrevem —, e formulário é bloco por padrão.
+     Fica numa div dentro da célula, e não na própria `<td>`: `display: flex` num
+     `<td>` o tira do layout de tabela, o navegador inventa uma célula anônima em
+     volta e as colunas saem do lugar. */
+  .acoes { display: flex; gap: 4px; align-items: center; }
+  .acoes form { display: contents; }
   .btn[disabled] { opacity: .5; cursor: not-allowed; }
 
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
@@ -269,6 +284,18 @@
   .pill.err { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
   .pill.info { background: var(--info-soft); color: var(--info); border-color: transparent; }
   .pill.accent { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+
+  /* A situação do texto como um único ícone. O nome escrito custava noventa
+     pixels por linha numa tela cuja coluna importante é a do texto; aqui ele
+     vira o `title`, e a cor já diz o essencial de relance. */
+  .selo {
+    display: inline-grid; place-items: center;
+    width: 26px; height: 26px; border-radius: 99px;
+    background: var(--surface-2); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .selo.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .selo.err { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
 
   label.field { display: block; margin-bottom: 14px; }
   label.field > span.lbl { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; }

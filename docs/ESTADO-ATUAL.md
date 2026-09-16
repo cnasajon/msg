@@ -5,7 +5,7 @@ projeto está**, **o que já foi decidido** e **o que continua aberto** — não
 repete a especificação (`docs/ESPECIFICACAO.md`, v1.5) nem as regras de trabalho
 (`CLAUDE.md`), que seguem sendo a fonte da verdade de cada assunto.
 
-**Última atualização:** 16/09/2026 · versão **1.5**
+**Última atualização:** 16/09/2026 · versão **1.6**
 
 ---
 
@@ -110,6 +110,9 @@ Tudo isto nasceu de pedidos feitos com o sistema já rodando:
 - **Bandeiras antes do nome de cada idioma** no seletor.
 - **A lista de textos volta como estava**: pasta e situação filtram no ato e
   ficam guardadas no usuário.
+- **A largura da lista é do conteúdo**: situação e ações viraram ícones com
+  balão, e a miniatura vazia saiu. A coluna do texto passou de 505 para 737
+  pixels a 1450px de largura.
 
 ## 6. Onde as coisas estão
 
@@ -120,6 +123,7 @@ Tudo isto nasceu de pedidos feitos com o sistema já rodando:
 | `src/lib/dispatcher.ts` | Reivindicação do slot antes do envio |
 | `src/lib/selecao.ts` | Ações em lote a partir da seleção da lista |
 | `src/lib/lista-lembrada.ts` | Pasta e situação lembradas da última visita |
+| `src/components/icones.tsx` | Os ícones da lista, em SVG embutido |
 | `src/lib/mover.ts` | Mover textos entre pastas |
 | `src/lib/versao.ts` | Versão e data que aparecem no rodapé |
 | `src/i18n/idiomas.ts` | Idiomas, bandeiras e os grupos que vão ao navegador |
