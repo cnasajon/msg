@@ -48,6 +48,11 @@ enum OrigemPublicacao {
   dispatcher
   manual
   importacao
+  // Marcada como publicada à mão, depois do fato: alguém postou no grupo por
+  // fora, ou o registro nasceu torto. Separada de `importacao` para que o
+  // histórico diga de onde a linha veio, e para que desmarcar a data apague só
+  // estas — nunca uma publicação que de fato saiu.
+  retroativa
 }
 
 enum StatusPublicacao {

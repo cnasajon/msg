@@ -12,7 +12,10 @@ import { prisma } from '@/lib/db';
 import { formatarNoFuso } from '@/lib/fuso';
 import { tamanhoDoTexto } from '@/lib/textos';
 import { formatarPadraoDeData } from '@/lib/data-da-publicacao';
-import { arquivarTexto, desarquivarTexto, editarTexto, excluirTexto } from '../acoes';
+import { Ajuda } from '@/components/ajuda';
+import { campoDoInstante } from '@/lib/data-publicada';
+import { siglaDoFuso } from '@/lib/fuso';
+import { ajustarDataDePublicada, arquivarTexto, desarquivarTexto, editarTexto, excluirTexto } from '../acoes';
 import { publicarAgora, pularTexto, reenviarTexto } from '@/app/pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
@@ -189,6 +192,58 @@ export default async function EditarTexto({
                   )}
                 </dd>
               </dl>
+            </div>
+          </div>
+
+          {/* Informar ou limpar a data de publicação, para quando a publicação
+              aconteceu fora daqui. Formulário separado do conteúdo de propósito:
+              isto muda a situação do texto, e ninguém deveria mudá-la sem querer
+              ao salvar uma vírgula. */}
+          <div className="card">
+            <header>
+              <h2>{t('dataDePublicacao')}</h2>
+            </header>
+            <div className="body">
+              <form action={ajustarDataDePublicada}>
+                <CampoCsrf token={csrf} />
+                <input type="hidden" name="id" value={texto.id} />
+                <label className="field">
+                  <span className="lbl">
+                    {t('publicadaEm')}
+                    <Ajuda
+                      texto={t('dataDePublicacaoHint', { fuso: siglaDoFuso(pasta.timezone) })}
+                      rotulo={comum('ajudaSobre', { campo: t('publicadaEm') })}
+                    />
+                  </span>
+                  <input
+                    type="datetime-local"
+                    name="publicadoEm"
+                    defaultValue={
+                      texto.publicadoEm ? campoDoInstante(texto.publicadoEm, pasta.timezone) : ''
+                    }
+                  />
+                </label>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button className="btn primary" type="submit">
+                    {t('marcarComoPublicado')}
+                  </button>
+                  {texto.publicadoEm ? (
+                    <button
+                      className="btn"
+                      type="submit"
+                      name="limpar"
+                      value="1"
+                    >
+                      {t('limparData')}
+                    </button>
+                  ) : null}
+                </div>
+                {texto.publicadoEm ? (
+                  <p className="faint" style={{ marginBottom: 0 }}>
+                    {t('limparDataAviso')}
+                  </p>
+                ) : null}
+              </form>
             </div>
           </div>
 

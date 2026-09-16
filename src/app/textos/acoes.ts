@@ -14,6 +14,7 @@ import { hashDoConteudo, problemaNoHtml, problemaNoTamanho } from '@/lib/textos'
 import { ImagemInvalida, processarImagem } from '@/lib/imagem';
 import { moverTextosParaPasta } from '@/lib/mover';
 import { abrirEspacoDepoisDe, escolhidosNaLista } from '@/lib/selecao';
+import { ajustarDataDePublicacao, instanteDoCampo } from '@/lib/data-publicada';
 import { analisarPadraoDeData, QUALQUER_DATA } from '@/lib/data-da-publicacao';
 
 function voltar(destino: string, mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
@@ -413,4 +414,48 @@ export async function excluirSelecionados(dados: FormData) {
     detalhes: { textos: count, emLote: true },
   });
   voltar(destino, t('excluidosEmLote', { quantidade: count }), 'ok');
+}
+
+/**
+ * Informa ou limpa a data em que o texto foi publicado.
+ *
+ * Serve para o caso de a publicação ter acontecido fora daqui — alguém postou
+ * no grupo por conta própria, ou o registro nasceu torto numa importação. A
+ * regra está em `lib/data-publicada.ts`, que é o que os testes exercitam; aqui
+ * ficam o formulário, a permissão e as mensagens.
+ */
+export async function ajustarDataDePublicada(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
+
+  const { t } = await tradutorDeAvisos();
+  const texto = await comEscopo(sessao).texto(String(dados.get('id') ?? ''));
+  const destino = `/textos/${texto.id}`;
+
+  const pasta = await prisma.folder.findUniqueOrThrow({
+    where: { id: texto.folderId },
+    select: { timezone: true },
+  });
+
+  const bruto = String(dados.get('publicadoEm') ?? '').trim();
+  const limpar = dados.get('limpar') !== null;
+  const quando = limpar ? null : instanteDoCampo(bruto, pasta.timezone);
+  if (!limpar && !quando) voltar(destino, t('dataDePublicacaoInvalida'));
+
+  const resultado = await ajustarDataDePublicacao(prisma, texto.id, quando, pasta.timezone);
+
+  await registrarAuditoria(sessao, {
+    acao: 'editar',
+    entidade: 'text',
+    entidadeId: texto.id,
+    detalhes: { dataDePublicacao: quando?.toISOString() ?? null, situacao: resultado.situacao },
+  });
+
+  voltar(
+    destino,
+    resultado.situacao === 'publicado'
+      ? t('marcadoComoPublicado')
+      : t('voltouParaAFila', { posicao: resultado.posicao }),
+    'ok',
+  );
 }
