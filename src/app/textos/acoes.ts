@@ -13,6 +13,7 @@ import type { Problema } from '@/lib/avisos';
 import { hashDoConteudo, problemaNoHtml, problemaNoTamanho } from '@/lib/textos';
 import { ImagemInvalida, processarImagem } from '@/lib/imagem';
 import { moverTextosParaPasta } from '@/lib/mover';
+import { abrirEspacoDepoisDe, escolhidosNaLista } from '@/lib/selecao';
 import { analisarPadraoDeData, QUALQUER_DATA } from '@/lib/data-da-publicacao';
 
 function voltar(destino: string, mensagem: string, tipo: 'erro' | 'ok' = 'erro'): never {
@@ -76,6 +77,13 @@ export async function criarTexto(dados: FormData) {
   // Só a pasta de lista por data mostra o campo; nas outras ele nem é lido.
   const padrao = lerPadrao(pasta.tipoDeLista, dados, destino, frase);
 
+  // Posição na fila: logo depois do texto escolhido na lista, ou o fim.
+  const depoisDe = String(dados.get('depoisDe') ?? '').trim();
+  const posicao = depoisDe
+    ? ((await abrirEspacoDepoisDe(prisma, sessao, pasta.id, depoisDe)) ??
+      (await proximaOrdem(pasta.id)))
+    : await proximaOrdem(pasta.id);
+
   const hash = hashDoConteudo(conteudo);
   const duplicado = await prisma.text.findFirst({
     where: { folderId: pasta.id, hashConteudo: hash },
@@ -96,7 +104,7 @@ export async function criarTexto(dados: FormData) {
     data: {
       folderId: pasta.id,
       conteudo,
-      ordem: await proximaOrdem(pasta.id),
+      ordem: posicao,
       hashConteudo: hash,
       diaDaPublicacao: padrao.dia,
       mesDaPublicacao: padrao.mes,
@@ -352,4 +360,57 @@ export async function moverTextos(dados: FormData) {
       : t('moverFeito', { quantidade: resultado.movidos, pasta: resultado.destino.nome }),
     'ok',
   );
+}
+
+/** Arquiva de uma vez os textos escolhidos na lista. */
+export async function arquivarSelecionados(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
+
+  const { t } = await tradutorDeAvisos();
+  const pasta = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
+  const destino = `/textos?pasta=${pasta.id}`;
+
+  const ids = await escolhidosNaLista(prisma, sessao, pasta.id, dados.getAll('textos').map(String));
+  if (!ids) voltar(destino, t('nenhumTextoEscolhido'));
+
+  const { count } = await prisma.text.updateMany({
+    where: { id: { in: ids }, status: { not: 'arquivado' } },
+    data: { status: 'arquivado', arquivadoEm: new Date() },
+  });
+  await registrarAuditoria(sessao, {
+    acao: 'arquivar',
+    entidade: 'folder',
+    entidadeId: pasta.id,
+    detalhes: { textos: count, emLote: true },
+  });
+  voltar(destino, t('arquivadosEmLote', { quantidade: count }), 'ok');
+}
+
+/**
+ * Exclui de uma vez os textos escolhidos.
+ *
+ * Arquivar é a ação normal — esta apaga a linha, e existe para o caso
+ * excepcional. O histórico sobrevive porque `publications` guarda o conteúdo
+ * que foi ao ar, e a confirmação fica na tela, antes de chegar aqui.
+ */
+export async function excluirSelecionados(dados: FormData) {
+  const sessao = await exigirCsrf(dados);
+  if (!podeFazer(sessao.perfil, 'textos.gerenciar')) throw new NaoAutorizado();
+
+  const { t } = await tradutorDeAvisos();
+  const pasta = await comEscopo(sessao).pasta(String(dados.get('folderId') ?? ''));
+  const destino = `/textos?pasta=${pasta.id}`;
+
+  const ids = await escolhidosNaLista(prisma, sessao, pasta.id, dados.getAll('textos').map(String));
+  if (!ids) voltar(destino, t('nenhumTextoEscolhido'));
+
+  const { count } = await prisma.text.deleteMany({ where: { id: { in: ids } } });
+  await registrarAuditoria(sessao, {
+    acao: 'excluir',
+    entidade: 'folder',
+    entidadeId: pasta.id,
+    detalhes: { textos: count, emLote: true },
+  });
+  voltar(destino, t('excluidosEmLote', { quantidade: count }), 'ok');
 }

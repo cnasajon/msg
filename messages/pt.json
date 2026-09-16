@@ -27,7 +27,8 @@
     "fechar": "Fechar",
     "semPastaTitulo": "Você ainda não tem nenhuma pasta atribuída",
     "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui.",
-    "versaoEData": "Versão {versao} · publicada em {data}"
+    "versaoEData": "Versão {versao} · publicada em {data}",
+    "excluir": "Excluir"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -178,7 +179,11 @@
     "semOutraPasta": "Não há outra pasta para onde mover.",
     "dataDaPublicacao": "Data da publicação",
     "qualquerData": "qualquer data",
-    "semPastaTitulo": "Nenhuma pasta cadastrada ainda"
+    "semPastaTitulo": "Nenhuma pasta cadastrada ainda",
+    "incluirAqui": "Incluir texto aqui",
+    "incluirAquiTitulo": "Abre a tela de novo texto já posicionada logo depois da última linha escolhida. Um texto por vez: nada é gravado até você salvar.",
+    "exportarEscolhidos": "Exportar escolhidos",
+    "confirmarExclusao": "Excluir {quantidade} texto(s)? Não há como desfazer. Para tirar da lista sem apagar, use Arquivar."
   },
   "editor": {
     "conteudo": "Conteúdo",
@@ -219,7 +224,8 @@
     "explicacaoTirar": "Arquivar preserva o registro e é o caminho normal. Excluir apaga o texto — o histórico das publicações sobrevive, porque a publicação guarda o que foi ao ar.",
     "dataDaPublicacao": "Data da publicação",
     "dataHint": "Dia/mês/ano, com * para “todos”. 25/12/* sai todo Natal; */09/* sai nos dias de setembro que estiverem marcados no agendamento; 01/01/2027 sai uma vez só.",
-    "duasCondicoes": "São duas condições, e valem juntas: a data precisa casar com este padrão E o dia da semana precisa estar marcado no agendamento da pasta. Com */09/* e apenas Dom marcado, sai nos domingos de setembro."
+    "duasCondicoes": "São duas condições, e valem juntas: a data precisa casar com este padrão E o dia da semana precisa estar marcado no agendamento da pasta. Com */09/* e apenas Dom marcado, sai nos domingos de setembro.",
+    "entraDepoisDe": "entra logo depois de “{texto}”"
   },
   "historico": {
     "titulo": "Histórico de publicações",
@@ -332,7 +338,9 @@
     "voltarAosTextos": "Voltar aos textos",
     "seraoExportados": "<b>{quantidade}</b> texto(s) serão exportados com estes filtros.",
     "baixar": "Baixar {formato}",
-    "respeitaEscopo": "A exportação respeita o que você enxerga: um usuário com duas pastas atribuídas exporta apenas essas duas. Datas saem no fuso da pasta, indicado no cabeçalho do arquivo."
+    "respeitaEscopo": "A exportação respeita o que você enxerga: um usuário com duas pastas atribuídas exporta apenas essas duas. Datas saem no fuso da pasta, indicado no cabeçalho do arquivo.",
+    "soAEscolha": "Só os {quantidade} textos escolhidos na lista.",
+    "exportarTudo": "Exportar a pasta inteira"
   },
   "tiposDeAlerta": {
     "falha_publicacao": "Falha definitiva de publicação",
@@ -801,7 +809,10 @@
     "organizacoesAtualizadas": "Organizações de “{nome}” atualizadas.",
     "peloMenosUmaOrganizacao": "A pessoa precisa participar de pelo menos uma organização.",
     "organizacaoInexistente": "Organização não encontrada.",
-    "superadminSemOrganizacao": "Superadmin não participa de organização: ele alcança todas pelo perfil."
+    "superadminSemOrganizacao": "Superadmin não participa de organização: ele alcança todas pelo perfil.",
+    "nenhumTextoEscolhido": "Escolha ao menos um texto da lista.",
+    "arquivadosEmLote": "{quantidade} texto(s) arquivado(s).",
+    "excluidosEmLote": "{quantidade} texto(s) excluído(s)."
   },
   "esqueci": {
     "titulo": "Esqueci a senha",

@@ -15,7 +15,14 @@ import { escopoDePasta, escopoDeTexto } from '@/lib/escopo';
 import { resumir, tamanhoDoTexto } from '@/lib/textos';
 import { formatarNoFuso } from '@/lib/fuso';
 import { formatarPadraoDeData } from '@/lib/data-da-publicacao';
-import { arquivarTexto, desarquivarTexto, moverTextos, reordenarFila } from './acoes';
+import {
+  arquivarSelecionados,
+  arquivarTexto,
+  desarquivarTexto,
+  excluirSelecionados,
+  moverTextos,
+  reordenarFila,
+} from './acoes';
 import { publicarAgora, pularTexto, reenviarTexto } from '../pastas/acoes-agenda';
 
 export const dynamic = 'force-dynamic';
@@ -124,8 +131,11 @@ export default async function Textos({
   const podeReordenar = semFiltro && pendentes.length > 1 && pasta.tipoDeLista === 'fila';
 
   // Mover é de admin para cima; o destino sai da mesma lista de pastas que a
-  // pessoa já enxerga, menos a que está aberta.
+  // pessoa já enxerga, menos a que está aberta. Arquivar, excluir, incluir e
+  // exportar em lote seguem `textos.gerenciar`, que o perfil `usuario` também
+  // tem — por isso a caixa de seleção aparece para ele, e o bloco de mover não.
   const podeMover = podeFazer(sessao.perfil, 'textos.mover');
+  const podeSelecionar = podeFazer(sessao.perfil, 'textos.gerenciar');
   const porData = pasta.tipoDeLista === 'data';
   const destinos = pastas.filter((p) => p.id !== pasta.id).map((p) => ({ id: p.id, nome: p.nome }));
 
@@ -193,17 +203,20 @@ export default async function Textos({
         </form>
 
         <MoverTextos
-          ativo={podeMover}
+          ativo={podeSelecionar}
+          podeMover={podeMover}
           folderId={pasta.id}
           destinos={destinos}
           acao={moverTextos}
+          arquivarEmLote={arquivarSelecionados}
+          excluirEmLote={excluirSelecionados}
           csrf={<CampoCsrf token={csrf} />}
         >
         <div className="rolagem">
         <table>
           <thead>
             <tr>
-              {podeMover ? (
+              {podeSelecionar ? (
                 <th style={{ width: 34 }}>
                   <CaixaDeTodos rotulo={t('escolherTodos')} />
                 </th>
@@ -220,14 +233,14 @@ export default async function Textos({
           <tbody>
             {textos.length === 0 ? (
               <tr>
-                <td colSpan={podeMover ? 6 : 5} className="faint">
+                <td colSpan={podeSelecionar ? 6 : 5} className="faint">
                   {t('nenhumComFiltros')}
                 </td>
               </tr>
             ) : (
               textos.map((texto) => (
                 <tr key={texto.id}>
-                  {podeMover ? (
+                  {podeSelecionar ? (
                     <td>
                       <CaixaDeTexto id={texto.id} />
                     </td>

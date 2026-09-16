@@ -251,6 +251,7 @@ Editável apenas pelo superadmin. Ver a ordem de precedência em 7.4.
 | Configurar destino dos alertas | sim | não | não |
 | Configurar agendamentos | sim | sim | não |
 | Mover textos entre pastas | sim | sim | não |
+| Arquivar, excluir, incluir e exportar em lote pela seleção da lista | sim | sim | nas pastas atribuídas |
 | Criar, editar, excluir textos e imagens | sim | sim | nas pastas atribuídas |
 | Importar CSV/XLSX | sim | sim | nas pastas atribuídas |
 | Reordenar a fila | sim | sim | nas pastas atribuídas |
@@ -343,6 +344,12 @@ A falha de um canal de alerta nunca interrompe a publicação nem gera novo aler
 - A lista de textos mostra miniatura da imagem, conteúdo, ordem, status e data-hora da publicação, com busca por conteúdo, filtro por status e reordenação manual por arrastar.
 - Textos publicados não voltam para a fila nem são reordenados. **Arquivar** é a ação normal para tirá-los da lista preservando o registro; **excluir** existe para o admin, em casos excepcionais, e mesmo assim o histórico sobrevive, porque a publicação guarda o conteúdo que foi ao ar.
 - **Exportação dos textos em PDF, XLSX, CSV, JSON e XML**, respeitando o filtro ativo da lista e o escopo do usuário — quem só enxerga duas pastas exporta apenas o que enxerga.
+- **Ações a partir da seleção de linhas.** Marcar uma ou mais linhas abre uma barra com cinco ações: *incluir texto aqui*, *exportar escolhidos*, *arquivar*, *excluir* e *mover para outra pasta*. Todas valem para o lote inteiro.
+  - *Incluir texto aqui* abre o editor já posicionado logo depois da última linha marcada, em vez de jogar o texto novo no fim da fila. Um texto por vez: nada é gravado antes de salvar, e não se cria linha em branco no banco.
+  - *Arquivar* e *excluir* agem sobre o lote; excluir pede confirmação dizendo quantos textos são e que não há como desfazer, e a barra mostra as duas lado a lado porque arquivar é a saída normal.
+  - *Exportar escolhidos* leva a seleção à tela de exportação, onde só falta escolher o formato.
+  - *Mover* é a única restrita a admin para cima; as demais seguem `textos.gerenciar`, então o perfil `usuario` também as tem nas pastas atribuídas a ele.
+  - Os identificadores chegam do navegador, então o lote é **tudo ou nada**: se um único deles estiver fora do escopo, nada acontece. Exportar é o único que apenas ignora o intruso, porque é leitura — e o que sai continua sendo só o que a pessoa enxerga.
 
 ---
 
