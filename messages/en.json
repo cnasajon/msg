@@ -28,7 +28,8 @@
     "semPastaTitulo": "No folder has been assigned to you yet",
     "semPastaExplicacao": "The system is not empty: your role only sees the folders an administrator assigns to you. Ask an administrator in your organization to do it under Configuration → Users. Once a folder is assigned, its texts and publications show up here.",
     "versaoEData": "Version {versao} · published {data}",
-    "excluir": "Delete"
+    "excluir": "Delete",
+    "editar": "Edit"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -183,7 +184,11 @@
     "incluirAqui": "Insert text here",
     "incluirAquiTitulo": "Opens the new-text screen already positioned right after the last selected row. One text at a time: nothing is stored until you save.",
     "exportarEscolhidos": "Export selected",
-    "confirmarExclusao": "Delete {quantidade} text(s)? This cannot be undone. To take them off the list without erasing them, use Archive."
+    "confirmarExclusao": "Delete {quantidade} text(s)? This cannot be undone. To take them off the list without erasing them, use Archive.",
+    "incluirAbaixo": "Insert a text right below this one",
+    "paraArrastarVolteAOrdem": "The list is sorted by another column, so dragging is off: where you drop a row would say nothing about the queue.",
+    "voltarAOrdemDaFila": "Back to queue order",
+    "ordenarPor": "Sort by {coluna}"
   },
   "editor": {
     "conteudo": "Content",
@@ -225,7 +230,13 @@
     "dataDaPublicacao": "Publication date",
     "dataHint": "Day/month/year, with * for “any”. 25/12/* goes out every Christmas; */09/* goes out on the September days marked in the schedule; 01/01/2027 goes out once.",
     "duasCondicoes": "Two conditions, and both must hold: the date has to match this pattern AND the weekday has to be ticked on the folder’s schedule. With */09/* and only Sun ticked, it goes out on the Sundays of September.",
-    "entraDepoisDe": "goes right after “{texto}”"
+    "entraDepoisDe": "goes right after “{texto}”",
+    "dataDePublicacao": "Publication date",
+    "publicadaEm": "Published on",
+    "dataDePublicacaoHint": "For when publishing happened outside this system — someone posted to the group themselves, or the record came in wrong from an import. The date is read in the folder’s timezone ({fuso}). Setting a date marks the text as published; clearing it sends the text back to the end of the queue.",
+    "marcarComoPublicado": "Mark as published",
+    "limparData": "Clear the date",
+    "limparDataAviso": "Clearing the date sends the text back to the end of the queue, and it will publish again at the folder’s next slot. Publications that actually went out stay in the history."
   },
   "historico": {
     "titulo": "Publication history",
@@ -247,7 +258,8 @@
     "tentativas": "{quantidade} attempts",
     "vazio": "No publications yet. They show up here as soon as the dispatcher runs the first slot.",
     "explicacao": "Each row is a slot (folder, scheduled date, scheduled time) — the same unique key that guarantees idempotency: a slot never appears twice. Imported history has no scheduled time and is never re-sent by the dispatcher.",
-    "sem_texto": "no text for the date"
+    "sem_texto": "no text for the date",
+    "marcadaAMao": "marked by hand"
   },
   "alertas": {
     "titulo": "Alerts panel",
@@ -812,7 +824,10 @@
     "superadminSemOrganizacao": "A superadmin belongs to no organization: the role reaches them all.",
     "nenhumTextoEscolhido": "Choose at least one text from the list.",
     "arquivadosEmLote": "{quantidade} text(s) archived.",
-    "excluidosEmLote": "{quantidade} text(s) deleted."
+    "excluidosEmLote": "{quantidade} text(s) deleted.",
+    "dataDePublicacaoInvalida": "Enter a valid date and time, or use \"Clear the date\".",
+    "marcadoComoPublicado": "Text marked as published.",
+    "voltouParaAFila": "Date cleared: the text is back in the queue, at position {posicao}."
   },
   "esqueci": {
     "titulo": "I forgot my password",

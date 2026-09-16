@@ -149,7 +149,11 @@ export default async function Historico({
                       )}
                       {p.origem !== 'dispatcher' ? (
                         <div className="faint">
-                          {p.origem === 'manual' ? t('publicadoAgora') : t('historicoImportado')}
+                          {p.origem === 'manual'
+                            ? t('publicadoAgora')
+                            : p.origem === 'retroativa'
+                              ? t('marcadaAMao')
+                              : t('historicoImportado')}
                         </div>
                       ) : null}
                     </td>

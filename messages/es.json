@@ -28,7 +28,8 @@
     "semPastaTitulo": "Todavía no tiene ninguna carpeta asignada",
     "semPastaExplicacao": "No es que el sistema esté vacío: su perfil solo ve las carpetas que un administrador le asigna. Pida a un administrador de su organización que lo haga en Configuración → Usuarios. En cuanto le asignen la carpeta, sus textos y publicaciones aparecen aquí.",
     "versaoEData": "Versión {versao} · publicada el {data}",
-    "excluir": "Eliminar"
+    "excluir": "Eliminar",
+    "editar": "Editar"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -183,7 +184,11 @@
     "incluirAqui": "Incluir texto aquí",
     "incluirAquiTitulo": "Abre la pantalla de nuevo texto ya posicionada justo después de la última fila elegida. Un texto por vez: nada se guarda hasta que usted guarde.",
     "exportarEscolhidos": "Exportar elegidos",
-    "confirmarExclusao": "¿Eliminar {quantidade} texto(s)? No se puede deshacer. Para sacarlos de la lista sin borrarlos, use Archivar."
+    "confirmarExclusao": "¿Eliminar {quantidade} texto(s)? No se puede deshacer. Para sacarlos de la lista sin borrarlos, use Archivar.",
+    "incluirAbaixo": "Incluir un texto justo debajo de este",
+    "paraArrastarVolteAOrdem": "La lista está ordenada por otra columna, así que no se puede arrastrar: la posición donde se suelta no diría nada sobre la cola.",
+    "voltarAOrdemDaFila": "Volver al orden de la cola",
+    "ordenarPor": "Ordenar por {coluna}"
   },
   "editor": {
     "conteudo": "Contenido",
@@ -225,7 +230,13 @@
     "dataDaPublicacao": "Fecha de publicación",
     "dataHint": "Día/mes/año, con * para “todos”. 25/12/* sale cada Navidad; */09/* sale en los días de septiembre marcados en la programación; 01/01/2027 sale una sola vez.",
     "duasCondicoes": "Son dos condiciones, y valen juntas: la fecha tiene que coincidir con este patrón Y el día de la semana tiene que estar marcado en la programación de la carpeta. Con */09/* y solo Dom marcado, sale los domingos de septiembre.",
-    "entraDepoisDe": "entra justo después de «{texto}»"
+    "entraDepoisDe": "entra justo después de «{texto}»",
+    "dataDePublicacao": "Fecha de publicación",
+    "publicadaEm": "Publicada el",
+    "dataDePublicacaoHint": "Para cuando la publicación ocurrió fuera de aquí — alguien publicó en el grupo por su cuenta, o el registro vino mal de una importación. La fecha se lee en el huso de la carpeta ({fuso}). Indicar una fecha marca el texto como publicado; limpiarla devuelve el texto al final de la cola.",
+    "marcarComoPublicado": "Marcar como publicado",
+    "limparData": "Limpiar la fecha",
+    "limparDataAviso": "Limpiar la fecha devuelve el texto al final de la cola, y volverá a publicarse en el próximo horario de la carpeta. Las publicaciones que de hecho salieron siguen en el historial."
   },
   "historico": {
     "titulo": "Historial de publicaciones",
@@ -247,7 +258,8 @@
     "tentativas": "{quantidade} intentos",
     "vazio": "Todavía no hay publicaciones. Aparecen aquí en cuanto el dispatcher ejecute el primer slot.",
     "explicacao": "Cada fila es un slot (carpeta, fecha prevista, hora prevista) — la misma clave única que garantiza la idempotencia: un slot nunca aparece dos veces. El historial importado entra sin hora prevista y el dispatcher nunca lo reenvía.",
-    "sem_texto": "sin texto para la fecha"
+    "sem_texto": "sin texto para la fecha",
+    "marcadaAMao": "marcada a mano"
   },
   "alertas": {
     "titulo": "Panel de alertas",
@@ -812,7 +824,10 @@
     "superadminSemOrganizacao": "El superadmin no participa de organización: alcanza todas por su perfil.",
     "nenhumTextoEscolhido": "Elija al menos un texto de la lista.",
     "arquivadosEmLote": "{quantidade} texto(s) archivado(s).",
-    "excluidosEmLote": "{quantidade} texto(s) eliminado(s)."
+    "excluidosEmLote": "{quantidade} texto(s) eliminado(s).",
+    "dataDePublicacaoInvalida": "Indique una fecha y hora válidas, o use «Limpiar la fecha».",
+    "marcadoComoPublicado": "Texto marcado como publicado.",
+    "voltouParaAFila": "Fecha limpiada: el texto volvió a la cola, en la posición {posicao}."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",

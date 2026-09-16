@@ -4,11 +4,11 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Casca } from '@/components/casca';
 import { CampoCsrf } from '@/components/csrf';
 import { Avisos } from '@/components/avisos';
-import { FilaOrdenavel } from '@/components/fila-ordenavel';
 import { MoverTextos, CaixaDeTexto, CaixaDeTodos } from '@/components/mover-textos';
 import { SelectQueFiltra } from '@/components/filtro-imediato';
 import {
-  IconeAbrir,
+  IconeEditar,
+  IconeIncluir,
   IconeArquivar,
   IconeDaSituacao,
   IconeDesarquivar,
@@ -24,6 +24,9 @@ import { resumir, tamanhoDoTexto } from '@/lib/textos';
 import { formatarNoFuso } from '@/lib/fuso';
 import { formatarPadraoDeData } from '@/lib/data-da-publicacao';
 import { SITUACOES, lembrarLista, listaLembrada, pastaDaVez } from '@/lib/lista-lembrada';
+import { lerOrdenacao, paraPrisma, podeArrastar } from '@/lib/ordenacao-da-lista';
+import { CabecalhoOrdenavel } from '@/components/cabecalho-ordenavel';
+import { ListaArrastavel } from '@/components/lista-arrastavel';
 import {
   arquivarSelecionados,
   arquivarTexto,
@@ -56,7 +59,16 @@ const RESUMO_NA_LISTA = 480;
 export default async function Textos({
   searchParams,
 }: {
-  searchParams: Promise<{ pasta?: string; busca?: string; status?: string; imagem?: string; erro?: string; ok?: string }>;
+  searchParams: Promise<{
+    pasta?: string;
+    busca?: string;
+    status?: string;
+    imagem?: string;
+    ordenar?: string;
+    sentido?: string;
+    erro?: string;
+    ok?: string;
+  }>;
 }) {
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
@@ -95,6 +107,13 @@ export default async function Textos({
   }
 
   const busca = (filtros.busca ?? '').trim();
+  const ordenacao = lerOrdenacao(filtros.ordenar, filtros.sentido);
+  // Os filtros em vigor, para os links de ordenação não os apagarem ao trocar a
+  // coluna — e para a ordenação sobreviver a uma troca de filtro.
+  const emVigor = new URLSearchParams({ pasta: pasta.id });
+  if (busca) emVigor.set('busca', busca);
+  if (filtros.status !== undefined) emVigor.set('status', filtros.status);
+  if (filtros.imagem) emVigor.set('imagem', filtros.imagem);
   // A situação vem da URL quando ela traz uma, mesmo vazia — `?status=` é a
   // escolha explícita de "todas". Só a ausência do parâmetro cai no lembrado;
   // um valor desconhecido cai em "todas", sem sobrescrever o que estava guardado
@@ -124,7 +143,7 @@ export default async function Textos({
         filtros.imagem === 'sem' ? { imagem: null } : {},
       ],
     },
-    orderBy: [{ status: 'asc' }, { ordem: 'asc' }],
+    orderBy: paraPrisma(ordenacao, pasta.tipoDeLista === 'data'),
     select: {
       id: true,
       conteudo: true,
@@ -143,12 +162,15 @@ export default async function Textos({
   });
 
   const pendentes = textos.filter((texto) => texto.status === 'pendente');
-  // A coluna mostra a posição na fila, não o valor bruto de `ordem`: depois de
-  // uma importação os números têm buracos, e "5" numa fila de três assusta sem
-  // motivo.
-  const posicaoNaFila = new Map(pendentes.map((texto, indice) => [texto.id, indice + 1]));
   const semFiltro = !busca && !status && !filtros.imagem;
-  const podeReordenar = semFiltro && pendentes.length > 1 && pasta.tipoDeLista === 'fila';
+  const porData = pasta.tipoDeLista === 'data';
+  const arrastavel = podeArrastar({
+    ordenacao,
+    comFiltro: !semFiltro,
+    porData,
+    pendentes: pendentes.length,
+    temPermissao: podeFazer(sessao.perfil, 'textos.reordenar'),
+  });
 
   // Mover é de admin para cima; o destino sai da mesma lista de pastas que a
   // pessoa já enxerga, menos a que está aberta. Arquivar, excluir, incluir e
@@ -156,7 +178,6 @@ export default async function Textos({
   // tem — por isso a caixa de seleção aparece para ele, e o bloco de mover não.
   const podeMover = podeFazer(sessao.perfil, 'textos.mover');
   const podeSelecionar = podeFazer(sessao.perfil, 'textos.gerenciar');
-  const porData = pasta.tipoDeLista === 'data';
   const destinos = pastas.filter((p) => p.id !== pasta.id).map((p) => ({ id: p.id, nome: p.nome }));
 
   return (
@@ -241,17 +262,51 @@ export default async function Textos({
                   <CaixaDeTodos rotulo={t('escolherTodos')} />
                 </th>
               ) : null}
-              <th style={{ width: porData ? 96 : 52 }}>
-                {porData ? t('dataDaPublicacao') : t('ordem')}
-              </th>
-              <th>{t('texto')}</th>
+              {/* A coluna que só mostrava o número virou a alça de arrastar: o
+                  cabeçalho continua ordenando por ela, que é como se volta à
+                  ordem da fila depois de ordenar por outra coisa. */}
+              {porData ? (
+                <CabecalhoOrdenavel
+                  coluna="ordem"
+                  rotulo={t('dataDaPublicacao')}
+                  ordenacao={ordenacao}
+                  parametros={emVigor}
+                  largura={110}
+                />
+              ) : (
+                <CabecalhoOrdenavel
+                  coluna="ordem"
+                  rotulo={t('ordem')}
+                  ordenacao={ordenacao}
+                  parametros={emVigor}
+                  largura={arrastavel ? 108 : 66}
+                />
+              )}
+              <CabecalhoOrdenavel
+                coluna="texto"
+                rotulo={t('texto')}
+                ordenacao={ordenacao}
+                parametros={emVigor}
+              />
               {/* Sem rótulo escrito: era ele, e não o conteúdo, que segurava a
                   coluna em noventa e cinco pixels. O nome continua chegando a
-                  quem usa leitor de tela pelo `aria-label`, e ao mouse pelo
-                  `title` — como já acontece na coluna das ações. */}
-              <th style={{ width: 40 }} title={t('situacao')} aria-label={t('situacao')} />
-              <th style={{ width: 128 }}>{t('publicadoEm')}</th>
-              <th style={{ width: 104 }} />
+                  quem usa leitor de tela, e ao mouse pelo `title`. */}
+              <CabecalhoOrdenavel
+                coluna="situacao"
+                rotulo={t('situacao')}
+                ordenacao={ordenacao}
+                parametros={emVigor}
+                largura={48}
+                soIndicador
+              />
+              <CabecalhoOrdenavel
+                coluna="publicadoEm"
+                rotulo={t('publicadoEm')}
+                ordenacao={ordenacao}
+                parametros={emVigor}
+                largura={138}
+              />
+              <th style={{ width: 132 }} />
             </tr>
           </thead>
           <tbody>
@@ -262,26 +317,32 @@ export default async function Textos({
                 </td>
               </tr>
             ) : (
-              textos.map((texto) => (
-                <tr key={texto.id}>
-                  {podeSelecionar ? (
+              <ListaArrastavel
+                folderId={pasta.id}
+                acao={reordenarFila}
+                csrf={<CampoCsrf token={csrf} />}
+                comPosicao={!porData}
+                arrastavel={arrastavel}
+                colunas={podeSelecionar ? 6 : 5}
+                linhas={textos.map((texto) => ({
+                  id: texto.id,
+                  posicao: texto.status === 'pendente' ? texto.ordem : null,
+                  prefixo: podeSelecionar ? (
                     <td>
                       <CaixaDeTexto id={texto.id} />
                     </td>
-                  ) : null}
-                  <td className="num">
-                    {porData ? (
-                      formatarPadraoDeData({
+                  ) : null,
+                  celulas: (
+                    <>
+                  {porData ? (
+                    <td className="num">
+                      {formatarPadraoDeData({
                         dia: texto.diaDaPublicacao,
                         mes: texto.mesDaPublicacao,
                         ano: texto.anoDaPublicacao,
-                      })
-                    ) : texto.status === 'pendente' ? (
-                      posicaoNaFila.get(texto.id)
-                    ) : (
-                      <span className="faint">{comum('nenhum')}</span>
-                    )}
-                  </td>
+                      })}
+                    </td>
+                  ) : null}
                   <td className="textcell">
                     {/* Sem imagem, nada ocupa o lugar dela: o quadrado vazio
                         custava cinquenta e oito pixels de leitura por linha para
@@ -338,10 +399,21 @@ export default async function Textos({
                     <Link
                       className="btn sm icone"
                       href={`/textos/${texto.id}`}
-                      title={comum('abrir')}
-                      aria-label={comum('abrir')}
+                      title={comum('editar')}
+                      aria-label={comum('editar')}
                     >
-                      <IconeAbrir />
+                      <IconeEditar />
+                    </Link>
+                    {/* Incluir logo abaixo desta linha. A mesma coisa que a barra
+                        de seleção já fazia, mas na própria linha: lá era preciso
+                        marcar a caixa primeiro para descobrir que existia. */}
+                    <Link
+                      className="btn sm icone"
+                      href={`/textos/novo?pasta=${pasta.id}&depoisDe=${texto.id}`}
+                      title={t('incluirAbaixo')}
+                      aria-label={t('incluirAbaixo')}
+                    >
+                      <IconeIncluir />
                     </Link>
                     {texto.status === 'pendente' ? (
                       <form action={publicarAgora}>
@@ -404,8 +476,10 @@ export default async function Textos({
                     )}
                    </div>
                   </td>
-                </tr>
-              ))
+                    </>
+                  ),
+                }))}
+              />
             )}
           </tbody>
         </table>
@@ -413,27 +487,15 @@ export default async function Textos({
         </MoverTextos>
       </div>
 
-      {podeReordenar ? (
-        <div className="card">
-          <header>
-            <h2>{t('ordemDaFila')}</h2>
-            <span className="spacer" />
-            <span className="sub">{t('textosPendentes', { quantidade: pendentes.length })}</span>
-          </header>
-          <FilaOrdenavel
-            folderId={pasta.id}
-            acao={reordenarFila}
-            csrf={<CampoCsrf token={csrf} />}
-            itens={pendentes.map((texto) => ({
-              id: texto.id,
-              resumo: resumir(texto.conteudo, 120),
-              miniatura: texto.imagemMime ? `/api/textos/${texto.id}/imagem` : null,
-              caracteres: tamanhoDoTexto(texto.conteudo),
-            }))}
-          />
-        </div>
-      ) : pendentes.length > 1 ? (
-        <p className="faint">{t('limpeOsFiltros')}</p>
+      {/* Por que não dá para arrastar agora, quando não dá. Sem isto a alça
+          simplesmente some e não há como adivinhar o que a trouxe de volta. */}
+      {arrastavel ? (
+        <p className="faint">{t('arrasteOuSetas')}</p>
+      ) : !porData && pendentes.length > 1 && podeFazer(sessao.perfil, 'textos.reordenar') ? (
+        <p className="faint">
+          {semFiltro ? t('paraArrastarVolteAOrdem') : t('limpeOsFiltros')}{' '}
+          <Link href={`/textos?pasta=${pasta.id}`}>{t('voltarAOrdemDaFila')}</Link>
+        </p>
       ) : null}
     </Casca>
   );

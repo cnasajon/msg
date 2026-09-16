@@ -5,7 +5,7 @@ projeto está**, **o que já foi decidido** e **o que continua aberto** — não
 repete a especificação (`docs/ESPECIFICACAO.md`, v1.5) nem as regras de trabalho
 (`CLAUDE.md`), que seguem sendo a fonte da verdade de cada assunto.
 
-**Última atualização:** 16/09/2026 · versão **1.6**
+**Última atualização:** 16/09/2026 · versão **1.7**
 
 ---
 
@@ -113,6 +113,9 @@ Tudo isto nasceu de pedidos feitos com o sistema já rodando:
 - **A largura da lista é do conteúdo**: situação e ações viraram ícones com
   balão, e a miniatura vazia saiu. A coluna do texto passou de 505 para 737
   pixels a 1450px de largura.
+- **Ordenar por qualquer coluna** ao clique no cabeçalho, e a coluna Ordem virou
+  a alça de arrastar — o cartão de reordenar embaixo da lista deixou de existir.
+- **Data de publicação editável** na tela do texto, com a situação acompanhando.
 
 ## 6. Onde as coisas estão
 
@@ -124,12 +127,14 @@ Tudo isto nasceu de pedidos feitos com o sistema já rodando:
 | `src/lib/selecao.ts` | Ações em lote a partir da seleção da lista |
 | `src/lib/lista-lembrada.ts` | Pasta e situação lembradas da última visita |
 | `src/components/icones.tsx` | Os ícones da lista, em SVG embutido |
+| `src/lib/ordenacao-da-lista.ts` | Ordenar por coluna, e quando as alças valem |
+| `src/lib/data-publicada.ts` | Marcar e desmarcar a data de publicação |
 | `src/lib/mover.ts` | Mover textos entre pastas |
 | `src/lib/versao.ts` | Versão e data que aparecem no rodapé |
 | `src/i18n/idiomas.ts` | Idiomas, bandeiras e os grupos que vão ao navegador |
 | `messages/` | `pt.json`, `es.json`, `en.json` |
 | `src/worker/` | Serviço `worker` |
-| `tests/` | 19 arquivos, **218 testes** |
+| `tests/` | 21 arquivos, **245 testes** |
 | `docs/ESPECIFICACAO.md` | Especificação funcional e técnica (v1.5) |
 | `CLAUDE.md` | Regras de trabalho e pontos não negociáveis |
 

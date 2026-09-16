@@ -32,6 +32,8 @@ Onde o projeto está hoje, para abrir uma conversa nova sem reler o histórico:
 | `src/lib/mover.ts` | Mover textos entre pastas, com o escopo dos dois lados |
 | `src/lib/selecao.ts` | Ações em lote a partir da seleção da lista, tudo ou nada |
 | `src/components/icones.tsx` | Os ícones da lista de textos, em SVG embutido |
+| `src/lib/ordenacao-da-lista.ts` | Ordenar por coluna, e quando as alças valem |
+| `src/lib/data-publicada.ts` | Marcar e desmarcar a data de publicação |
 | `src/lib/data-da-publicacao.ts` | O padrão `dia/mês/ano` das listas por data |
 | `src/lib/proximo-texto.ts` | Qual texto sai em cada slot, por fila ou por data |
 | `src/lib/autorizacao.ts` | Matriz de permissões da seção 6 |
@@ -453,6 +455,54 @@ disponível. Apagar uma pasta não derruba nada: a coluna é `ON DELETE SET NULL
 
 A **busca digitada não é lembrada**, de propósito: uma caixa de busca preenchida
 de ontem esconde textos sem dizer por quê.
+
+## Ordenar, arrastar e a coluna Ordem
+
+Clicar no cabeçalho de qualquer coluna ordena por ela: o primeiro clique sobe, o
+seguinte desce. A ordenação vive na URL junto dos filtros, então a tela ordenada
+é marcável nos favoritos, compartilhável e reversível pelo botão de voltar.
+
+A coluna **Ordem** deixou de ser só um número: ela é a alça de arrastar. O que
+antes era um segundo cartão embaixo da lista — achar o texto de novo para poder
+movê-lo — passou a ser a própria linha, com `⠿`, a posição e duas setas para
+quem está no telefone ou no teclado. A ordem só vai para o banco ao clicar em
+salvar; arrastar cinco textos não deveria gerar cinco escritas.
+
+**Arrastar e ordenar por outra coluna não valem ao mesmo tempo**, e isso é
+deliberado: numa lista ordenada por data, soltar uma linha entre outras duas não
+diz nada sobre a posição na fila, e gravar aquilo como ordem embaralharia a fila
+sem ninguém pedir. As alças também somem com filtro ativo — reordenar o que se vê
+reescreveria a posição do que está escondido —, em lista por data, que não tem
+fila, e para quem não pode reordenar. Quando somem, a tela diz por quê e oferece
+o caminho de volta. **A posição continua à mostra**: é dela que se precisa
+justamente aí.
+
+## Incluir um texto no meio da fila
+
+Duas portas para a mesma coisa: o **`+`** na linha, que abre o editor já
+posicionado logo abaixo daquele texto, e o **Incluir texto aqui** da barra de
+seleção, que usa a última linha marcada. Um texto por vez; nada é gravado antes
+de salvar.
+
+## Data de publicação editável
+
+Na tela do texto, **Data de publicação** informa ou limpa a data em que ele foi
+publicado — para quando a publicação aconteceu fora daqui: alguém postou no grupo
+por conta própria, ou o registro veio torto de uma importação. É a mesma ideia da
+coluna de data da importação, só que texto a texto, depois do fato.
+
+A data é lida **no fuso da pasta**, com as viradas de horário de verão resolvidas
+pelo mesmo conversor do agendamento. Informar uma data marca o texto como
+`publicado` e grava uma linha em `publications` com origem `retroativa`, sem hora
+prevista, para não disputar slot com o dispatcher.
+
+Limpar a data devolve o texto ao **fim** da fila, e ele volta a publicar no
+próximo horário — a tela avisa antes. Some a marcação retroativa; as publicações
+que **de fato** saíram ficam onde estão, porque o histórico sobreviver à edição é
+ponto não negociável.
+
+O formulário é separado do conteúdo de propósito: isto muda a situação do texto,
+e ninguém deveria mudá-la sem querer ao salvar uma vírgula.
 
 ## A largura é do conteúdo
 

@@ -28,7 +28,8 @@
     "semPastaTitulo": "Você ainda não tem nenhuma pasta atribuída",
     "semPastaExplicacao": "Não é que o sistema esteja vazio: o seu perfil enxerga apenas as pastas que um administrador atribui a você. Peça a um administrador da sua organização que faça isso em Configuração → Usuários. Assim que a pasta for atribuída, os textos e as publicações dela aparecem aqui.",
     "versaoEData": "Versão {versao} · publicada em {data}",
-    "excluir": "Excluir"
+    "excluir": "Excluir",
+    "editar": "Editar"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -183,7 +184,11 @@
     "incluirAqui": "Incluir texto aqui",
     "incluirAquiTitulo": "Abre a tela de novo texto já posicionada logo depois da última linha escolhida. Um texto por vez: nada é gravado até você salvar.",
     "exportarEscolhidos": "Exportar escolhidos",
-    "confirmarExclusao": "Excluir {quantidade} texto(s)? Não há como desfazer. Para tirar da lista sem apagar, use Arquivar."
+    "confirmarExclusao": "Excluir {quantidade} texto(s)? Não há como desfazer. Para tirar da lista sem apagar, use Arquivar.",
+    "incluirAbaixo": "Incluir um texto logo abaixo deste",
+    "paraArrastarVolteAOrdem": "A lista está ordenada por outra coluna, então não há como arrastar: a posição de soltura não diria nada sobre a fila.",
+    "voltarAOrdemDaFila": "Voltar à ordem da fila",
+    "ordenarPor": "Ordenar por {coluna}"
   },
   "editor": {
     "conteudo": "Conteúdo",
@@ -225,7 +230,13 @@
     "dataDaPublicacao": "Data da publicação",
     "dataHint": "Dia/mês/ano, com * para “todos”. 25/12/* sai todo Natal; */09/* sai nos dias de setembro que estiverem marcados no agendamento; 01/01/2027 sai uma vez só.",
     "duasCondicoes": "São duas condições, e valem juntas: a data precisa casar com este padrão E o dia da semana precisa estar marcado no agendamento da pasta. Com */09/* e apenas Dom marcado, sai nos domingos de setembro.",
-    "entraDepoisDe": "entra logo depois de “{texto}”"
+    "entraDepoisDe": "entra logo depois de “{texto}”",
+    "dataDePublicacao": "Data de publicação",
+    "publicadaEm": "Publicada em",
+    "dataDePublicacaoHint": "Para quando a publicação aconteceu fora daqui — alguém postou no grupo por conta própria, ou o registro veio torto de uma importação. A data é lida no fuso da pasta ({fuso}). Informar uma data marca o texto como publicado; limpar devolve o texto ao fim da fila.",
+    "marcarComoPublicado": "Marcar como publicado",
+    "limparData": "Limpar a data",
+    "limparDataAviso": "Limpar a data devolve o texto ao fim da fila, e ele volta a ser publicado no próximo horário da pasta. As publicações que de fato saíram continuam no histórico."
   },
   "historico": {
     "titulo": "Histórico de publicações",
@@ -247,7 +258,8 @@
     "tentativas": "{quantidade} tentativas",
     "vazio": "Nenhuma publicação ainda. Elas aparecem aqui assim que o dispatcher rodar o primeiro slot.",
     "explicacao": "Cada linha é um slot (pasta, data prevista, hora prevista) — a mesma chave única que garante a idempotência: um slot nunca aparece duas vezes. O histórico importado entra sem hora prevista e nunca é reenviado pelo dispatcher.",
-    "sem_texto": "sem texto para a data"
+    "sem_texto": "sem texto para a data",
+    "marcadaAMao": "marcada à mão"
   },
   "alertas": {
     "titulo": "Painel de alertas",
@@ -812,7 +824,10 @@
     "superadminSemOrganizacao": "Superadmin não participa de organização: ele alcança todas pelo perfil.",
     "nenhumTextoEscolhido": "Escolha ao menos um texto da lista.",
     "arquivadosEmLote": "{quantidade} texto(s) arquivado(s).",
-    "excluidosEmLote": "{quantidade} texto(s) excluído(s)."
+    "excluidosEmLote": "{quantidade} texto(s) excluído(s).",
+    "dataDePublicacaoInvalida": "Informe uma data e hora válidas, ou use \"Limpar a data\".",
+    "marcadoComoPublicado": "Texto marcado como publicado.",
+    "voltouParaAFila": "Data limpa: o texto voltou à fila, na posição {posicao}."
   },
   "esqueci": {
     "titulo": "Esqueci a senha",
