@@ -12,7 +12,13 @@ export const dynamic = 'force-dynamic';
 export default async function Exportacao({
   searchParams,
 }: {
-  searchParams: Promise<{ pasta?: string; status?: string; imagem?: string; busca?: string }>;
+  searchParams: Promise<{
+    pasta?: string;
+    status?: string;
+    imagem?: string;
+    busca?: string;
+    textos?: string | string[];
+  }>;
 }) {
   const sessao = await sessaoAtual();
   if (!sessao) redirect('/entrar');
@@ -44,12 +50,21 @@ export default async function Exportacao({
   const status = filtros.status ?? '';
   const imagem = filtros.imagem ?? '';
   const busca = (filtros.busca ?? '').trim();
+  // Quem chega pela barra de seleção da lista já disse o que quer exportar; aqui
+  // só falta escolher o formato. Os demais filtros continuam aplicáveis, mas
+  // sempre **dentro** da escolha.
+  const escolhidos = (
+    Array.isArray(filtros.textos) ? filtros.textos : filtros.textos ? [filtros.textos] : []
+  )
+    .map((i) => i.trim())
+    .filter(Boolean);
 
   const quantidade = await prisma.text.count({
     where: {
       AND: [
         escopoDeTexto(sessao),
         { folderId: pasta.id },
+        escolhidos.length > 0 ? { id: { in: escolhidos } } : {},
         status ? { status: status as 'pendente' } : {},
         busca ? { conteudo: { contains: busca, mode: 'insensitive' } } : {},
         imagem === 'com' ? { imagem: { not: null } } : {},
@@ -62,6 +77,7 @@ export default async function Exportacao({
   if (status) parametros.set('status', status);
   if (imagem) parametros.set('imagem', imagem);
   if (busca) parametros.set('busca', busca);
+  for (const id of escolhidos) parametros.append('textos', id);
 
   return (
     <Casca
@@ -72,6 +88,11 @@ export default async function Exportacao({
     >
       <div className="card">
         <form className="toolbar" method="get">
+          {/* Sem isto, mexer em qualquer filtro apagaria a escolha feita na lista:
+              o formulário GET reescreve a URL inteira com os campos que tem. */}
+          {escolhidos.map((id) => (
+            <input key={id} type="hidden" name="textos" value={id} />
+          ))}
           <select name="pasta" defaultValue={pasta.id} aria-label={menu('pastas')}>
             {pastas.map((p) => (
               <option key={p.id} value={p.id}>
@@ -102,6 +123,12 @@ export default async function Exportacao({
         </form>
 
         <div className="body">
+          {escolhidos.length > 0 ? (
+            <p style={{ marginTop: 0 }}>
+              <b>{t('soAEscolha', { quantidade: escolhidos.length })}</b>{' '}
+              <Link href={`/exportacao?pasta=${pasta.id}`}>{t('exportarTudo')}</Link>
+            </p>
+          ) : null}
           <p style={{ marginTop: 0 }}>
             {t.rich('seraoExportados', { quantidade, b: (partes) => <b>{partes}</b> })}
           </p>

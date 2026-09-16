@@ -163,6 +163,22 @@ describe.skipIf(!temBanco || !BASE)('isolamento nas rotas HTTP', () => {
     expect(daOutra.status).toBe(404);
   });
 
+  it('exportação da seleção: id de outra organização na URL não traz nada de volta', async () => {
+    // A barra da lista manda os escolhidos em `textos=`. Trocar um deles pelo id
+    // de um texto de B é a tentativa óbvia: a pasta continua sendo a de A, que
+    // passa no escopo, e só o id do texto é forjado.
+    const url =
+      `/api/exportacao?pasta=${cenario.a.pasta.id}&formato=json` +
+      `&textos=${cenario.a.texto.id}&textos=${cenario.b.texto.id}`;
+    const resposta = await buscar(url, cookieAdminA);
+    expect(resposta.status).toBe(200);
+
+    const conteudo = await resposta.json();
+    expect(JSON.stringify(conteudo)).not.toContain('Organização B');
+    expect(conteudo.textos).toHaveLength(1);
+    expect(conteudo.textos[0].conteudo).toContain('Organização A');
+  });
+
   it('pré-visualização da importação exige sessão', async () => {
     const resposta = await fetch(`${BASE}/api/importacao/previa`, { method: 'POST', body: new FormData() });
     expect(resposta.status).toBe(401);

@@ -27,7 +27,8 @@
     "fechar": "Cerrar",
     "semPastaTitulo": "Todavía no tiene ninguna carpeta asignada",
     "semPastaExplicacao": "No es que el sistema esté vacío: su perfil solo ve las carpetas que un administrador le asigna. Pida a un administrador de su organización que lo haga en Configuración → Usuarios. En cuanto le asignen la carpeta, sus textos y publicaciones aparecen aquí.",
-    "versaoEData": "Versión {versao} · publicada el {data}"
+    "versaoEData": "Versión {versao} · publicada el {data}",
+    "excluir": "Eliminar"
   },
   "perfis": {
     "superadmin": "Superadmin",
@@ -178,7 +179,11 @@
     "semOutraPasta": "No hay otra carpeta a la que mover.",
     "dataDaPublicacao": "Fecha de publicación",
     "qualquerData": "cualquier fecha",
-    "semPastaTitulo": "Ninguna carpeta registrada todavía"
+    "semPastaTitulo": "Ninguna carpeta registrada todavía",
+    "incluirAqui": "Incluir texto aquí",
+    "incluirAquiTitulo": "Abre la pantalla de nuevo texto ya posicionada justo después de la última fila elegida. Un texto por vez: nada se guarda hasta que usted guarde.",
+    "exportarEscolhidos": "Exportar elegidos",
+    "confirmarExclusao": "¿Eliminar {quantidade} texto(s)? No se puede deshacer. Para sacarlos de la lista sin borrarlos, use Archivar."
   },
   "editor": {
     "conteudo": "Contenido",
@@ -219,7 +224,8 @@
     "explicacaoTirar": "Archivar conserva el registro y es el camino normal. Eliminar borra el texto — el historial de publicaciones sobrevive, porque la publicación guarda lo que salió al aire.",
     "dataDaPublicacao": "Fecha de publicación",
     "dataHint": "Día/mes/año, con * para “todos”. 25/12/* sale cada Navidad; */09/* sale en los días de septiembre marcados en la programación; 01/01/2027 sale una sola vez.",
-    "duasCondicoes": "Son dos condiciones, y valen juntas: la fecha tiene que coincidir con este patrón Y el día de la semana tiene que estar marcado en la programación de la carpeta. Con */09/* y solo Dom marcado, sale los domingos de septiembre."
+    "duasCondicoes": "Son dos condiciones, y valen juntas: la fecha tiene que coincidir con este patrón Y el día de la semana tiene que estar marcado en la programación de la carpeta. Con */09/* y solo Dom marcado, sale los domingos de septiembre.",
+    "entraDepoisDe": "entra justo después de «{texto}»"
   },
   "historico": {
     "titulo": "Historial de publicaciones",
@@ -332,7 +338,9 @@
     "voltarAosTextos": "Volver a los textos",
     "seraoExportados": "Se exportarán <b>{quantidade}</b> texto(s) con estos filtros.",
     "baixar": "Descargar {formato}",
-    "respeitaEscopo": "La exportación respeta lo que ves: un usuario con dos carpetas asignadas exporta solo esas dos. Las fechas salen en la zona horaria de la carpeta, indicada en el encabezado del archivo."
+    "respeitaEscopo": "La exportación respeta lo que ves: un usuario con dos carpetas asignadas exporta solo esas dos. Las fechas salen en la zona horaria de la carpeta, indicada en el encabezado del archivo.",
+    "soAEscolha": "Solo los {quantidade} textos elegidos en la lista.",
+    "exportarTudo": "Exportar la carpeta entera"
   },
   "tiposDeAlerta": {
     "falha_publicacao": "Fallo definitivo de publicación",
@@ -801,7 +809,10 @@
     "organizacoesAtualizadas": "Organizaciones de «{nome}» actualizadas.",
     "peloMenosUmaOrganizacao": "La persona necesita participar de al menos una organización.",
     "organizacaoInexistente": "Organización no encontrada.",
-    "superadminSemOrganizacao": "El superadmin no participa de organización: alcanza todas por su perfil."
+    "superadminSemOrganizacao": "El superadmin no participa de organización: alcanza todas por su perfil.",
+    "nenhumTextoEscolhido": "Elija al menos un texto de la lista.",
+    "arquivadosEmLote": "{quantidade} texto(s) archivado(s).",
+    "excluidosEmLote": "{quantidade} texto(s) eliminado(s)."
   },
   "esqueci": {
     "titulo": "Olvidé la contraseña",

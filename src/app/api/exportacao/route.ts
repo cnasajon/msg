@@ -30,12 +30,18 @@ export async function GET(pedido: Request) {
     const status = url.searchParams.get('status') ?? '';
     const comImagem = url.searchParams.get('imagem') ?? '';
     const busca = (url.searchParams.get('busca') ?? '').trim();
+    // Escolha feita na lista. Continua sendo um recorte *dentro* do escopo: os
+    // identificadores entram no mesmo `AND`, ao lado de `escopoDeTexto`, então
+    // trocar um deles na URL não alcança texto de outra organização — some da
+    // exportação, que é o resultado certo.
+    const escolhidos = url.searchParams.getAll('textos').map((i) => i.trim()).filter(Boolean);
 
     const textos = await prisma.text.findMany({
       where: {
         AND: [
           escopoDeTexto(sessao),
           { folderId: pasta.id },
+          escolhidos.length > 0 ? { id: { in: escolhidos } } : {},
           status ? { status: status as 'pendente' } : {},
           busca ? { conteudo: { contains: busca, mode: 'insensitive' } } : {},
           comImagem === 'com' ? { imagem: { not: null } } : {},
@@ -60,6 +66,7 @@ export async function GET(pedido: Request) {
     });
 
     const filtros = [
+      escolhidos.length > 0 ? `escolhidos na lista: ${escolhidos.length}` : null,
       status ? `situação: ${status}` : 'todas as situações',
       comImagem === 'com' ? 'só com imagem' : comImagem === 'sem' ? 'só sem imagem' : 'com e sem imagem',
       busca ? `busca: "${busca}"` : null,
